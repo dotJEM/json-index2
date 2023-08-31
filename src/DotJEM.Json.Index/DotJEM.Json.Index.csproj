@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+		
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>DotJEM</Authors>
+    <Copyright>Copyright © DotJEM 2023</Copyright>
+    <Description>Builder for JSON Data Contract Resolvers</Description>
+    <IncludeSymbols>False</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+ 
+    <Version></Version>
+    <PackageVersion></PackageVersion>
+    <InformationalVersion></InformationalVersion>
+    <PackageVersion></PackageVersion>
+    <AssemblyVersion></AssemblyVersion>
+    <FileVersion></FileVersion>
+	
+	<PackageIcon>avatar.png</PackageIcon>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	  
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="..\..\avatar.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

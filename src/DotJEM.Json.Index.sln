@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index.Test", "DotJEM.Json.Index.Test\DotJEM.Json.Index.Test.csproj", "{E617BC88-B223-440B-8AB5-34F38827893C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index", "DotJEM.Json.Index\DotJEM.Json.Index.csproj", "{2E33AE34-57CD-4867-A0FF-507E7C51D718}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solu", ".Solu", "{574B5607-3A32-4EB4-A3EF-46267F35DEBC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E617BC88-B223-440B-8AB5-34F38827893C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E617BC88-B223-440B-8AB5-34F38827893C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E617BC88-B223-440B-8AB5-34F38827893C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E617BC88-B223-440B-8AB5-34F38827893C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E33AE34-57CD-4867-A0FF-507E7C51D718}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E33AE34-57CD-4867-A0FF-507E7C51D718}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E33AE34-57CD-4867-A0FF-507E7C51D718}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E33AE34-57CD-4867-A0FF-507E7C51D718}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7E7928A8-CADD-4F04-A69D-36EFE1A8D27B}
+	EndGlobalSection
+EndGlobal
