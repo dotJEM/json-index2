@@ -7,7 +7,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index.Test", "D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index", "DotJEM.Json.Index\DotJEM.Json.Index.csproj", "{2E33AE34-57CD-4867-A0FF-507E7C51D718}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solu", ".Solu", "{574B5607-3A32-4EB4-A3EF-46267F35DEBC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{574B5607-3A32-4EB4-A3EF-46267F35DEBC}"
+	ProjectSection(SolutionItems) = preProject
+		..\.gitignore = ..\.gitignore
+		..\avatar.png = ..\avatar.png
+		DotJEM.Json.Index.common.props = DotJEM.Json.Index.common.props
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+		..\VERSION = ..\VERSION
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
