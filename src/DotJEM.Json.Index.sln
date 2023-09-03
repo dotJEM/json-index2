@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 		..\VERSION = ..\VERSION
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotJEM.Json.Index.Contexts", "DotJEM.Json.Index.Contexts\DotJEM.Json.Index.Contexts.csproj", "{79933340-D497-44BE-8FA2-7C1EBE1BC715}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{2E33AE34-57CD-4867-A0FF-507E7C51D718}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E33AE34-57CD-4867-A0FF-507E7C51D718}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E33AE34-57CD-4867-A0FF-507E7C51D718}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79933340-D497-44BE-8FA2-7C1EBE1BC715}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79933340-D497-44BE-8FA2-7C1EBE1BC715}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79933340-D497-44BE-8FA2-7C1EBE1BC715}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79933340-D497-44BE-8FA2-7C1EBE1BC715}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
