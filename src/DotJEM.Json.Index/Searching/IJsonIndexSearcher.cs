@@ -2,23 +2,24 @@ using System;
 using DotJEM.Json.Index.Diagnostics;
 using DotJEM.Json.Index.Results;
 using DotJEM.Json.Index.Util;
+using DotJEM.ObservableExtensions.InfoStreams;
 using Lucene.Net.Search;
 
 namespace DotJEM.Json.Index.Searching
 {
-    public interface ILuceneJsonIndexSearcher : IDisposable
+    public interface IJsonIndexSearcher : IDisposable
     {
-        ILuceneJsonIndex Index { get; }
-        IEventInfoStream InfoStream { get; }
+        IJsonIndex Index { get; }
+        IInfoStream InfoStream { get; }
         ISearch Search(Query query);
     }
 
-    public class LuceneJsonIndexSearcher : Disposable, ILuceneJsonIndexSearcher
+    public class JsonIndexSearcher : Disposable, IJsonIndexSearcher
     {
-        public ILuceneJsonIndex Index { get; }
-        public IEventInfoStream InfoStream { get; } = EventInfoStream.Default.Bind<LuceneJsonIndexSearcher>();
+        public IJsonIndex Index { get; }
+        public IInfoStream InfoStream { get; } = new InfoStream<JsonIndexSearcher>();
 
-        public LuceneJsonIndexSearcher(ILuceneJsonIndex index)
+        public JsonIndexSearcher(IJsonIndex index)
         {
             Index = index;
         }
@@ -31,7 +32,7 @@ namespace DotJEM.Json.Index.Searching
 
     public static class IndexSearcherExtensions
     {
-        public static ISearch Search(this ILuceneJsonIndex self, Query query)
+        public static ISearch Search(this IJsonIndex self, Query query)
         {
             return self.CreateSearcher().Search(query);
         }

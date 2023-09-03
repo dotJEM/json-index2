@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using DotJEM.Json.Index.Diagnostics;
 using DotJEM.Json.Index.Documents.Fields;
 using DotJEM.Json.Index.Serialization;
 using DotJEM.Json.Visitor;
+using DotJEM.ObservableExtensions.InfoStreams;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
@@ -11,7 +11,7 @@ namespace DotJEM.Json.Index.Documents.Builder
 {
     public interface ILuceneDocumentBuilder
     {
-        IEventInfoStream EventInfoStream { get; }
+        IInfoStream EventInfoStream { get; }
         ILuceneDocument Build(JObject json);
     }
 
@@ -45,18 +45,18 @@ namespace DotJEM.Json.Index.Documents.Builder
     public abstract class AbstractLuceneDocumentBuilder : JValueVisitor<IPathContext>, ILuceneDocumentBuilder
     {
         private readonly IFieldResolver resolver;
-        private readonly ILuceneJsonDocumentSerializer documentSerializer;
+        private readonly IJsonDocumentSerializer documentSerializer;
         private readonly ITypeBoundEventInfoStream eventInfoStream;
 
         private ILuceneDocument document;
 
-        public IEventInfoStream EventInfoStream => eventInfoStream;
+        public IInfoStream EventInfoStream => eventInfoStream;
 
-        protected AbstractLuceneDocumentBuilder(IFieldResolver resolver = null, ILuceneJsonDocumentSerializer documentSerializer = null, IEventInfoStream eventInfoStream = null)
+        protected AbstractLuceneDocumentBuilder(IFieldResolver resolver = null, IJsonDocumentSerializer documentSerializer = null, IEventInfoStream eventInfoStream = null)
         {
             this.resolver = resolver ?? new FieldResolver();
             this.eventInfoStream = (eventInfoStream ?? Diagnostics.EventInfoStream.Default).Bind<AbstractLuceneDocumentBuilder>();
-            this.documentSerializer = documentSerializer ?? new GZipLuceneJsonDocumentSerialier();
+            this.documentSerializer = documentSerializer ?? new GZipJsonDocumentSerialier();
         }
 
         public virtual ILuceneDocument Build(JObject json)

@@ -8,7 +8,7 @@ namespace DotJEM.Json.Index.Storage
 {
     public abstract class AbstractJsonIndexStorage : IJsonIndexStorage
     {
-        private readonly ILuceneJsonIndex index;
+        private readonly IJsonIndex index;
         private readonly object padlock = new object();
 
         private Directory directory;
@@ -33,11 +33,11 @@ namespace DotJEM.Json.Index.Storage
             protected set => directory = value;
         }
 
-        protected AbstractJsonIndexStorage(ILuceneJsonIndex index)
+        protected AbstractJsonIndexStorage(IJsonIndex index)
         {
             this.index = index;
             WriterManager = new IndexWriterManager(index);
-            SearcherManager = new IndexSearcherManager(WriterManager, index.Services.Resolve<ILuceneJsonDocumentSerializer>());
+            SearcherManager = new IndexSearcherManager(WriterManager, index.Services.Resolve<IJsonDocumentSerializer>());
         }
 
         public void Unlock()

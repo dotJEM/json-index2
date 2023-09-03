@@ -8,7 +8,7 @@ namespace DotJEM.Json.Index.Searching
 {
     public interface IIndexSearcherManager : IDisposable
     {
-        ILuceneJsonDocumentSerializer Serializer { get; }
+        IJsonDocumentSerializer Serializer { get; }
         IIndexSearcherContext Acquire();
 
         void Close();
@@ -18,9 +18,9 @@ namespace DotJEM.Json.Index.Searching
     {
         private readonly ResetableLazy<SearcherManager> manager;
         
-        public ILuceneJsonDocumentSerializer Serializer { get; }
+        public IJsonDocumentSerializer Serializer { get; }
 
-        public IndexSearcherManager(IIndexWriterManager writerManager, ILuceneJsonDocumentSerializer serializer)
+        public IndexSearcherManager(IIndexWriterManager writerManager, IJsonDocumentSerializer serializer)
         {
             Serializer = serializer;
             manager = new ResetableLazy<SearcherManager>(() => new SearcherManager(writerManager.Writer, true, new SearcherFactory()));

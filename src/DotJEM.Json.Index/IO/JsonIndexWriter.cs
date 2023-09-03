@@ -25,10 +25,10 @@ namespace DotJEM.Json.Index.IO
         private readonly IIndexWriterManager manager;
         private readonly ILuceneDocumentFactory factory;
 
-        public ILuceneJsonIndex Index { get; }
+        public IJsonIndex Index { get; }
         public IndexWriter UnderlyingWriter => manager.Writer;
 
-        public JsonIndexWriter(ILuceneJsonIndex index, ILuceneDocumentFactory factory, IIndexWriterManager manager)
+        public JsonIndexWriter(IJsonIndex index, ILuceneDocumentFactory factory, IIndexWriterManager manager)
         {
             Index = index;
             this.factory = factory;

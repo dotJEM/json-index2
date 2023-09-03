@@ -4,7 +4,7 @@ namespace DotJEM.Json.Index.Storage
 {
     public class RamJsonIndexStorage : AbstractJsonIndexStorage
     {
-        public RamJsonIndexStorage(ILuceneJsonIndex index) : base(index)
+        public RamJsonIndexStorage(IJsonIndex index) : base(index)
         {
         }
 

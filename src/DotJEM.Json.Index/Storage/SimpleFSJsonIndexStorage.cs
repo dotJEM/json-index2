@@ -8,7 +8,7 @@ namespace DotJEM.Json.Index.Storage
     {
         private readonly string path;
 
-        public SimpleFsJsonIndexStorage(ILuceneJsonIndex index, string path) : base(index)
+        public SimpleFsJsonIndexStorage(IJsonIndex index, string path) : base(index)
         {
             this.path = path;
         }

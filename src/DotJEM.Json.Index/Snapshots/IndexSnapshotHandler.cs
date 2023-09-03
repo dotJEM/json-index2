@@ -10,13 +10,13 @@ namespace DotJEM.Json.Index.Snapshots
     
     public interface IIndexSnapshotHandler
     {
-        ISnapshot Snapshot(ILuceneJsonIndex index, ISnapshotTarget target);
-        ISnapshot Restore(ILuceneJsonIndex index, ISnapshotSource source);
+        ISnapshot Snapshot(IJsonIndex index, ISnapshotTarget target);
+        ISnapshot Restore(IJsonIndex index, ISnapshotSource source);
     }
 
     public class IndexSnapshotHandler : IIndexSnapshotHandler
     {
-        public ISnapshot Snapshot(ILuceneJsonIndex index, ISnapshotTarget target)
+        public ISnapshot Snapshot(IJsonIndex index, ISnapshotTarget target)
         {
             IndexWriter writer = index.WriterManager.Writer;
             SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy;
@@ -50,7 +50,7 @@ namespace DotJEM.Json.Index.Snapshots
             }
         }
 
-        public ISnapshot Restore(ILuceneJsonIndex index, ISnapshotSource source)
+        public ISnapshot Restore(IJsonIndex index, ISnapshotSource source)
         {
             index.Storage.Delete();
             Directory dir = index.Storage.Directory;

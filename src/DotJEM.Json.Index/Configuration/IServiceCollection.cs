@@ -44,7 +44,7 @@ namespace DotJEM.Json.Index.Configuration
                 .Use<IFieldResolver, FieldResolver>()
                 .Use<IFieldInformationManager, DefaultFieldInformationManager>()
                 .Use<ILuceneDocumentFactory, LuceneDocumentFactory>()
-                .Use<ILuceneJsonDocumentSerializer, GZipLuceneJsonDocumentSerialier>()
+                .Use<IJsonDocumentSerializer, GZipJsonDocumentSerialier>()
                 .Use<IJsonIndexWriterProvider, SyncJsonIndexWriterProvider>()
                 .Use<IInflowCapacity, NullInflowCapacity>();
         }
@@ -91,7 +91,7 @@ namespace DotJEM.Json.Index.Configuration
         IFieldResolver FieldResolver { get; }
         IFieldInformationManager FieldInformationManager { get; }
         ILuceneDocumentFactory DocumentFactory { get; }
-        ILuceneJsonDocumentSerializer Serializer { get; }
+        IJsonDocumentSerializer Serializer { get; }
     }
 
     public class DefaultServices : IServices
@@ -100,18 +100,18 @@ namespace DotJEM.Json.Index.Configuration
         private Lazy<IFieldResolver> fieldResolver;
         private Lazy<IFieldInformationManager> fieldInformationManager;
         private Lazy<ILuceneDocumentFactory> documentFactory;
-        private Lazy<ILuceneJsonDocumentSerializer> serializer;
+        private Lazy<IJsonDocumentSerializer> serializer;
 
         public Analyzer Analyzer => analyzer.Value;
         public IFieldResolver FieldResolver => fieldResolver.Value;
         public IFieldInformationManager FieldInformationManager => fieldInformationManager.Value;
         public ILuceneDocumentFactory DocumentFactory => documentFactory.Value;
-        public ILuceneJsonDocumentSerializer Serializer => serializer.Value;
+        public IJsonDocumentSerializer Serializer => serializer.Value;
 
         public DefaultServices()
         {
             this.analyzer = new Lazy<Analyzer>(() => new StandardAnalyzer(LuceneVersion.LUCENE_48, CharArraySet.EMPTY_SET));
-            this.serializer = new Lazy<ILuceneJsonDocumentSerializer>(() => new GZipLuceneJsonDocumentSerialier());
+            this.serializer = new Lazy<IJsonDocumentSerializer>(() => new GZipJsonDocumentSerialier());
             this.documentFactory = new Lazy<ILuceneDocumentFactory>(() => new LuceneDocumentFactory(FieldInformationManager));
             this.fieldInformationManager = new Lazy<IFieldInformationManager>(() => new DefaultFieldInformationManager(FieldResolver));
             this.fieldResolver = new Lazy<IFieldResolver>(() => new FieldResolver());

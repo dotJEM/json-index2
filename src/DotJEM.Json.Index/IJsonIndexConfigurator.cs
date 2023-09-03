@@ -23,7 +23,7 @@ namespace DotJEM.Json.Index
     {
         IServiceCollection Services { get; }
         ILuceneJsonIndexBuilder AddFacility(Func<ILuceneStorageFactory> facility);
-        ILuceneJsonIndex Build();
+        IJsonIndex Build();
     }
 
     public class LuceneJsonIndexBuilder : ILuceneJsonIndexBuilder
@@ -49,7 +49,7 @@ namespace DotJEM.Json.Index
             this.Services = services;
         }
 
-        public virtual ILuceneJsonIndex Build()
+        public virtual IJsonIndex Build()
         {
             return new LuceneJsonIndex(StorageFactory, Configuration, Services);
         }

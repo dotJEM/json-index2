@@ -11,11 +11,11 @@ namespace DotJEM.Json.Index.IO
     {
         private SyncJsonIndexWriter cache;
 
-        private ILuceneJsonIndex index;
+        private IJsonIndex index;
         private ILuceneDocumentFactory factory;
         private IIndexWriterManager manager;
 
-        public SyncJsonIndexWriterProvider(ILuceneJsonIndex index, ILuceneDocumentFactory factory, IIndexWriterManager manager)
+        public SyncJsonIndexWriterProvider(IJsonIndex index, ILuceneDocumentFactory factory, IIndexWriterManager manager)
         {
             this.index = index;
             this.factory = factory;
@@ -35,11 +35,11 @@ namespace DotJEM.Json.Index.IO
     {
         private AsyncJsonIndexWriter cache;
 
-        private ILuceneJsonIndex index;
+        private IJsonIndex index;
         private ILuceneDocumentFactory factory;
         private IIndexWriterManager manager;
 
-        public AsyncJsonIndexWriterProvider(ILuceneJsonIndex index, ILuceneDocumentFactory factory, IIndexWriterManager manager)
+        public AsyncJsonIndexWriterProvider(IJsonIndex index, ILuceneDocumentFactory factory, IIndexWriterManager manager)
         {
             this.index = index;
             this.factory = factory;

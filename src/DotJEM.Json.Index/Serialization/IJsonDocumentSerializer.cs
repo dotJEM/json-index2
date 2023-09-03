@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace DotJEM.Json.Index.Serialization
 {
-    public interface ILuceneJsonDocumentSerializer
+    public interface IJsonDocumentSerializer
     {
         ISet<string> FieldsToLoad { get; }
 
@@ -20,7 +20,7 @@ namespace DotJEM.Json.Index.Serialization
         JObject DeserializeFrom(Document document);
     }
 
-    public class GZipLuceneJsonDocumentSerialier : ILuceneJsonDocumentSerializer
+    public class GZipJsonDocumentSerialier : IJsonDocumentSerializer
     {
         private const string FIELD_NAME = "$$RAW$$";
 

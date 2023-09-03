@@ -1,15 +1,15 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using DotJEM.Json.Index.Diagnostics;
 using DotJEM.Json.Index.Documents.Builder;
 using DotJEM.Json.Index.Documents.Fields;
+using DotJEM.ObservableExtensions.InfoStreams;
 
 namespace DotJEM.Json.Index.Documents.Info
 {
     public interface IFieldInformationManager
     {
-        IEventInfoStream InfoStream { get; }
+        IInfoStream InfoStream { get; }
         IFieldResolver Resolver { get; }
 
         IEnumerable<string> ContentTypes { get; }

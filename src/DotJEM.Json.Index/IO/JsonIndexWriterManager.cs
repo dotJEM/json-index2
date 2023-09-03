@@ -23,12 +23,12 @@ namespace DotJEM.Json.Index.IO
 
         public IndexWriter Writer => writer.Value;
 
-        public IndexWriterManager(ILuceneJsonIndex index)
+        public IndexWriterManager(IJsonIndex index)
         {
             writer = new ResetableLazy<IndexWriter>(() => Open(index));
         }
 
-        protected virtual IndexWriter Open(ILuceneJsonIndex index)
+        protected virtual IndexWriter Open(IJsonIndex index)
         {
             IndexWriterConfig config = new IndexWriterConfig(index.Configuration.Version, index.Services.Resolve<Analyzer>());
             config.RAMBufferSizeMB = DEFAULT_RAM_BUFFER_SIZE_MB;

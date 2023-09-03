@@ -125,7 +125,7 @@ namespace DotJEM.Json.Index.Results
                     //    : query;
                     //Weight w = s.CreateNormalizedWeight(fq);
                     //collector2.GetTopDocs()
-                    ILuceneJsonDocumentSerializer serializer = manager.Serializer;
+                    IJsonDocumentSerializer serializer = manager.Serializer;
 
                     TopFieldDocs topDocs = searcher.Search(query, filter, take, sort, doDocScores, doMaxScores);
                     

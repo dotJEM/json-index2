@@ -1,7 +1,5 @@
 ﻿using System;
 using DotJEM.Json.Index.Configuration;
-using DotJEM.Json.Index.Diagnostics;
-using DotJEM.Json.Index.Documents;
 using DotJEM.Json.Index.IO;
 using DotJEM.Json.Index.Searching;
 using DotJEM.Json.Index.Storage;
@@ -9,12 +7,12 @@ using DotJEM.ObservableExtensions.InfoStreams;
 
 namespace DotJEM.Json.Index
 {
-    public interface ILuceneJsonIndexSearcherProvider
+    public interface IJsonIndexSearcherProvider
     {
-        ILuceneJsonIndexSearcher CreateSearcher();
+        IJsonIndexSearcher CreateSearcher();
     }
 
-    public interface ILuceneJsonIndex : ILuceneJsonIndexSearcherProvider
+    public interface IJsonIndex : IJsonIndexSearcherProvider
     {
         IInfoStream InfoStream { get; }
         IServiceResolver Services { get; }
@@ -27,7 +25,7 @@ namespace DotJEM.Json.Index
         void Close();
     }
 
-    public class LuceneJsonIndex : ILuceneJsonIndex
+    public class LuceneJsonIndex : IJsonIndex
     {
         public IInfoStream InfoStream { get; } = new InfoStream<LuceneJsonIndex>();
         public IJsonIndexStorage Storage { get; }
@@ -55,7 +53,7 @@ namespace DotJEM.Json.Index
 
             //TODO: Ehhh... could we perhaps provide this differently, e.g. a Generic Provider pattern that would allow us to inject'
             //      both the LuceneVersion and the Index.
-            services.Use<ILuceneJsonIndex>(p => this);
+            services.Use<IJsonIndex>(p => this);
             services.Use<IIndexWriterManager>(() => Storage.WriterManager);
 
             Services = new ServiceResolver(services);
@@ -71,9 +69,9 @@ namespace DotJEM.Json.Index
             Storage = storage.Create(this, configuration.Version);
         }
 
-        public ILuceneJsonIndexSearcher CreateSearcher()
+        public IJsonIndexSearcher CreateSearcher()
         {
-            return new LuceneJsonIndexSearcher(this);
+            return new JsonIndexSearcher(this);
         }
 
         public IJsonIndexWriter CreateWriter()
