@@ -20,7 +20,7 @@ namespace DotJEM.Json.Index.Contexts
     public class JsonIndexContext : IJsonIndexContext
     {
         private readonly ILuceneJsonIndexFactory factory;
-        private readonly ConcurrentDictionary<string, ILuceneJsonIndex> indices = new ConcurrentDictionary<string, ILuceneJsonIndex>();
+        private readonly ConcurrentDictionary<string, IJsonIndex> indices = new ConcurrentDictionary<string, IJsonIndex>();
         public IServiceResolver Services { get; }
         public JsonIndexContext(IServiceCollection services = null)
             : this(new LuceneIndexContextBuilder(), services) { }
@@ -59,7 +59,7 @@ namespace DotJEM.Json.Index.Contexts
 
     public interface ILuceneJsonIndexFactory
     {
-        ILuceneJsonIndex Create(string name);
+        IJsonIndex Create(string name);
     }
 
     public class LuceneIndexContextBuilder : ILuceneIndexContextBuilder, ILuceneJsonIndexFactory
@@ -103,7 +103,7 @@ namespace DotJEM.Json.Index.Contexts
             return this;
         }
 
-        ILuceneJsonIndex ILuceneJsonIndexFactory.Create(string name)
+        IJsonIndex ILuceneJsonIndexFactory.Create(string name)
         {
             if (builders.TryGetValue(name, out ILuceneJsonIndexBuilder builder))
                 return builder.Build();
