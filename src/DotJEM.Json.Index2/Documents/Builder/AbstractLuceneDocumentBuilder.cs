@@ -46,16 +46,16 @@ namespace DotJEM.Json.Index2.Documents.Builder
     {
         private readonly IFieldResolver resolver;
         private readonly IJsonDocumentSerializer documentSerializer;
-        private readonly ITypeBoundEventInfoStream eventInfoStream;
+        private readonly IInfoStream<AbstractLuceneDocumentBuilder> eventInfoStream;
 
         private ILuceneDocument document;
 
         public IInfoStream EventInfoStream => eventInfoStream;
 
-        protected AbstractLuceneDocumentBuilder(IFieldResolver resolver = null, IJsonDocumentSerializer documentSerializer = null, IEventInfoStream eventInfoStream = null)
+        protected AbstractLuceneDocumentBuilder(IFieldResolver resolver = null, IJsonDocumentSerializer documentSerializer = null)
         {
             this.resolver = resolver ?? new FieldResolver();
-            this.eventInfoStream = (eventInfoStream ?? Diagnostics.EventInfoStream.Default).Bind<AbstractLuceneDocumentBuilder>();
+            this.eventInfoStream = new InfoStream<AbstractLuceneDocumentBuilder>();
             this.documentSerializer = documentSerializer ?? new GZipJsonDocumentSerialier();
         }
 

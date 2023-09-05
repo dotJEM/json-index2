@@ -44,8 +44,7 @@ namespace DotJEM.Json.Index2.Configuration
                 .Use<IFieldInformationManager, DefaultFieldInformationManager>()
                 .Use<ILuceneDocumentFactory, LuceneDocumentFactory>()
                 .Use<IJsonDocumentSerializer, GZipJsonDocumentSerialier>()
-                .Use<IJsonIndexWriterProvider, SyncJsonIndexWriterProvider>()
-                .Use<IInflowCapacity, NullInflowCapacity>();
+                .Use<IJsonIndexWriterProvider, SyncJsonIndexWriterProvider>();
         }
 
         public ServiceCollection(IServiceFactory factory = null)
