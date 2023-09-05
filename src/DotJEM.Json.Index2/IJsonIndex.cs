@@ -15,7 +15,6 @@ namespace DotJEM.Json.Index2
     public interface IJsonIndex : IJsonIndexSearcherProvider
     {
         IInfoStream InfoStream { get; }
-        IServiceResolver Services { get; }
         IJsonIndexStorageManager Storage { get; }
         IJsonIndexConfiguration Configuration { get; }
         IIndexWriterManager WriterManager { get; }
@@ -30,8 +29,6 @@ namespace DotJEM.Json.Index2
         public IInfoStream InfoStream { get; } = new InfoStream<JsonIndex>();
         public IJsonIndexStorageManager Storage { get; }
         public IJsonIndexConfiguration Configuration { get; }
-        public IServiceResolver Services { get; }
-
         public IIndexWriterManager WriterManager => Storage.WriterManager;
         public IIndexSearcherManager SearcherManager => Storage.SearcherManager;
 
@@ -47,7 +44,7 @@ namespace DotJEM.Json.Index2
 
         public JsonIndex(IJsonIndexStorage storage, IJsonIndexConfiguration configuration)
         {
-            Configuration = configuration.AsReadOnly() ?? throw new ArgumentNullException(nameof(configuration));
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             Storage = new JsonIndexStorageManager(this, storage);
         }
 
@@ -66,7 +63,7 @@ namespace DotJEM.Json.Index2
 
         public IJsonIndexWriter CreateWriter()
         {
-            IJsonIndexWriterProvider provider = Services.Resolve<IJsonIndexWriterProvider>();
+            IJsonIndexWriterProvider provider = Configuration.Resolve<IJsonIndexWriterProvider>();
             return provider.Get();
         }
 

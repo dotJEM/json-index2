@@ -5,62 +5,65 @@ using DotJEM.Json.Index2.Contexts.Searching;
 using DotJEM.Json.Index2.Contexts.Storage;
 using DotJEM.Json.Index2.Searching;
 
-namespace DotJEM.Json.Index2.Contexts
+namespace DotJEM.Json.Index2.Contexts;
+
+public interface IJsonIndexContext : IJsonIndexSearcherProvider
 {
-    public interface IJsonIndexContext : IJsonIndexSearcherProvider
-    {
-        IServiceResolver Services { get; }
+    IJsonIndex Open(string name);
+}
 
-        IJsonIndex Open(string name);
+public class JsonIndexContext : IJsonIndexContext
+{
+    private readonly ILuceneJsonIndexFactory factory;
+    private readonly ConcurrentDictionary<string, IJsonIndex> indices = new ConcurrentDictionary<string, IJsonIndex>();
+
+    public IServiceResolver Services { get; }
+    //public JsonIndexContext(IServiceCollection services = null)
+    //    : this(new LuceneIndexContextBuilder(), services) { }
+
+    //public JsonIndexContext(string path, IServiceCollection services = null)
+    //    : this(new LuceneIndexContextBuilder(path), services) { }
+
+    public JsonIndexContext(ILuceneJsonIndexFactory factory, IServiceCollection services = null)
+    {
+        this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        this.Services = new ServiceResolver(services ?? ServiceCollection.CreateDefault());
     }
 
-    public class JsonIndexContext : IJsonIndexContext
+    public JsonIndexContext(ILuceneJsonIndexFactory factory, IServiceResolver resolver)
     {
-        private readonly ILuceneJsonIndexFactory factory;
-        private readonly ConcurrentDictionary<string, IJsonIndex> indices = new ConcurrentDictionary<string, IJsonIndex>();
-        public IServiceResolver Services { get; }
-        public JsonIndexContext(IServiceCollection services = null)
-            : this(new LuceneIndexContextBuilder(), services) { }
-
-        public JsonIndexContext(string path, IServiceCollection services = null)
-            : this(new LuceneIndexContextBuilder(path), services) { }
-
-        public JsonIndexContext(ILuceneJsonIndexFactory factory, IServiceCollection services = null)
-        {
-            this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            this.Services = new ServiceResolver(services ?? ServiceCollection.CreateDefault());
-        }
-        public JsonIndexContext(ILuceneJsonIndexFactory factory, IServiceResolver resolver)
-        {
-            this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            this.Services = resolver ?? throw new ArgumentNullException(nameof(resolver));
-        }
-
-        public IJsonIndex Open(string name)
-        {
-            return indices.GetOrAdd(name, factory.Create);
-        }
-
-        public IJsonIndexSearcher CreateSearcher()
-        {
-            return new LuceneJsonMultiIndexSearcher(indices.Values);
-        }
+        this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        this.Services = resolver ?? throw new ArgumentNullException(nameof(resolver));
     }
+
+    public IJsonIndex Open(string name)
+    {
+        return indices.GetOrAdd(name, factory.Create);
+    }
+
+    public IJsonIndexSearcher CreateSearcher()
+    {
+        return new LuceneJsonMultiIndexSearcher(indices.Values);
+    }
+}
     
-    //public interface ILuceneIndexContextBuilder
-    //{
+public interface ILuceneIndexContextBuilder
+{
     //    IServiceCollection Services { get; }
     //    ILuceneIndexContextBuilder Configure(string name, Action<ILuceneJsonIndexBuilder> config);
-    //    IJsonIndexContext Build();
-    //}
+    IJsonIndexContext Build();
+}
 
-    public interface ILuceneJsonIndexFactory
-    {
-        IJsonIndex Create(string name);
-    }
+public interface ILuceneJsonIndexFactory
+{
+    IJsonIndex Create(string name);
+}
 
-    //public class LuceneIndexContextBuilder : ILuceneIndexContextBuilder, ILuceneJsonIndexFactory
-    //{
+public class LuceneIndexContextBuilder : ILuceneIndexContextBuilder
+{
+
+
+
     //    private readonly ConcurrentDictionary<string, ILuceneJsonIndexBuilder> builders = new ConcurrentDictionary<string, ILuceneJsonIndexBuilder>();
 
     //    public IServiceCollection Services { get; }
@@ -108,6 +111,8 @@ namespace DotJEM.Json.Index2.Contexts
     //        builder = new ContextedLuceneJsonIndexBuilder(name, Services).AddFacility(storage.Create(name));
     //        return builder.Build();
     //    }
-    //}
-
+    public IJsonIndexContext Build()
+    {
+        throw new NotImplementedException();
+    }
 }

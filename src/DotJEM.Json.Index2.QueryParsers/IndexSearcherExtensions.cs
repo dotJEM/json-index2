@@ -7,11 +7,11 @@ namespace DotJEM.Json.Index2.QueryParsers
 {
     public static class IndexSearcherExtensions
     {
-        public static ILuceneJsonIndexBuilder UseSimplifiedLuceneQueryParser(this ILuceneJsonIndexBuilder self)
-        {
-            self.Services.Use<ILuceneQueryParser, SimplifiedLuceneQueryParser>();
-            return self;
-        }
+        //public static ILuceneJsonIndexBuilder UseSimplifiedLuceneQueryParser(this ILuceneJsonIndexBuilder self)
+        //{
+        //    self.Services.Use<ILuceneQueryParser, SimplifiedLuceneQueryParser>();
+        //    return self;
+        //}
 
         public static IServiceCollection UseSimplifiedLuceneQueryParser(this IServiceCollection self)
         {
