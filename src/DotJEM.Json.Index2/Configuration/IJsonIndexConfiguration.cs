@@ -98,6 +98,8 @@ public class ServiceCollection : IServiceCollection
 
     public TService Get<TService>()
     {
-        throw new NotImplementedException();
+        return TryGet(out TService service)
+            ? service 
+            : default;
     }
 }

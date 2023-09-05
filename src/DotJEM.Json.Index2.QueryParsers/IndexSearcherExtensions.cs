@@ -15,7 +15,7 @@ namespace DotJEM.Json.Index2.QueryParsers
 
         public static IServiceCollection UseSimplifiedLuceneQueryParser(this IServiceCollection self)
         {
-            self.Use<ILuceneQueryParser, SimplifiedLuceneQueryParser>();
+            self.RegisterOrReplace<ILuceneQueryParser, SimplifiedLuceneQueryParser>(()=>new SimplifiedLuceneQueryParser());
             return self;
         }
 
@@ -36,7 +36,7 @@ namespace DotJEM.Json.Index2.QueryParsers
         private static ILuceneQueryParser ResolveParser(this IJsonIndex self)
         {
             //TODO: Fail and ask for configuration instead.
-            return self.Services.Resolve<ILuceneQueryParser>() ?? throw new Exception("Query parser not configured.");
+            return self.Configuration.Get<ILuceneQueryParser>() ?? throw new Exception("Query parser not configured.");
         }
 
     }
