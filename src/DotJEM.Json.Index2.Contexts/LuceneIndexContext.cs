@@ -17,7 +17,7 @@ public class JsonIndexContext : IJsonIndexContext
     private readonly ILuceneJsonIndexFactory factory;
     private readonly ConcurrentDictionary<string, IJsonIndex> indices = new ConcurrentDictionary<string, IJsonIndex>();
 
-    public IServiceResolver Services { get; }
+    //public IServiceResolver Services { get; }
     //public JsonIndexContext(IServiceCollection services = null)
     //    : this(new LuceneIndexContextBuilder(), services) { }
 
@@ -27,13 +27,13 @@ public class JsonIndexContext : IJsonIndexContext
     public JsonIndexContext(ILuceneJsonIndexFactory factory, IServiceCollection services = null)
     {
         this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
-        this.Services = new ServiceResolver(services ?? ServiceCollection.CreateDefault());
+      //  this.Services = new ServiceResolver(services ?? ServiceCollection.CreateDefault());
     }
 
     public JsonIndexContext(ILuceneJsonIndexFactory factory, IServiceResolver resolver)
     {
         this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
-        this.Services = resolver ?? throw new ArgumentNullException(nameof(resolver));
+        //this.Services = resolver ?? throw new ArgumentNullException(nameof(resolver));
     }
 
     public IJsonIndex Open(string name)

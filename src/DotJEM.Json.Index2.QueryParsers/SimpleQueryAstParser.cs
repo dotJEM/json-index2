@@ -3,6 +3,7 @@ using Antlr4.Runtime;
 using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.Json.Index2.QueryParsers.Ast;
 using DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Optimizer;
+using DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner;
 using DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
 using Lucene.Net.Analysis;
 using Lucene.Net.Search;

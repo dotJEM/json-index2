@@ -195,7 +195,7 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Parser
 
         private List<BaseQuery> Visit(IList<IParseTree> items) => items
             .Select(Visit)
-            .Where<List<BaseQuery>>(ast => ast != null)
+            .Where(ast => ast != null)
             .ToList();
 
     }

@@ -1,7 +1,9 @@
 ﻿using System;
 using DotJEM.Json.Index2.Configuration;
+using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.Json.Index2.Results;
 using DotJEM.Json.Index2.Searching;
+using Lucene.Net.Analysis;
 
 namespace DotJEM.Json.Index2.QueryParsers
 {
@@ -15,7 +17,9 @@ namespace DotJEM.Json.Index2.QueryParsers
 
         public static IServiceCollection UseSimplifiedLuceneQueryParser(this IServiceCollection self)
         {
-            self.RegisterOrReplace<ILuceneQueryParser, SimplifiedLuceneQueryParser>(()=>new SimplifiedLuceneQueryParser());
+            self.RegisterOrReplace<ILuceneQueryParser>(services=>new SimplifiedLuceneQueryParser(
+                services.Get<IFieldInformationManager>(), services.Get<Analyzer>()
+                ));
             return self;
         }
 
