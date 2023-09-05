@@ -19,7 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index2.Contexts", "DotJEM.Json.Index2.Contexts\DotJEM.Json.Index2.Contexts.csproj", "{79933340-D497-44BE-8FA2-7C1EBE1BC715}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotJEM.Json.Index2.QueryParsers", "DotJEM.Json.Index2.QueryParsers\DotJEM.Json.Index2.QueryParsers.csproj", "{B07B4E9F-7202-4E9D-ACCC-717B43469A7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index2.QueryParsers", "DotJEM.Json.Index2.QueryParsers\DotJEM.Json.Index2.QueryParsers.csproj", "{B07B4E9F-7202-4E9D-ACCC-717B43469A7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotJEM.Json.Index2.Snapshots", "DotJEM.Json.Index2.Snapshots\DotJEM.Json.Index2.Snapshots.csproj", "{98FF81EC-F9B6-4B6C-9B02-2A5830756B05}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +45,10 @@ Global
 		{B07B4E9F-7202-4E9D-ACCC-717B43469A7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B07B4E9F-7202-4E9D-ACCC-717B43469A7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B07B4E9F-7202-4E9D-ACCC-717B43469A7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98FF81EC-F9B6-4B6C-9B02-2A5830756B05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98FF81EC-F9B6-4B6C-9B02-2A5830756B05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98FF81EC-F9B6-4B6C-9B02-2A5830756B05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98FF81EC-F9B6-4B6C-9B02-2A5830756B05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
