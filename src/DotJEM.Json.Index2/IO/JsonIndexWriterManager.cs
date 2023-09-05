@@ -1,4 +1,5 @@
 ﻿using System;
+using DotJEM.Json.Index2.Configuration;
 using DotJEM.Json.Index2.Util;
 using Lucene.Net.Analysis;
 using Lucene.Net.Index;
@@ -30,7 +31,7 @@ namespace DotJEM.Json.Index2.IO
 
         protected virtual IndexWriter Open(IJsonIndex index)
         {
-            IndexWriterConfig config = new IndexWriterConfig(index.Configuration.Version, index.Services.Resolve<Analyzer>());
+            IndexWriterConfig config = new IndexWriterConfig(index.Configuration.Version, index.Configuration.Get<Analyzer>());
             config.RAMBufferSizeMB = DEFAULT_RAM_BUFFER_SIZE_MB;
             config.OpenMode = OpenMode.CREATE_OR_APPEND;
             config.IndexDeletionPolicy = new SnapshotDeletionPolicy(config.IndexDeletionPolicy);

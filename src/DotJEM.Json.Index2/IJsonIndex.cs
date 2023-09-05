@@ -63,7 +63,7 @@ namespace DotJEM.Json.Index2
 
         public IJsonIndexWriter CreateWriter()
         {
-            IJsonIndexWriterProvider provider = Configuration.Resolve<IJsonIndexWriterProvider>();
+            IJsonIndexWriterProvider provider = Configuration.Get<IJsonIndexWriterProvider>();
             return provider.Get();
         }
 
