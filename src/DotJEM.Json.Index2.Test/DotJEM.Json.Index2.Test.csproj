@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DotJEM.Json.Index\DotJEM.Json.Index.csproj" />
+    <ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
   </ItemGroup>
 
 </Project>

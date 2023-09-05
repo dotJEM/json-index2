@@ -23,7 +23,7 @@ namespace DotJEM.Json.Index2.Contexts.Searching
 
         public ISearch Search(Query query)
         {
-            return new Search(new MultiIndexJsonSearcherManager(indicies, null), InfoStream, query);
+            return new Search(new MultiIndexJsonSearcherManager(indicies, null), query);
         }
     }
 }

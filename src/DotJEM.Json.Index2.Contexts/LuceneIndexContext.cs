@@ -47,67 +47,67 @@ namespace DotJEM.Json.Index2.Contexts
         }
     }
     
-    public interface ILuceneIndexContextBuilder
-    {
-        IServiceCollection Services { get; }
-        ILuceneIndexContextBuilder Configure(string name, Action<ILuceneJsonIndexBuilder> config);
-        IJsonIndexContext Build();
-    }
+    //public interface ILuceneIndexContextBuilder
+    //{
+    //    IServiceCollection Services { get; }
+    //    ILuceneIndexContextBuilder Configure(string name, Action<ILuceneJsonIndexBuilder> config);
+    //    IJsonIndexContext Build();
+    //}
 
     public interface ILuceneJsonIndexFactory
     {
         IJsonIndex Create(string name);
     }
 
-    public class LuceneIndexContextBuilder : ILuceneIndexContextBuilder, ILuceneJsonIndexFactory
-    {
-        private readonly ConcurrentDictionary<string, ILuceneJsonIndexBuilder> builders = new ConcurrentDictionary<string, ILuceneJsonIndexBuilder>();
+    //public class LuceneIndexContextBuilder : ILuceneIndexContextBuilder, ILuceneJsonIndexFactory
+    //{
+    //    private readonly ConcurrentDictionary<string, ILuceneJsonIndexBuilder> builders = new ConcurrentDictionary<string, ILuceneJsonIndexBuilder>();
 
-        public IServiceCollection Services { get; }
+    //    public IServiceCollection Services { get; }
 
-        private readonly ILuceneStorageFactoryProvider storage;
+    //    private readonly ILuceneStorageFactoryProvider storage;
         
-        public LuceneIndexContextBuilder()
-            : this(new RamStorageFacility(), ServiceCollection.CreateDefault()) { }
+    //    public LuceneIndexContextBuilder()
+    //        : this(new RamStorageFacility(), ServiceCollection.CreateDefault()) { }
 
-        public LuceneIndexContextBuilder(string path)
-            : this(new SimpleFileSystemRootStorageFacility(path), ServiceCollection.CreateDefault()) { }
+    //    public LuceneIndexContextBuilder(string path)
+    //        : this(new SimpleFileSystemRootStorageFacility(path), ServiceCollection.CreateDefault()) { }
 
-        public LuceneIndexContextBuilder(ILuceneStorageFactoryProvider storage, IServiceCollection services)
-        {
-            this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
-            this.Services = services ?? throw new ArgumentNullException(nameof(services));
-        }
+    //    public LuceneIndexContextBuilder(ILuceneStorageFactoryProvider storage, IServiceCollection services)
+    //    {
+    //        this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+    //        this.Services = services ?? throw new ArgumentNullException(nameof(services));
+    //    }
 
-        public IJsonIndexContext Build()
-        {
-            return new JsonIndexContext(this, Services);
-        }
+    //    public IJsonIndexContext Build()
+    //    {
+    //        return new JsonIndexContext(this, Services);
+    //    }
 
-        public ILuceneIndexContextBuilder Configure(string name, Action<ILuceneJsonIndexBuilder> config)
-        {
-            return Configure(name, builder =>
-            {
-                config(builder);
-                return builder;
-            });
-        }
+    //    public ILuceneIndexContextBuilder Configure(string name, Action<ILuceneJsonIndexBuilder> config)
+    //    {
+    //        return Configure(name, builder =>
+    //        {
+    //            config(builder);
+    //            return builder;
+    //        });
+    //    }
 
-        private ILuceneIndexContextBuilder Configure(string name, Func<ILuceneJsonIndexBuilder, ILuceneJsonIndexBuilder> config)
-        {
-            ILuceneJsonIndexBuilder builder = config(new ContextedLuceneJsonIndexBuilder(name, Services).AddFacility(storage.Create(name)));
-            builders.AddOrUpdate(name, builder, (s, a) => builder);
-            return this;
-        }
+    //    private ILuceneIndexContextBuilder Configure(string name, Func<ILuceneJsonIndexBuilder, ILuceneJsonIndexBuilder> config)
+    //    {
+    //        ILuceneJsonIndexBuilder builder = config(new ContextedLuceneJsonIndexBuilder(name, Services).AddFacility(storage.Create(name)));
+    //        builders.AddOrUpdate(name, builder, (s, a) => builder);
+    //        return this;
+    //    }
 
-        IJsonIndex ILuceneJsonIndexFactory.Create(string name)
-        {
-            if (builders.TryGetValue(name, out ILuceneJsonIndexBuilder builder))
-                return builder.Build();
+    //    IJsonIndex ILuceneJsonIndexFactory.Create(string name)
+    //    {
+    //        if (builders.TryGetValue(name, out ILuceneJsonIndexBuilder builder))
+    //            return builder.Build();
 
-            builder = new ContextedLuceneJsonIndexBuilder(name, Services).AddFacility(storage.Create(name));
-            return builder.Build();
-        }
-    }
+    //        builder = new ContextedLuceneJsonIndexBuilder(name, Services).AddFacility(storage.Create(name));
+    //        return builder.Build();
+    //    }
+    //}
 
 }
