@@ -25,7 +25,7 @@ namespace DotJEM.Json.Index2.Searching
 
         public ISearch Search(Query query)
         {
-            return new Search(Index.SearcherManager, InfoStream, query);
+            return new Search(Index.SearcherManager, query);
         }
     }
 
