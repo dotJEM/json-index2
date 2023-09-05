@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
 
-namespace DotJEM.Json.Index.Snapshots
+namespace DotJEM.Json.Index2.Snapshots
 {
     
     public interface IIndexSnapshotHandler

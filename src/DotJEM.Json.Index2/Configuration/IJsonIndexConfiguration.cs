@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using Lucene.Net.Analysis;
 using Lucene.Net.Util;
 
-namespace DotJEM.Json.Index.Configuration
+namespace DotJEM.Json.Index2.Configuration
 {
     public interface IJsonIndexConfiguration
     {

@@ -4,10 +4,9 @@ using System.Text;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Search.Similarities;
-using Lucene.Net.Support;
 using Lucene.Net.Util;
 using LuceneQuery = Lucene.Net.Search.Query;
-namespace DotJEM.Json.Index.QueryParsers.Query
+namespace DotJEM.Json.Index2.QueryParsers.Query
 {
     public class InQuery : LuceneQuery
     {

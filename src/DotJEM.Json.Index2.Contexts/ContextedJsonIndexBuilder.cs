@@ -1,7 +1,7 @@
-﻿using DotJEM.Json.Index.Configuration;
-using DotJEM.Json.Index.Contexts.Configuration;
+﻿using DotJEM.Json.Index2.Configuration;
+using DotJEM.Json.Index2.Contexts.Configuration;
 
-namespace DotJEM.Json.Index.Contexts
+namespace DotJEM.Json.Index2.Contexts
 {
     public class ContextedLuceneJsonIndexBuilder : LuceneJsonIndexBuilder
     {

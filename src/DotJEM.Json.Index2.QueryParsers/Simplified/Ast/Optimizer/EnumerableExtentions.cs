@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DotJEM.Json.Index.QueryParsers.Simplified.Ast.Optimizer
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Optimizer
 {
     public static class EnumerableExtentions
     {

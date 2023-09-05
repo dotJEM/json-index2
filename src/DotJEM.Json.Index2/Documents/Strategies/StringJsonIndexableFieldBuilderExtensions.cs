@@ -1,7 +1,7 @@
 ﻿using System;
 using Lucene.Net.Documents;
 
-namespace DotJEM.Json.Index.Documents.Strategies
+namespace DotJEM.Json.Index2.Documents.Strategies
 {
     public static class StringJsonIndexableFieldBuilderExtensions
     {

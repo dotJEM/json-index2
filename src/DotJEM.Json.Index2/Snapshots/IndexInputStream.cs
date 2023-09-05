@@ -2,7 +2,7 @@
 using System.IO;
 using Lucene.Net.Store;
 
-namespace DotJEM.Json.Index.Snapshots
+namespace DotJEM.Json.Index2.Snapshots
 {
     public class IndexInputStream : Stream
     {

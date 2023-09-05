@@ -5,7 +5,7 @@ using J2N.Collections.ObjectModel;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.Documents.Builder
+namespace DotJEM.Json.Index2.Documents.Builder
 {
     public interface IIndexableJsonField
     {

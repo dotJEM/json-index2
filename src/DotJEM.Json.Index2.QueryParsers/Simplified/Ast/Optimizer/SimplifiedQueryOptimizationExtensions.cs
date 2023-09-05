@@ -1,6 +1,6 @@
-﻿using DotJEM.Json.Index.QueryParsers.Ast;
+﻿using DotJEM.Json.Index2.QueryParsers.Ast;
 
-namespace DotJEM.Json.Index.QueryParsers.Simplified.Ast.Optimizer
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Optimizer
 {
     public static class SimplifiedQueryOptimizationExtensions
     {

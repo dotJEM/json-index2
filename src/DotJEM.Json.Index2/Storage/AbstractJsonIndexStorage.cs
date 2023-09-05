@@ -1,10 +1,9 @@
-﻿using DotJEM.Json.Index.IO;
-using DotJEM.Json.Index.Searching;
-using DotJEM.Json.Index.Serialization;
+﻿using DotJEM.Json.Index2.IO;
+using DotJEM.Json.Index2.Searching;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
 
-namespace DotJEM.Json.Index.Storage;
+namespace DotJEM.Json.Index2.Storage;
 
 public interface IJsonIndexStorageManager
 {

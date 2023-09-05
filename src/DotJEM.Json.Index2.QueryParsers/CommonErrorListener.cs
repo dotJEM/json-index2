@@ -3,7 +3,7 @@ using Antlr4.Runtime.Atn;
 using Antlr4.Runtime.Dfa;
 using Antlr4.Runtime.Sharpen;
 
-namespace DotJEM.Json.Index.QueryParsers
+namespace DotJEM.Json.Index2.QueryParsers
 {
     public class CommonErrorListener : BaseErrorListener
     {

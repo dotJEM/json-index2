@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DotJEM.AdvParsers;
-using DotJEM.Json.Index.QueryParsers.Simplified;
+using DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
 
-namespace DotJEM.Json.Index.QueryParsers.Ast
+namespace DotJEM.Json.Index2.QueryParsers.Ast
 {
     public enum FieldOperator
     {

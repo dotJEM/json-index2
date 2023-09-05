@@ -1,6 +1,6 @@
-﻿using DotJEM.Json.Index.Documents;
+﻿using DotJEM.Json.Index2.Documents;
 
-namespace DotJEM.Json.Index.IO
+namespace DotJEM.Json.Index2.IO
 {
     public interface IJsonIndexWriterProvider
     {

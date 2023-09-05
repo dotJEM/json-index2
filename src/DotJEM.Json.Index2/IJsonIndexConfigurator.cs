@@ -1,70 +1,69 @@
-﻿using System;
-using DotJEM.Json.Index.Configuration;
-using DotJEM.Json.Index.Storage;
+﻿//using System;
+//using DotJEM.Json.Index2.Configuration;
 
-namespace DotJEM.Json.Index
-{
-    public static class Extensions
-    {
-        public static ILuceneJsonIndexBuilder UseSimpleFileStorage(this ILuceneJsonIndexBuilder self, string path)
-        {
-            self.AddFacility(() => new LuceneSimpleFileSystemStorageFactory(path));
-            return self;
-        }
+//namespace DotJEM.Json.Index2
+//{
+//    public static class Extensions
+//    {
+//        public static ILuceneJsonIndexBuilder UseSimpleFileStorage(this ILuceneJsonIndexBuilder self, string path)
+//        {
+//            self.AddFacility(() => new LuceneSimpleFileSystemStorageFactory(path));
+//            return self;
+//        }
 
-        public static ILuceneJsonIndexBuilder UseMemoryStorage(this ILuceneJsonIndexBuilder self)
-        {
-            self.AddFacility(() => new LuceneRamStorageFactory());
-            return self;
-        }
-    }
+//        public static ILuceneJsonIndexBuilder UseMemoryStorage(this ILuceneJsonIndexBuilder self)
+//        {
+//            self.AddFacility(() => new LuceneRamStorageFactory());
+//            return self;
+//        }
+//    }
 
-    public interface ILuceneJsonIndexBuilder 
-    {
-        IServiceCollection Services { get; }
-        ILuceneJsonIndexBuilder AddFacility(Func<ILuceneStorageFactory> facility);
-        IJsonIndex Build();
-    }
+//    public interface ILuceneJsonIndexBuilder 
+//    {
+//        IServiceCollection Services { get; }
+//        ILuceneJsonIndexBuilder AddFacility(Func<ILuceneStorageFactory> facility);
+//        IJsonIndex Build();
+//    }
 
-    public class LuceneJsonIndexBuilder : ILuceneJsonIndexBuilder
-    {
-        private readonly string name;
-        private Func<ILuceneStorageFactory> storageFacilty;
+//    public class LuceneJsonIndexBuilder : ILuceneJsonIndexBuilder
+//    {
+//        private readonly string name;
+//        private Func<ILuceneStorageFactory> storageFacilty;
 
-        public IServiceCollection Services { get; }
+//        public IServiceCollection Services { get; }
 
 
-        public IServiceResolver ServiceResolver => new ServiceResolver(Services);
-        public ILuceneStorageFactory StorageFactory => CreateStorage();
+//        public IServiceResolver ServiceResolver => new ServiceResolver(Services);
+//        public ILuceneStorageFactory StorageFactory => CreateStorage();
 
-        public IJsonIndexConfiguration Configuration { get; } = new JsonIndexConfiguration();
+//        public IJsonIndexConfiguration Configuration { get; } = new JsonIndexConfiguration();
 
-        public LuceneJsonIndexBuilder(string name)
-        : this(name, ServiceCollection.CreateDefault())
-        {
-        }
-        public LuceneJsonIndexBuilder(string name,  IServiceCollection services)
-        {
-            this.name = name;
-            this.Services = services;
-        }
+//        public LuceneJsonIndexBuilder(string name)
+//        : this(name, ServiceCollection.CreateDefault())
+//        {
+//        }
+//        public LuceneJsonIndexBuilder(string name,  IServiceCollection services)
+//        {
+//            this.name = name;
+//            this.Services = services;
+//        }
 
-        public virtual IJsonIndex Build()
-        {
-            return new JsonIndex(StorageFactory, Configuration, Services);
-        }
+//        public virtual IJsonIndex Build()
+//        {
+//            return new JsonIndex(StorageFactory, Configuration, Services);
+//        }
 
-        private ILuceneStorageFactory CreateStorage()
-        {
-            Func<ILuceneStorageFactory> facility = storageFacilty;
-            return facility.Invoke();
-        }
+//        private ILuceneStorageFactory CreateStorage()
+//        {
+//            Func<ILuceneStorageFactory> facility = storageFacilty;
+//            return facility.Invoke();
+//        }
 
-        public ILuceneJsonIndexBuilder AddFacility(Func<ILuceneStorageFactory> facility)
-        {
-            storageFacilty = facility;
-            return this;
-        }
-    }
+//        public ILuceneJsonIndexBuilder AddFacility(Func<ILuceneStorageFactory> facility)
+//        {
+//            storageFacilty = facility;
+//            return this;
+//        }
+//    }
 
-}
+//}

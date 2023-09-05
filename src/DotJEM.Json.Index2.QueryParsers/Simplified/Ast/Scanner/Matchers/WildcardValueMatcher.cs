@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace DotJEM.Json.Index.QueryParsers.Simplified.Ast.Scanner.Matchers
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner.Matchers
 {
     public class WildcardValueMatcher : IValueMatcher
     {

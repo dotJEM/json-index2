@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using DotJEM.Json.Index.Util;
+using DotJEM.Json.Index2.Util;
 
-namespace DotJEM.Json.Index.Snapshots.Zip
+namespace DotJEM.Json.Index2.Snapshots.Zip
 {
     public class ZipSnapshotReader : Disposable, ISnapshotReader
     {

@@ -7,7 +7,7 @@ using Lucene.Net.Util;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.Serialization
+namespace DotJEM.Json.Index2.Serialization
 {
     public interface IJsonDocumentSerializer
     {

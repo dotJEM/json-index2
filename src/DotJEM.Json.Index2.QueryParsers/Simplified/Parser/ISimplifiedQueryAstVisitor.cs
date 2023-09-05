@@ -1,8 +1,6 @@
-﻿
-using DotJEM.Json.Index.QueryParsers.Ast;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast;
+﻿using DotJEM.Json.Index2.QueryParsers.Ast;
 
-namespace DotJEM.Json.Index.QueryParsers.Simplified
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Parser
 {
     public interface ISimplifiedQueryAstVisitor<out TResult, in TContext>
     {

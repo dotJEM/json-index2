@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.IO
+namespace DotJEM.Json.Index2.IO
 {
     public static class IndexWriterExtensions
     {

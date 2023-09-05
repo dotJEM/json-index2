@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DotJEM.Json.Index.QueryParsers.Simplified.Ast.Scanner.Matchers
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner.Matchers
 {
     public class ExactValueMatcher : IValueMatcher
     {

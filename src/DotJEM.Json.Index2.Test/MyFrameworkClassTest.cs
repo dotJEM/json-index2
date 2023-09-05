@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace DotJEM.Json.Index.Test
+namespace DotJEM.Json.Index2.Test
 {
     public class MyFrameworkClassTest
     {

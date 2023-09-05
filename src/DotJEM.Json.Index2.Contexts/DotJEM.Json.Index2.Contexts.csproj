@@ -1,13 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\DotJEM.Json.Index.common.props"/>
+  <Import Project="..\DotJEM.Json.Index2.common.props" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DotJEM.Json.Index\DotJEM.Json.Index.csproj" />
+    <ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
   </ItemGroup>
 
 </Project>

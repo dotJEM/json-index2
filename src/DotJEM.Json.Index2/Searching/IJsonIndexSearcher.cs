@@ -1,10 +1,10 @@
 using System;
-using DotJEM.Json.Index.Results;
-using DotJEM.Json.Index.Util;
+using DotJEM.Json.Index2.Results;
+using DotJEM.Json.Index2.Util;
 using DotJEM.ObservableExtensions.InfoStreams;
 using Lucene.Net.Search;
 
-namespace DotJEM.Json.Index.Searching
+namespace DotJEM.Json.Index2.Searching
 {
     public interface IJsonIndexSearcher : IDisposable
     {

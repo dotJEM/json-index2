@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotJEM.Json.Index.Configuration;
-using DotJEM.Json.Index.Documents.Builder;
-using DotJEM.Json.Index.Documents.Info;
+using DotJEM.Json.Index2.Configuration;
+using DotJEM.Json.Index2.Documents.Builder;
+using DotJEM.Json.Index2.Documents.Info;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.Documents
+namespace DotJEM.Json.Index2.Documents
 {
     public interface ILuceneDocumentFactory
     {

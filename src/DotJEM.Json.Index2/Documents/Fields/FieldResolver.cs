@@ -2,7 +2,7 @@
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.Documents.Fields
+namespace DotJEM.Json.Index2.Documents.Fields
 {
     public interface IFieldResolver
     {

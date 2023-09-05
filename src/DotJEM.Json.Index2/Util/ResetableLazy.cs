@@ -1,77 +1,76 @@
 ﻿using System;
 using System.Threading;
 
-namespace DotJEM.Json.Index.Util
+namespace DotJEM.Json.Index2.Util;
+
+public class ResetableLazy<T>
 {
-    public class ResetableLazy<T>
+    private Lazy<T> lazy;
+    private readonly Func<Lazy<T>> factory;
+    private readonly object padLock = new object();
+
+    public ResetableLazy()
     {
-        private Lazy<T> lazy;
-        private readonly Func<Lazy<T>> factory;
-        private readonly object padLock = new object();
+        factory = () => new Lazy<T>();
+        Reset();
+    }
 
-        public ResetableLazy()
+    public ResetableLazy(bool isThreadSafe)
+    {
+        factory = () => new Lazy<T>(isThreadSafe);
+        Reset();
+    }
+
+    public ResetableLazy(Func<T> valueFactory)
+    {
+        factory = () => new Lazy<T>(valueFactory);
+        Reset();
+    }
+
+    public ResetableLazy(Func<T> valueFactory, bool isThreadSafe)
+    {
+        factory = () => new Lazy<T>(valueFactory, isThreadSafe);
+        Reset();
+    }
+
+    public ResetableLazy(Func<T> valueFactory, LazyThreadSafetyMode mode)
+    {
+        factory = () => new Lazy<T>(valueFactory, mode);
+        Reset();
+    }
+
+    public ResetableLazy(LazyThreadSafetyMode mode)
+    {
+        factory = () => new Lazy<T>(mode);
+        Reset();
+    }
+
+    public void Reset()
+    {
+        lock (padLock)
         {
-            factory = () => new Lazy<T>();
-            Reset();
+            lazy = factory();
         }
+    }
 
-        public ResetableLazy(bool isThreadSafe)
-        {
-            factory = () => new Lazy<T>(isThreadSafe);
-            Reset();
-        }
-
-        public ResetableLazy(Func<T> valueFactory)
-        {
-            factory = () => new Lazy<T>(valueFactory);
-            Reset();
-        }
-
-        public ResetableLazy(Func<T> valueFactory, bool isThreadSafe)
-        {
-            factory = () => new Lazy<T>(valueFactory, isThreadSafe);
-            Reset();
-        }
-
-        public ResetableLazy(Func<T> valueFactory, LazyThreadSafetyMode mode)
-        {
-            factory = () => new Lazy<T>(valueFactory, mode);
-            Reset();
-        }
-
-        public ResetableLazy(LazyThreadSafetyMode mode)
-        {
-            factory = () => new Lazy<T>(mode);
-            Reset();
-        }
-
-        public void Reset()
+    public bool IsValueCreated
+    {
+        get
         {
             lock (padLock)
             {
-                lazy = factory();
+                return lazy.IsValueCreated;
             }
         }
+    }
 
-        public bool IsValueCreated
+    public T Value
+    {
+        get
         {
-            get
+            lock (padLock)
             {
-                lock (padLock)
-                {
-                    return lazy.IsValueCreated;
-                }
-            }
-        }
-
-        public T Value
-        {
-            get
-            {
-                lock (padLock)
-                {
-                    return lazy.Value;
-                }
+                return lazy.Value;
             }
         }
     }

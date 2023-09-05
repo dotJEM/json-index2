@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.Documents.Strategies
+namespace DotJEM.Json.Index2.Documents.Strategies
 {
     public interface IFieldStrategyCollection
     {

@@ -1,10 +1,10 @@
 ﻿using System.IO;
 using System.IO.Compression;
-using DotJEM.Json.Index.Util;
+using DotJEM.Json.Index2.Util;
 using Lucene.Net.Store;
 using Directory = Lucene.Net.Store.Directory;
 
-namespace DotJEM.Json.Index.Snapshots.Zip
+namespace DotJEM.Json.Index2.Snapshots.Zip
 {
     public class ZipSnapshotWriter : Disposable, ISnapshotWriter
     {

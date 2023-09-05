@@ -1,7 +1,7 @@
 ﻿using Lucene.Net.Documents;
 using Lucene.Net.Index;
 
-namespace DotJEM.Json.Index.Documents
+namespace DotJEM.Json.Index2.Documents
 {
     public class LuceneDocumentEntry
     {

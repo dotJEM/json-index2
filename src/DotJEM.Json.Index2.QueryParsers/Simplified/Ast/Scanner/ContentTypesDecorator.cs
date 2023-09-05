@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
-using DotJEM.Json.Index.Documents.Info;
-using DotJEM.Json.Index.QueryParsers.Ast;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast.Scanner.Matchers;
+using DotJEM.Json.Index2.Documents.Info;
+using DotJEM.Json.Index2.QueryParsers.Ast;
+using DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner.Matchers;
+using DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
 
-namespace DotJEM.Json.Index.QueryParsers.Simplified.Ast.Scanner
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner
 {
     public interface IContentTypesDecorator : ISimplifiedQueryAstVisitor<IValueMatcher, object>
     {

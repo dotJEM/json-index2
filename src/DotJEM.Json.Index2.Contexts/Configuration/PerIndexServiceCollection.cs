@@ -1,7 +1,7 @@
 ﻿using System;
-using DotJEM.Json.Index.Configuration;
+using DotJEM.Json.Index2.Configuration;
 
-namespace DotJEM.Json.Index.Contexts.Configuration
+namespace DotJEM.Json.Index2.Contexts.Configuration
 {
     public class PerIndexServiceCollection : ServiceCollection
     {

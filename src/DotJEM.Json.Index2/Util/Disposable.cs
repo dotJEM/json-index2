@@ -1,27 +1,26 @@
 ﻿using System;
 
-namespace DotJEM.Json.Index.Util
+namespace DotJEM.Json.Index2.Util;
+
+public class Disposable : IDisposable
 {
-    public class Disposable : IDisposable
+    private bool disposed;
+
+    public void Dispose()
     {
-        private bool disposed;
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+        disposed = true;
+    }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-                return;
-            disposed = true;
-        }
-
-        ~Disposable()
-        {
-            Dispose(false);
-        }
+    ~Disposable()
+    {
+        Dispose(false);
     }
 }

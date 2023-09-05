@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace DotJEM.Json.Index.Snapshots.Zip
+namespace DotJEM.Json.Index2.Snapshots.Zip
 {
     public class ZipSnapshotTarget : ISnapshotTarget
     {

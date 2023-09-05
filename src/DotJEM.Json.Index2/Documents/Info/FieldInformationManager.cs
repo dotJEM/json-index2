@@ -1,11 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using DotJEM.Json.Index.Documents.Builder;
-using DotJEM.Json.Index.Documents.Fields;
+using DotJEM.Json.Index2.Documents.Builder;
+using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.ObservableExtensions.InfoStreams;
 
-namespace DotJEM.Json.Index.Documents.Info
+namespace DotJEM.Json.Index2.Documents.Info
 {
     public interface IFieldInformationManager
     {

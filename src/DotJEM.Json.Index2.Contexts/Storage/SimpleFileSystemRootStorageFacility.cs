@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using DotJEM.Json.Index.Storage;
 
-namespace DotJEM.Json.Index.Contexts.Storage
+namespace DotJEM.Json.Index2.Contexts.Storage
 {
     public class SimpleFileSystemRootStorageFacility : ILuceneStorageFactoryProvider
     {

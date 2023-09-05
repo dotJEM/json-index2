@@ -1,9 +1,9 @@
 ﻿using System;
-using DotJEM.Json.Index.Configuration;
-using DotJEM.Json.Index.Results;
-using DotJEM.Json.Index.Searching;
+using DotJEM.Json.Index2.Configuration;
+using DotJEM.Json.Index2.Results;
+using DotJEM.Json.Index2.Searching;
 
-namespace DotJEM.Json.Index.QueryParsers
+namespace DotJEM.Json.Index2.QueryParsers
 {
     public static class IndexSearcherExtensions
     {

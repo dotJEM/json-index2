@@ -1,7 +1,7 @@
 ﻿using System;
 using Lucene.Net.Documents;
 
-namespace DotJEM.Json.Index.Documents.Info
+namespace DotJEM.Json.Index2.Documents.Info
 {
 
     [Flags]

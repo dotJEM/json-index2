@@ -1,8 +1,7 @@
-﻿using System.Text;
-using DotJEM.Json.Index.Documents.Info;
-using DotJEM.Json.Index.QueryParsers.Ast;
+﻿using DotJEM.Json.Index2.Documents.Info;
+using DotJEM.Json.Index2.QueryParsers.Ast;
 
-namespace DotJEM.Json.Index.QueryParsers.Simplified.Ast.Scanner
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner
 {
     public static class SimplifiedQueryOptimizationExtensions
     {

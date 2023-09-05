@@ -1,29 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using DotJEM.Json.Index.Documents.Builder;
-using DotJEM.Json.Index.Documents.Fields;
-using DotJEM.Json.Index.Documents.Info;
-using DotJEM.Json.Index.Documents.Strategies;
-using DotJEM.Json.Index.QueryParsers.Ast;
-using DotJEM.Json.Index.QueryParsers.Query;
-using DotJEM.Json.Index.QueryParsers.Simplified;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast.Scanner;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast.Scanner.Matchers;
+using DotJEM.Json.Index2.Documents.Builder;
+using DotJEM.Json.Index2.Documents.Info;
+using DotJEM.Json.Index2.QueryParsers.Ast;
+using DotJEM.Json.Index2.QueryParsers.Query;
+using DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.TokenAttributes;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using Lucene.Net.Search.Similarities;
-using Lucene.Net.Support;
 using Lucene.Net.Util;
 using LuceneQuery = Lucene.Net.Search.Query;
 
-namespace DotJEM.Json.Index.QueryParsers
+namespace DotJEM.Json.Index2.QueryParsers
 {
     public class ContentTypeContext
     {

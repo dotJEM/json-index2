@@ -1,17 +1,14 @@
 ﻿using System;
 using Antlr4.Runtime;
-using DotJEM.Json.Index.Documents.Info;
-using DotJEM.Json.Index.QueryParsers.Ast;
-using DotJEM.Json.Index.QueryParsers.Simplified;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast.Optimizer;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast.Scanner;
-using DotJEM.Json.Index.QueryParsers.Simplified.Parser;
+using DotJEM.Json.Index2.Documents.Info;
+using DotJEM.Json.Index2.QueryParsers.Ast;
+using DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Optimizer;
+using DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
 using Lucene.Net.Analysis;
 using Lucene.Net.Search;
 using LuceneQuery = Lucene.Net.Search.Query;
 
-namespace DotJEM.Json.Index.QueryParsers
+namespace DotJEM.Json.Index2.QueryParsers
 {
     public class LuceneQueryInfo
     {

@@ -1,8 +1,7 @@
 ﻿using System.Linq;
-using DotJEM.Json.Index.QueryParsers.Ast;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast;
+using DotJEM.Json.Index2.QueryParsers.Ast;
 
-namespace DotJEM.Json.Index.QueryParsers.Simplified
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Parser
 {
     public abstract class SimplifiedQueryAstVisitor<TResult, TContext>: ISimplifiedQueryAstVisitor<TResult, TContext> where TResult : class 
     {

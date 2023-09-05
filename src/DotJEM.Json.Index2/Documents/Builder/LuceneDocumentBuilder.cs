@@ -1,10 +1,10 @@
-﻿using DotJEM.Json.Index.Documents.Fields;
-using DotJEM.Json.Index.Documents.Strategies;
-using DotJEM.Json.Index.Serialization;
+﻿using DotJEM.Json.Index2.Documents.Fields;
+using DotJEM.Json.Index2.Documents.Strategies;
+using DotJEM.Json.Index2.Serialization;
 using DotJEM.ObservableExtensions.InfoStreams;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.Documents.Builder
+namespace DotJEM.Json.Index2.Documents.Builder
 {
     public class LuceneDocumentBuilder : AbstractLuceneDocumentBuilder
     {

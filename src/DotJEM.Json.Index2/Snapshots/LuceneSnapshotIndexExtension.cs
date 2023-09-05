@@ -1,4 +1,4 @@
-﻿namespace DotJEM.Json.Index.Snapshots
+﻿namespace DotJEM.Json.Index2.Snapshots
 {
     public static class LuceneSnapshotIndexExtension
     {

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotJEM.Json.Index.Documents;
-using DotJEM.Json.Index.Util;
+using DotJEM.Json.Index2.Documents;
+using DotJEM.Json.Index2.Util;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.IO
+namespace DotJEM.Json.Index2.IO
 {
     public interface IJsonIndexWriter : IDisposable
     {

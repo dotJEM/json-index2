@@ -4,16 +4,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using DotJEM.Json.Index.Results;
-using DotJEM.Json.Index.Searching;
-using DotJEM.Json.Index.Serialization;
+using DotJEM.Json.Index2.Searching;
+using DotJEM.Json.Index2.Serialization;
 using DotJEM.ObservableExtensions.InfoStreams;
-using Lucene.Net.Index;
 using Lucene.Net.Search;
-using Lucene.Net.Util;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.Results;
+namespace DotJEM.Json.Index2.Results;
     public readonly record struct SearchResult(float Score, JObject Data);
 
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DotJEM.Json.Index.Configuration
+namespace DotJEM.Json.Index2.Configuration
 {
     public interface IServiceResolver
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using DotJEM.Json.Index.Documents.Builder;
+using DotJEM.Json.Index2.Documents.Builder;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index.Documents.Strategies
+namespace DotJEM.Json.Index2.Documents.Strategies
 {
     public interface IFieldStrategy
     {

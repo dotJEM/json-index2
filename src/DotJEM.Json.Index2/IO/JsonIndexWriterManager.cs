@@ -1,9 +1,9 @@
 ﻿using System;
-using DotJEM.Json.Index.Util;
+using DotJEM.Json.Index2.Util;
 using Lucene.Net.Analysis;
 using Lucene.Net.Index;
 
-namespace DotJEM.Json.Index.IO
+namespace DotJEM.Json.Index2.IO
 {
     public interface IIndexWriterManager : IDisposable
     {

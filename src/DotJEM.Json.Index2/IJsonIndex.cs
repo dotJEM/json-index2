@@ -1,11 +1,11 @@
 ﻿using System;
-using DotJEM.Json.Index.Configuration;
-using DotJEM.Json.Index.IO;
-using DotJEM.Json.Index.Searching;
-using DotJEM.Json.Index.Storage;
+using DotJEM.Json.Index2.Configuration;
+using DotJEM.Json.Index2.IO;
+using DotJEM.Json.Index2.Searching;
+using DotJEM.Json.Index2.Storage;
 using DotJEM.ObservableExtensions.InfoStreams;
 
-namespace DotJEM.Json.Index
+namespace DotJEM.Json.Index2
 {
     public interface IJsonIndexSearcherProvider
     {

@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Antlr4.Runtime.Tree;
-using DotJEM.Json.Index.QueryParsers.Ast;
-using DotJEM.Json.Index.QueryParsers.Simplified.Ast;
-using DotJEM.Json.Index.QueryParsers.Simplified.Parser;
+using DotJEM.Json.Index2.QueryParsers.Ast;
 
-namespace DotJEM.Json.Index.QueryParsers.Simplified
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Parser
 {
     public class SimplifiedParserVisitor : SimplifiedBaseVisitor<BaseQuery>
     {
@@ -197,7 +195,7 @@ namespace DotJEM.Json.Index.QueryParsers.Simplified
 
         private List<BaseQuery> Visit(IList<IParseTree> items) => items
             .Select(Visit)
-            .Where(ast => ast != null)
+            .Where<List<BaseQuery>>(ast => ast != null)
             .ToList();
 
     }

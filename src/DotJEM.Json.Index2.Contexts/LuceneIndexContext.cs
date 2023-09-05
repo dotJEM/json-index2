@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using DotJEM.Json.Index;
-using DotJEM.Json.Index.Configuration;
-using DotJEM.Json.Index.Contexts.Searching;
-using DotJEM.Json.Index.Contexts.Storage;
-using DotJEM.Json.Index.Results;
-using DotJEM.Json.Index.Searching;
-using Lucene.Net.Search;
+using DotJEM.Json.Index2.Configuration;
+using DotJEM.Json.Index2.Contexts.Searching;
+using DotJEM.Json.Index2.Contexts.Storage;
+using DotJEM.Json.Index2.Searching;
 
-namespace DotJEM.Json.Index.Contexts
+namespace DotJEM.Json.Index2.Contexts
 {
     public interface IJsonIndexContext : IJsonIndexSearcherProvider
     {

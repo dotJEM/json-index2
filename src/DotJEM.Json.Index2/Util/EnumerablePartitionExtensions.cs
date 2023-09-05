@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DotJEM.Json.Index.Util
+namespace DotJEM.Json.Index2.Util
 {
     public static class EnumerablePartitionExtensions
     {

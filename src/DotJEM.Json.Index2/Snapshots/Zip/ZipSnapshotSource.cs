@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace DotJEM.Json.Index.Snapshots.Zip
+namespace DotJEM.Json.Index2.Snapshots.Zip
 {
     public class ZipSnapshotSource : ISnapshotSource
     {

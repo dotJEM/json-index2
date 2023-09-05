@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DotJEM.Json.Index.Documents.Builder
+namespace DotJEM.Json.Index2.Documents.Builder
 {
     public interface IFieldBuilder<out TValue>
     {
