@@ -48,6 +48,8 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     {
         this.index = index;
         this.provider = provider;
+        this.WriterManager = new IndexWriterManager(index);
+        this.SearcherManager = new IndexSearcherManager(WriterManager, index.Configuration.Serializer);
     }
     
     public void Unlock()

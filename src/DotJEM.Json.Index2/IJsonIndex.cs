@@ -53,9 +53,10 @@ public class JsonIndex : IJsonIndex
 
     public IJsonIndexWriter CreateWriter()
     {
+        return new JsonIndexWriter(this, Configuration.DocumentFactory, WriterManager);
         //TODO: We cant do a resolve each time we need the writer, we should have some lend/lease
-        IJsonIndexWriterProvider provider = Configuration.Get<IJsonIndexWriterProvider>();
-        return provider.Get();
+        //IJsonIndexWriterProvider provider = Configuration.Get<IJsonIndexWriterProvider>();
+        //return provider.Get();
     }
 
     public void Close()

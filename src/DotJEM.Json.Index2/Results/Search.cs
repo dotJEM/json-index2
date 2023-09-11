@@ -80,7 +80,7 @@ namespace DotJEM.Json.Index2.Results;
             this.sort = sort ?? Sort.RELEVANCE;
         }
 
-        public async Task<int> Count() => (await Take(0).Execute()).TotalHits;
+        public async Task<int> Count() => (await Take(1).Execute()).TotalHits;
 
         public Task<SearchResults> Execute() => Execute(query, skip, take, sort, filter, doDocScores, doMaxScores);
 
