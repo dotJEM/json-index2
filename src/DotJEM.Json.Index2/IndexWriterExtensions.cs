@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index2.IO
+namespace DotJEM.Json.Index2
 {
     public static class IndexWriterExtensions
     {
@@ -28,7 +28,7 @@ namespace DotJEM.Json.Index2.IO
             self.CreateWriter().Update(docs);
             return self;
         }
-        
+
         public static IJsonIndex Delete(this IJsonIndex self, JObject doc)
         {
             self.CreateWriter().Delete(doc);
@@ -40,7 +40,7 @@ namespace DotJEM.Json.Index2.IO
             self.CreateWriter().Delete(docs);
             return self;
         }
-        
+
         public static IJsonIndex Flush(this IJsonIndex self, bool triggerMerge, bool applyDeletes)
         {
             self.CreateWriter().Flush(triggerMerge, applyDeletes);
