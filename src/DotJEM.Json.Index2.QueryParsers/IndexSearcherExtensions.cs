@@ -9,19 +9,8 @@ namespace DotJEM.Json.Index2.QueryParsers
 {
     public static class IndexSearcherExtensions
     {
-        //public static ILuceneJsonIndexBuilder UseSimplifiedLuceneQueryParser(this ILuceneJsonIndexBuilder self)
-        //{
-        //    self.Services.Use<ILuceneQueryParser, SimplifiedLuceneQueryParser>();
-        //    return self;
-        //}
-
-        public static IServiceCollection UseSimplifiedLuceneQueryParser(this IServiceCollection self)
-        {
-            self.RegisterOrReplace<ILuceneQueryParser>(services=>new SimplifiedLuceneQueryParser(
-                services.Get<IFieldInformationManager>(), services.Get<Analyzer>()
-                ));
-            return self;
-        }
+        public static IJsonIndexBuilder UseSimplifiedLuceneQueryParser(this IJsonIndexBuilder self) 
+            => self.TryWithService<ILuceneQueryParser>(config=>new SimplifiedLuceneQueryParser(config.FieldInformationManager, config.Analyzer));
 
         public static ISearch Search(this IJsonIndexSearcher self, string query)
         {
@@ -39,7 +28,6 @@ namespace DotJEM.Json.Index2.QueryParsers
 
         private static ILuceneQueryParser ResolveParser(this IJsonIndex self)
         {
-            //TODO: Fail and ask for configuration instead.
             return self.Configuration.Get<ILuceneQueryParser>() ?? throw new Exception("Query parser not configured.");
         }
 
