@@ -68,6 +68,7 @@ public interface IJsonIndexBuilder
 {
     IJsonIndexBuilder UsingStorage(IJsonIndexStorage storage);
     IJsonIndexBuilder WithService<TService>(bool replace, Func<IJsonIndexConfiguration, TService> factory);
+    IJsonIndex Build();
 }
 
 public class JsonIndexBuilder : IJsonIndexBuilder
@@ -114,12 +115,13 @@ public class JsonIndexBuilder : IJsonIndexBuilder
 
 public static class JsonIndexBuilderExt
 {
-    public static IJsonIndexBuilder WithSimpleFileStorage(this IJsonIndexBuilder self, string path)
+    public static IJsonIndexBuilder UsingSimpleFileStorage(this IJsonIndexBuilder self, string path)
       => self.UsingStorage(new SimpleFsJsonIndexStorage(path));
-    public static IJsonIndexBuilder WithMemmoryStorage(this IJsonIndexBuilder self)
+    public static IJsonIndexBuilder UsingMemmoryStorage(this IJsonIndexBuilder self)
         => self.UsingStorage(new RamJsonIndexStorage());
-    public static IJsonIndexBuilder WithAnalyzer(this IJsonIndexBuilder self, Analyzer analyzer)
-        => self.WithService(analyzer);
+
+    public static IJsonIndexBuilder WithAnalyzer(this IJsonIndexBuilder self, Func<IJsonIndexConfiguration, Analyzer> analyzerProvider)
+        => self.WithService(analyzerProvider);
     public static IJsonIndexBuilder WithFieldResolver(this IJsonIndexBuilder self, IFieldResolver resolver)
         => self.WithService(resolver);
     public static IJsonIndexBuilder WithFieldInformationManager(this IJsonIndexBuilder self, Func<IJsonIndexConfiguration, IFieldInformationManager> managerProvider)
