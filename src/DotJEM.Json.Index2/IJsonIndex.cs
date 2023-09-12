@@ -75,13 +75,13 @@ public interface IJsonIndexBuilder
 
 public class JsonIndexBuilder : IJsonIndexBuilder
 {
-    private readonly string name = Guid.NewGuid().ToString("D");
+    public string Name { get; } = Guid.NewGuid().ToString("D");
     private IJsonIndexStorage storage = new RamJsonIndexStorage();
     private readonly Dictionary<Type, Func<IJsonIndexConfiguration, object>> factories = new();
 
     public JsonIndexBuilder(string name)
     {
-        this.name = name;
+        this.Name = name;
     }
 
     public IJsonIndexBuilder UsingStorage(IJsonIndexStorage storage)

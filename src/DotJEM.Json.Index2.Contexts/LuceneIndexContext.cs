@@ -45,3 +45,31 @@ public interface ILuceneJsonIndexFactory
 {
     IJsonIndex Create(string name);
 }
+
+public interface IJsonIndexContextBuilder
+{
+    IJsonIndexContextBuilder ByDefault(Func<IJsonIndexBuilder, IJsonIndex> defaultConfig);
+    IJsonIndexContextBuilder For(string name, Func<IJsonIndexBuilder, IJsonIndex> defaultConfig);
+    IJsonIndexContext Build();
+}
+
+public class JsonIndexContextBuilder : IJsonIndexContextBuilder
+{
+    private readonly ConcurrentDictionary<string, Func<IJsonIndexBuilder, IJsonIndex>> configurators = new();
+    public IJsonIndexContextBuilder ByDefault(Func<IJsonIndexBuilder, IJsonIndex> defaultConfig)
+    {
+        configurators.AddOrUpdate("*", s => defaultConfig, (s, func) => defaultConfig);
+        return this;
+    }
+
+    public IJsonIndexContextBuilder For(string name, Func<IJsonIndexBuilder, IJsonIndex> defaultConfig)
+    {
+        configurators.AddOrUpdate(name, s => defaultConfig, (s, func) => defaultConfig);
+        return this;
+    }
+
+    public IJsonIndexContext Build()
+    {
+        return new JsonIndexContext(null);
+    }
+}
