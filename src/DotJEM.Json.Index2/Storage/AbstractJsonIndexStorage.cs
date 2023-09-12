@@ -1,4 +1,5 @@
-﻿using DotJEM.Json.Index2.IO;
+﻿using System;
+using DotJEM.Json.Index2.IO;
 using DotJEM.Json.Index2.Searching;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
@@ -23,9 +24,12 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     private readonly object padlock = new ();
     private Directory directory;
 
-    public IIndexWriterManager WriterManager { get; }
+    private readonly Lazy<IIndexWriterManager> writerManager;
+    private readonly Lazy<IIndexSearcherManager> searcherManager;
+
+    public IIndexWriterManager WriterManager => writerManager.Value;
     
-    public IIndexSearcherManager SearcherManager { get; }
+    public IIndexSearcherManager SearcherManager => searcherManager.Value;
     
     public bool Exists => DirectoryReader.IndexExists(Directory);
 
@@ -48,8 +52,8 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     {
         this.index = index;
         this.provider = provider;
-        this.WriterManager = new IndexWriterManager(index);
-        this.SearcherManager = new IndexSearcherManager(WriterManager, index.Configuration.Serializer);
+        this.writerManager = new Lazy<IIndexWriterManager>(()=> new IndexWriterManager(index));
+        this.searcherManager = new Lazy<IIndexSearcherManager>(()=>  new IndexSearcherManager(WriterManager, index.Configuration.Serializer));
     }
     
     public void Unlock()

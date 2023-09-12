@@ -41,7 +41,7 @@ public class JsonIndexConfiguration : IJsonIndexConfiguration
         FieldResolver = Services.Get<IFieldResolver>() ?? new FieldResolver();
         FieldInformationManager = Services.Get<IFieldInformationManager>() ?? new DefaultFieldInformationManager(FieldResolver);
         DocumentFactory = Services.Get<ILuceneDocumentFactory>() ?? new LuceneDocumentFactory(FieldInformationManager);
-        Serializer = Services.Get<IJsonDocumentSerializer>();
+        Serializer = Services.Get<IJsonDocumentSerializer>() ?? new GZipJsonDocumentSerialier();
     }
 
 }

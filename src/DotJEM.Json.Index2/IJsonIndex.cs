@@ -75,8 +75,8 @@ public interface IJsonIndexBuilder
 
 public class JsonIndexBuilder : IJsonIndexBuilder
 {
-    private readonly string name;
-    private IJsonIndexStorage storage;
+    private readonly string name = Guid.NewGuid().ToString("D");
+    private IJsonIndexStorage storage = new RamJsonIndexStorage();
     private readonly Dictionary<Type, Func<IJsonIndexConfiguration, object>> factories = new();
 
     public JsonIndexBuilder(string name)

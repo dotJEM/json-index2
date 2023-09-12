@@ -1,11 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\DotJEM.Json.Index2.common.props"/>
+  <Import Project="..\DotJEM.Json.Index2.common.props" />
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
