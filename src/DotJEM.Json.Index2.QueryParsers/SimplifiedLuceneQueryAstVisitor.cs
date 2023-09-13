@@ -29,7 +29,7 @@ namespace DotJEM.Json.Index2.QueryParsers
 
         public override string ToString()
         {
-            return $"ContentTypes(" +string.Join(";", contentTypes)+")";
+            return $"ContentTypes(" + string.Join(";", contentTypes) + ")";
         }
     }
 
@@ -106,7 +106,6 @@ namespace DotJEM.Json.Index2.QueryParsers
                     // Calculate relevant fields from context.
                 }
             }
-
 
             switch (ast.Operator)
             {
@@ -214,7 +213,7 @@ namespace DotJEM.Json.Index2.QueryParsers
                     case StringValue stringValue:
                         return TermRangeQuery.NewStringRange(field, stringValue.Value, null, inclusive, inclusive);
 
-                    
+
                 }
                 throw new ArgumentOutOfRangeException();
             }
@@ -240,12 +239,14 @@ namespace DotJEM.Json.Index2.QueryParsers
                 {
                     case MatchAllValue _:
                         return new WildcardQuery(new Term(field, "*"));
+                    
                     case NumberValue numberValue:
                         return NumericRangeQuery.NewDoubleRange(field, numberValue.Value, numberValue.Value, true, true);
+                    
                     case IntegerValue integerValue:
                         return NumericRangeQuery.NewInt64Range(field, integerValue.Value, integerValue.Value, true, true);
-                    case PhraseValue phraseValue:
 
+                    case PhraseValue phraseValue:
                         TokenStream source = analyzer.GetTokenStream(field, new StringReader(phraseValue.Value));
                         source.Reset();
                         CachingTokenFilter buffer = new CachingTokenFilter(source);
@@ -276,15 +277,44 @@ namespace DotJEM.Json.Index2.QueryParsers
 
                         return phrase;
                     case WildcardValue wildcardValue:
+                        //TODO: Wildcards should probably also be analyzed in some way.
                         return new WildcardQuery(new Term(field, wildcardValue.Value));
+
                     case StringValue stringValue:
-                        return new CustomTermQuery(new Term(field, stringValue.Value));
+                        Term[] terms = ReadTerms(field, stringValue).ToArray();
+                        if(terms.Length == 1)
+                            return new TermQuery(terms.First());
+
+                        BooleanQuery q = new BooleanQuery();
+                        foreach (Term term in terms)
+                        {
+                            q.Add(new (new TermQuery(term), Occur.MUST));
+                        }
+                        return q;
+                        //TODO: Just use the standard term query, for not this is just testing.
                 }
                 throw new ArgumentOutOfRangeException();
             }
 
 
             return query;
+        }
+
+        private IEnumerable<Term> ReadTerms(string field, StringValue value)
+        {
+            using TokenStream source = analyzer.GetTokenStream(field, new StringReader(value.Value));
+            source.Reset();
+
+            using CachingTokenFilter buffer = new CachingTokenFilter(source);
+            buffer.Reset();
+
+            if (!buffer.TryGetAttribute(out ITermToBytesRefAttribute attribute))
+                yield break;
+            while (buffer.IncrementToken())
+            {
+                attribute.FillBytesRef();
+                yield return new Term(field, BytesRef.DeepCopyOf(attribute.BytesRef));
+            }
         }
 
         private LuceneQueryInfo VisitComposite(CompositeQuery ast, ContentTypeContext context, Occur occur)

@@ -17,20 +17,22 @@ public class LuceneIndexContextTest
     {
         IJsonIndexContextBuilder builder = new JsonIndexContextBuilder();
         builder
-            .ByDefault(x => x.UsingMemmoryStorage().Build());
+            .ByDefault(x => x
+                .UsingMemmoryStorage()
+                .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
+                .WithFieldResolver(new FieldResolver("uuid", "type"))
+                .Build());
         builder
-            .For("IndexName", b => b.UsingStorage(new RamJsonIndexStorage()).Build());
-
-
+            .For("IndexName", x => x
+                .UsingMemmoryStorage()
+                .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
+                .WithFieldResolver(new FieldResolver("uuid", "type"))
+                .Build());
 
         IJsonIndexContext context = builder.Build();
         context.Open("IndexName");
 
-        IJsonIndex index = new JsonIndexBuilder("myIndex")
-            .UsingMemmoryStorage()
-            .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
-            .WithFieldResolver(new FieldResolver("uuid", "type"))
-            .Build();
+        IJsonIndex index = context.Open("IndexName");
 
         IJsonIndexWriter writer = index.CreateWriter();
         writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));

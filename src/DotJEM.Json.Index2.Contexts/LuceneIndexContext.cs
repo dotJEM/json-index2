@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using DotJEM.Json.Index2.Configuration;
 using DotJEM.Json.Index2.Contexts.Searching;
 using DotJEM.Json.Index2.Contexts.Storage;
@@ -14,7 +15,7 @@ public interface IJsonIndexContext : IJsonIndexSearcherProvider
 
 public class JsonIndexContext : IJsonIndexContext
 {
-    private readonly ILuceneJsonIndexFactory factory;
+    private readonly IJsonIndexFactory factory;
     private readonly ConcurrentDictionary<string, IJsonIndex> indices = new ConcurrentDictionary<string, IJsonIndex>();
 
     //public IServiceResolver Services { get; }
@@ -24,7 +25,7 @@ public class JsonIndexContext : IJsonIndexContext
     //public JsonIndexContext(string path, IServiceCollection services = null)
     //    : this(new LuceneIndexContextBuilder(path), services) { }
 
-    public JsonIndexContext(ILuceneJsonIndexFactory factory)
+    public JsonIndexContext(IJsonIndexFactory factory)
     {
         this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
         //this.Services = resolver ?? throw new ArgumentNullException(nameof(resolver));
@@ -39,11 +40,6 @@ public class JsonIndexContext : IJsonIndexContext
     {
         return new LuceneJsonMultiIndexSearcher(indices.Values);
     }
-}
-  
-public interface ILuceneJsonIndexFactory
-{
-    IJsonIndex Create(string name);
 }
 
 public interface IJsonIndexContextBuilder
@@ -64,12 +60,42 @@ public class JsonIndexContextBuilder : IJsonIndexContextBuilder
 
     public IJsonIndexContextBuilder For(string name, Func<IJsonIndexBuilder, IJsonIndex> defaultConfig)
     {
+        if (name == null) throw new ArgumentNullException(nameof(name));
+        if (defaultConfig == null) throw new ArgumentNullException(nameof(defaultConfig));
+        if (name is "*" or "") throw new ArgumentException("Invalid name for an index.", nameof(name));
+
         configurators.AddOrUpdate(name, s => defaultConfig, (s, func) => defaultConfig);
         return this;
     }
 
     public IJsonIndexContext Build()
     {
-        return new JsonIndexContext(null);
+        return new JsonIndexContext(new JsonIndexFactory(new Dictionary<string, Func<IJsonIndexBuilder, IJsonIndex>>(configurators)));
+    }
+}
+
+public interface IJsonIndexFactory
+{
+    IJsonIndex Create(string name);
+}
+
+public class JsonIndexFactory : IJsonIndexFactory
+{
+    private readonly IReadOnlyDictionary<string, Func<IJsonIndexBuilder, IJsonIndex>> configurators;
+
+    public JsonIndexFactory(IReadOnlyDictionary<string, Func<IJsonIndexBuilder, IJsonIndex>> configurators)
+    {
+        this.configurators = configurators;
+    }
+
+    public IJsonIndex Create(string name)
+    {
+        if (configurators.TryGetValue(name, out Func<IJsonIndexBuilder, IJsonIndex> func))
+            return func(new JsonIndexBuilder(name));
+
+        if(configurators.TryGetValue("*", out func))
+            return func(new JsonIndexBuilder(name));
+
+        throw new InvalidOperationException("");
     }
 }
