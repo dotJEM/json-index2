@@ -69,46 +69,6 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Parser
             return new ImplicitCompositeQuery(fragments.ToArray());
         }
 
-        //public override QueryAst VisitBasicClause(SimplifiedParser.BasicClauseContext context)
-        //{
-        //    QueryAst result = base.VisitBasicClause(context);
-        //    if (result == null)
-        //    {
-        //        Console.WriteLine("These gave me null");
-        //        foreach (IParseTree tree in context.children)
-        //        {
-        //            Console.WriteLine(tree.GetType().Name + " : " + tree.GetText());
-        //        }
-        //    }
-        //    return result;
-        //}
-
-        //public override QueryAst VisitAtom(SimplifiedParser.AtomContext context)
-        //{
-        //    QueryAst result = base.VisitAtom(context);
-        //    if (result == null)
-        //    {
-        //        Console.WriteLine("atom gave me null:");
-        //        Console.WriteLine(" - atom.value:" + context.value()?.GetType().Name);
-        //        Console.WriteLine(" - atom.field:" + context.field()?.GetType().Name);
-        //        Console.WriteLine(" - atom.inClause:" + context.inClause()?.GetType().Name);
-        //        Console.WriteLine(" - atom.notInClause:" + context.notInClause()?.GetType().Name);
-
-        //        if (context.value() != null)
-        //            result = Visit(context.value());
-
-        //        Console.WriteLine(" - ??");
-
-        //    }
-        //    return result;
-        //}
-
-        //public override QueryAst Visit(IParseTree tree)
-        //{
-        //    Console.WriteLine(tree.GetType().Name + " : " + tree.GetText());
-        //    return base.Visit(tree);
-        //}
-        
         public override BaseQuery VisitValue(SimplifiedParser.ValueContext context)
         {
             return new FieldQuery(null, FieldOperator.None, Value(context));

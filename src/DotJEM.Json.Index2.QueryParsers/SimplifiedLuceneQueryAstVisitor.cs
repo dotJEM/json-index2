@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using DotJEM.Json.Index2.Documents.Builder;
 using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.Json.Index2.QueryParsers.Ast;
 using DotJEM.Json.Index2.QueryParsers.Query;
 using DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
+using J2N.Text;
 using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Core;
+using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Analysis.TokenAttributes;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
@@ -234,7 +238,7 @@ namespace DotJEM.Json.Index2.QueryParsers
 
             LuceneQuery CreateSimpleQuery(string field, Value val)
             {
-                field = field ?? "gender";
+                field ??= "gender";
                 switch (val)
                 {
                     case MatchAllValue _:
@@ -277,19 +281,23 @@ namespace DotJEM.Json.Index2.QueryParsers
 
                         return phrase;
                     case WildcardValue wildcardValue:
+                        Term[] wildTerms = Analyze(field, wildcardValue)
+                            .Select(br => new Term(field, br))
+                            .ToArray();
+
                         //TODO: Wildcards should probably also be analyzed in some way.
                         return new WildcardQuery(new Term(field, wildcardValue.Value));
 
                     case StringValue stringValue:
-                        Term[] terms = ReadTerms(field, stringValue).ToArray();
+                        Term[] terms = Analyze(field, stringValue)
+                            .Select(br => new Term(field, br))
+                            .ToArray();
                         if(terms.Length == 1)
                             return new TermQuery(terms.First());
-
+                        
                         BooleanQuery q = new BooleanQuery();
                         foreach (Term term in terms)
-                        {
                             q.Add(new (new TermQuery(term), Occur.MUST));
-                        }
                         return q;
                         //TODO: Just use the standard term query, for not this is just testing.
                 }
@@ -300,7 +308,8 @@ namespace DotJEM.Json.Index2.QueryParsers
             return query;
         }
 
-        private IEnumerable<Term> ReadTerms(string field, StringValue value)
+        //TODO: Will a string value ever result in more than a single term?
+        private IEnumerable<BytesRef> Analyze(string field, WildcardValue value)
         {
             using TokenStream source = analyzer.GetTokenStream(field, new StringReader(value.Value));
             source.Reset();
@@ -310,10 +319,51 @@ namespace DotJEM.Json.Index2.QueryParsers
 
             if (!buffer.TryGetAttribute(out ITermToBytesRefAttribute attribute))
                 yield break;
+
+            buffer.TryGetAttribute(out IOffsetAttribute offset);
+
+            int end = 0;
+            StringBuilder overlay = new StringBuilder(value.Value);
+            //TODO: We are already operating on bytes, so we should use that isntead.
+            byte[] bytes = new byte[value.Value.Length];
             while (buffer.IncrementToken())
             {
                 attribute.FillBytesRef();
-                yield return new Term(field, BytesRef.DeepCopyOf(attribute.BytesRef));
+                overlay.Replace(offset.StartOffset, attribute.BytesRef.Length, attribute.BytesRef.Utf8ToString());
+                Array.Copy(attribute.BytesRef.Bytes, 0, bytes, offset.StartOffset, attribute.BytesRef.Length);
+                
+                if (offset.EndOffset - offset.StartOffset != attribute.BytesRef.Length)
+                {
+                    Console.WriteLine("HELP?!");
+                }
+
+
+                Console.WriteLine($"[{offset.StartOffset:D3}:{offset.EndOffset:D3}] {attribute.BytesRef.Utf8ToString()}");
+
+                //yield return BytesRef.DeepCopyOf(attribute.BytesRef);
+            }
+            BytesRef br = new BytesRef(overlay.ToString());
+            Console.WriteLine($"{value.Value} => {br.Utf8ToString()}");
+            yield return br;
+        }
+
+        //TODO: Will a string value ever result in more than a single term?
+        private IEnumerable<BytesRef> Analyze(string field, StringValue value)
+        {
+            using TokenStream source = analyzer.GetTokenStream(field, new StringReader(value.Value));
+            source.Reset();
+
+            using CachingTokenFilter buffer = new CachingTokenFilter(source);
+            buffer.Reset();
+
+            if (!buffer.TryGetAttribute(out ITermToBytesRefAttribute attribute))
+                yield break;
+
+            int pos = 0;
+            while (buffer.IncrementToken())
+            {
+                attribute.FillBytesRef();
+                yield return BytesRef.DeepCopyOf(attribute.BytesRef);
             }
         }
 
