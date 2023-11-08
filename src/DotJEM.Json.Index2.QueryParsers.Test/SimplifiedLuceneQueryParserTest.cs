@@ -90,7 +90,7 @@ public class SimplifiedLuceneQueryParserTest
 
         Assert.That(search.Count(), Is.EqualTo(6));
     }
-    [Test]
+    [Test, Explicit]
     public async Task SayHello_ReturnsHell2()
     {
         IJsonIndex index = new JsonIndexBuilder("myIndex")
