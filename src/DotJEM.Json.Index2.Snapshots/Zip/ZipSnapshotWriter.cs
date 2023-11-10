@@ -1,5 +1,8 @@
 ﻿using System.IO;
 using System.IO.Compression;
+using System.Threading;
+using System.Threading.Tasks;
+using DotJEM.Json.Index2.Snapshots.Streams;
 using DotJEM.Json.Index2.Util;
 using Lucene.Net.Store;
 using Directory = Lucene.Net.Store.Directory;
@@ -18,16 +21,11 @@ namespace DotJEM.Json.Index2.Snapshots.Zip
             this.Snapshot = new ZipFileSnapshot(path);
         }
 
-        public void WriteFile(string fileName, Directory dir)
+        public async Task WriteFileAsync(string fileName, Directory dir)
         {
-            using IndexInputStream source = new IndexInputStream(dir.OpenInput(fileName, IOContext.READ_ONCE));
+            using IndexInputStream source = dir.OpenInputStream(fileName, IOContext.READ_ONCE);
             using Stream target = archive.CreateEntry(fileName).Open();
-            source.CopyTo(target);
-        }
-
-        public void WriteSegmentsFile(string segmentsFile, Directory dir)
-        {
-            this.WriteFile(segmentsFile, dir);
+            await source.CopyToAsync(target);
         }
 
         protected override void Dispose(bool disposing)

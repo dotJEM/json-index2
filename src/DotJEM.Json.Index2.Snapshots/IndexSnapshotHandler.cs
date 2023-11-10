@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using DotJEM.Json.Index2.Snapshots.Streams;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
+using Directory = Lucene.Net.Store.Directory;
 
 namespace DotJEM.Json.Index2.Snapshots
 {
@@ -21,24 +24,17 @@ namespace DotJEM.Json.Index2.Snapshots
             IndexWriter writer = index.WriterManager.Writer;
             SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy;
             if (sdp == null)
-            {
                 throw new InvalidOperationException("Index must use an implementation of the SnapshotDeletionPolicy.");
-            }
 
             IndexCommit commit = null;
             try
             {
                 commit = sdp.Snapshot();
                 Directory dir = commit.Directory;
-                string segmentsFile = commit.SegmentsFileName;
 
                 using ISnapshotWriter snapshotWriter = target.Open(commit.Generation);
                 foreach (string fileName in commit.FileNames)
-                {
-                    if (!fileName.Equals(segmentsFile, StringComparison.Ordinal))
-                        snapshotWriter.WriteFile(fileName, dir);
-                }
-                snapshotWriter.WriteSegmentsFile(segmentsFile, dir);
+                    snapshotWriter.WriteFileAsync(fileName, dir);
                 return snapshotWriter.Snapshot;
             }
             finally
@@ -58,18 +54,17 @@ namespace DotJEM.Json.Index2.Snapshots
 
             ILuceneFile sementsFile = null;
             List<string> files = new List<string>();
-            foreach (ILuceneFile file in reader)
+            foreach (ILuceneFile file in reader.ReadFiles())
             {
                 if (Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"))
                 {
                     sementsFile = file;
                     continue;
                 }
-                IndexOutput output = dir.CreateOutput(file.Name, IOContext.DEFAULT);
-                output.WriteBytes(file.Bytes, 0, file.Length);
-                output.Flush();
-                output.Dispose();
 
+                using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
+                using Stream sourceStream = file.Open();
+                sourceStream.CopyToAsync(output);
                 files.Add(file.Name);
             }
             dir.Sync(files);
@@ -77,11 +72,9 @@ namespace DotJEM.Json.Index2.Snapshots
             if (sementsFile == null)
                 throw new ArgumentException();
 
-            IndexOutput segOutput = dir.CreateOutput(sementsFile.Name, IOContext.DEFAULT);
-            segOutput.WriteBytes(sementsFile.Bytes, 0, sementsFile.Length);
-            segOutput.Flush();
-            segOutput.Dispose();
-
+            using IndexOutputStream segOutput = dir.CreateOutputStream(sementsFile.Name, IOContext.DEFAULT);
+            using Stream sementsSourceStream = sementsFile.Open();
+            sementsSourceStream.CopyToAsync(segOutput);
             dir.Sync(new [] { sementsFile.Name });
 
             SegmentInfos.WriteSegmentsGen(dir, reader.Snapshot.Generation);

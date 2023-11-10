@@ -128,10 +128,12 @@ public static class JsonIndexBuilderExt
         => self.WithService(resolver);
     public static IJsonIndexBuilder WithFieldInformationManager(this IJsonIndexBuilder self, Func<IJsonIndexConfiguration, IFieldInformationManager> managerProvider)
         => self.WithService(managerProvider);
-    public static IJsonIndexBuilder WithFieldInformationManager(this IJsonIndexBuilder self, Func<IJsonIndexConfiguration, ILuceneDocumentFactory> factoryProvider)
+    public static IJsonIndexBuilder WithDocumentFactory(this IJsonIndexBuilder self, Func<IJsonIndexConfiguration, ILuceneDocumentFactory> factoryProvider)
         => self.WithService(factoryProvider);
-    public static IJsonIndexBuilder WithFieldInformationManager(this IJsonIndexBuilder self, IJsonDocumentSerializer serializer)
+    public static IJsonIndexBuilder WithSerializer(this IJsonIndexBuilder self, IJsonDocumentSerializer serializer)
         => self.WithService(serializer);
+
+
     public static IJsonIndexBuilder WithService<TService>(this IJsonIndexBuilder self, TService impl)
         => self.WithService(_ => impl);
     public static IJsonIndexBuilder WithService<TService>(this IJsonIndexBuilder self, Func<IJsonIndexConfiguration, TService> factory)

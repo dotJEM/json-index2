@@ -23,29 +23,23 @@ namespace DotJEM.Json.Index2.Snapshots.Zip
             this.archive = ZipFile.Open(snapshot.FilePath, ZipArchiveMode.Read);
         }
 
-        public IEnumerator<ILuceneFile> GetEnumerator()
+        public IEnumerable<ILuceneFile> ReadFiles()
         {
-            return archive.Entries.Select(entry =>
-            {
-                using MemoryStream target = new MemoryStream();
-                using Stream source = entry.Open();
-                source.CopyTo(target);
+            //return archive.Entries.Select(entry =>
+            //{
+            //    //using MemoryStream target = new MemoryStream();
+            //    //using Stream source = entry.Open();
+            //    //source.CopyTo(target);
 
-                return new LuceneFile(entry.Name, target.ToArray());
-            }).GetEnumerator();
-        }
+            //    return new LuceneFile(entry.Name, entry.Open);
+            //});
+            return archive.Entries.Select(entry => new LuceneFile(entry.Name, entry.Open));        }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 archive.Dispose();
-            }
             base.Dispose(disposing);
         }
 

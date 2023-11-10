@@ -1,24 +1,29 @@
-﻿namespace DotJEM.Json.Index2.Snapshots
+﻿using System;
+using System.IO;
+
+namespace DotJEM.Json.Index2.Snapshots
 {
     
     public interface ILuceneFile
     {
         string Name { get; }
-        byte[] Bytes { get; }
-        int Length { get; }
+        long Length { get; }
+        Stream Open();
     }
 
     public class LuceneFile : ILuceneFile
     {
-        public byte[] Bytes { get; }
-        public int Length { get; }
+        private readonly Func<Stream> streamProvider;
         public string Name { get; }
+        public long Length { get; }
 
-        public LuceneFile(string name, byte[] bytes)
+
+        public LuceneFile(string name, Func<Stream> streamProvider)
         {
-            Bytes = bytes;
+            this.streamProvider = streamProvider;
             Name = name;
-            Length = bytes.Length;
         }
+        public Stream Open()
+            => streamProvider.Invoke();
     }
 }

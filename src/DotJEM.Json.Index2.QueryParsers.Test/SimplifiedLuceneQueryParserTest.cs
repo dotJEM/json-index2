@@ -90,6 +90,7 @@ public class SimplifiedLuceneQueryParserTest
 
         Assert.That(search.Count(), Is.EqualTo(6));
     }
+
     [Test, Explicit]
     public async Task SayHello_ReturnsHell2()
     {
