@@ -42,6 +42,8 @@ public class SnapshotsTest
 
         FakeSnapshotTarget target = new FakeSnapshotTarget();
         await index.TakeSnapshotAsync(target);
+        index.Storage.Delete();
+        Assert.That(index.Search(new MatchAllDocsQuery()).Count(), Is.EqualTo(0));
 
         ISnapshotSource source = target.LastCreatedWriter.GetSource();
         Assert.That(await index.RestoreSnapshotAsync(source), Is.Not.Null);
