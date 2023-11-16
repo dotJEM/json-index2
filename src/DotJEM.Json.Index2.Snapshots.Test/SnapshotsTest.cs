@@ -16,17 +16,19 @@ namespace DotJEM.Json.Index2.Snapshots.Test;
 
 public class SnapshotsTest
 {
-       
+
     [Test]
 
     public async Task WriteContext_MakesDocumentsAvailable()
-    {      IJsonIndex index = new JsonIndexBuilder("myIndex")
+    {
+        IJsonIndex index = new JsonIndexBuilder("myIndex")
             .UsingMemmoryStorage()
             .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
             .WithFieldResolver(new FieldResolver("Id", "Type"))
+            .WithSnapshoting()
             .Build();
 
-            
+
         IJsonIndexWriter writer = index.CreateWriter();
 
         writer.Create(JObject.FromObject(new { Id = new Guid("00000000-0000-0000-0000-000000000001"), Type = "Person", Name = "John", LastName = "Doe", Area = "Foo" }));
@@ -40,131 +42,118 @@ public class SnapshotsTest
         writer.Create(JObject.FromObject(new { Id = new Guid("00000000-0000-0000-0000-000000000009"), Type = "Flower", Name = "Aster", Meaning = "Patience", Number = 15, Area = "Foo" }));
         writer.Commit();
 
-        FakeSnapshotTarget target = new FakeSnapshotTarget();
-        await index.TakeSnapshotAsync(target);
+        FakeSnapshotStorage storage = new FakeSnapshotStorage();
+        await index.TakeSnapshotAsync(storage);
         index.Storage.Delete();
         Assert.That(index.Search(new MatchAllDocsQuery()).Count(), Is.EqualTo(0));
 
-        ISnapshotSource source = target.LastCreatedWriter.GetSource();
-        Assert.That(await index.RestoreSnapshotAsync(source), Is.Not.Null);
+        ISnapshot snapshot = storage.LastCreated;
+        Assert.That(await index.RestoreSnapshotAsync(snapshot), Is.Not.Null);
 
         Assert.That(index.Search(new MatchAllDocsQuery()).Count(), Is.EqualTo(9));
     }
 }
 
-  public class FakeSnapshotTarget : ISnapshotTarget
+public class FakeSnapshotStorage : ISnapshotStorage
+{
+
+    public ISnapshot LastCreated { get; private set; }
+
+    public IReadOnlyCollection<ISnapshot> Snapshots => new List<ISnapshot> { LastCreated };
+
+    public ISnapshot Open(IndexCommit commit)
     {
-        public FakeSnapshotWriter LastCreatedWriter { get; private set; }
+        return LastCreated = new FakeSnapshot(commit.Generation);
 
-        public IReadOnlyCollection<ISnapshot> Snapshots { get; }
+    }
+}
 
-        public ISnapshotWriter Open(IndexCommit commit)
-        {
-            return LastCreatedWriter= new FakeSnapshotWriter(commit.Generation);
-        }
+public class FakeSnapshotWriter : ISnapshotWriter
+{
+    private readonly FakeSnapshot snapshot;
+
+    public ISnapshot Snapshot => snapshot;
+
+    public FakeSnapshotWriter(FakeSnapshot snapshot)
+    {
+        this.snapshot = snapshot;
     }
 
-    public class FakeSnapshotWriter : ISnapshotWriter
+    public async Task WriteFileAsync(string fileName, Directory dir)
     {
-        private readonly long generation;
-        private readonly List<ISnapshotFile> files = new();
-
-        public ISnapshot Snapshot { get; }
-
-        public FakeSnapshotWriter(long generation)
-        {
-            this.generation = generation;
-        }
-
-        public async Task WriteFileAsync(string fileName, Directory dir)
-        {
-            IndexInputStream? stream = dir.OpenInputStream(fileName, IOContext.READ_ONCE);
-            FakeFile file = new FakeFile(stream.FileName);
-            await stream.CopyToAsync(file.Stream);
-            file.Stream.Flush();
-            files.Add(file);
-        }
-
-        public class FakeFile : ISnapshotFile
-        {
-
-            public string Name { get; }
-            public long Length { get; }
-            public MemoryStream Stream { get; } = new MemoryStream();
-
-            public FakeFile(string name)
-            {
-                Name = name;
-            }
-            public Stream Open()
-            {
-                Stream.Seek(0, SeekOrigin.Begin);
-                return Stream;
-            }
-
-        }
-
-        public ISnapshotSource GetSource()
-        {
-            return new FakeSnapshotSource(new FakeSnapshot(generation,  files));
-        }
-
-        public void Dispose()
-        {
-        }
+        IndexInputStream? stream = dir.OpenInputStream(fileName, IOContext.READ_ONCE);
+        FakeFile file = new FakeFile(stream.FileName);
+        await stream.CopyToAsync(file.Stream);
+        file.Stream.Flush();
+        snapshot.Files.Add(file);
     }
 
-    public class FakeSnapshotSource : ISnapshotSource
+    public class FakeFile : ISnapshotFile
     {
-        private readonly FakeSnapshot snapshot;
 
-        public FakeSnapshotSource(FakeSnapshot snapshot)
+        public string Name { get; }
+        public long Length { get; }
+        public MemoryStream Stream { get; } = new MemoryStream();
+
+        public FakeFile(string name)
         {
-            this.snapshot = snapshot;
+            Name = name;
         }
-
-        public IReadOnlyCollection<ISnapshot> Snapshots { get; }
-
-
-        public ISnapshotReader Open()
+        public Stream Open()
         {
-            return new FakeSnapshotReader(snapshot);
-        }
-    }
-
-    public class FakeSnapshotReader : ISnapshotReader
-    {
-        private readonly FakeSnapshot snapshot;
-        public ISnapshot Snapshot => snapshot;
-
-        public FakeSnapshotReader(FakeSnapshot snapshot)
-        {
-            this.snapshot = snapshot;
-        }
-        public IEnumerable<ISnapshotFile> ReadFiles()
-        {
-            return snapshot.Files;
-        }
-
-        public void Dispose()
-        {
+            Stream.Seek(0, SeekOrigin.Begin);
+            return Stream;
         }
 
     }
 
-    public class FakeSnapshot : ISnapshot
+
+    public void Dispose()
     {
-        public long Generation { get; }
-        public ICollection<ISnapshotFile> Files { get; }
-
-        public FakeSnapshot(long generation,  ICollection<ISnapshotFile> files)
-        {
-            Generation = generation;
-            Files = files;
-
-        }
-
-        public void Dispose()
-        {
-        }
     }
+}
+
+
+public class FakeSnapshotReader : ISnapshotReader
+{
+    private readonly FakeSnapshot snapshot;
+    public ISnapshot Snapshot => snapshot;
+
+    public FakeSnapshotReader(FakeSnapshot snapshot)
+    {
+        this.snapshot = snapshot;
+    }
+    public IEnumerable<ISnapshotFile> ReadFiles()
+    {
+        return snapshot.Files;
+    }
+
+    public void Dispose()
+    {
+    }
+
+}
+
+public class FakeSnapshot : ISnapshot
+{
+    public long Generation { get; }
+
+    public List<ISnapshotFile> Files { get; }
+
+    public FakeSnapshot(long generation)
+    {
+        Generation = generation;
+        Files = new List<ISnapshotFile>();
+
+    }
+    public ISnapshotReader OpenReader()
+    {
+        return new FakeSnapshotReader(this);
+    }
+
+    public ISnapshotWriter OpenWriter()
+    {
+        return new FakeSnapshotWriter(this);
+    }
+
+}

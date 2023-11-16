@@ -20,7 +20,7 @@ public interface IJsonIndexStorageManager
 public class JsonIndexStorageManager: IJsonIndexStorageManager
 {
     private readonly IJsonIndex index;
-    private readonly IJsonIndexStorage provider;
+    private readonly IIndexStorageProvider provider;
     private readonly object padlock = new ();
     private Directory directory;
 
@@ -48,7 +48,7 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
         protected set => directory = value;
     }
 
-    public JsonIndexStorageManager(IJsonIndex index, IJsonIndexStorage provider)
+    public JsonIndexStorageManager(IJsonIndex index, IIndexStorageProvider provider)
     {
         this.index = index;
         this.provider = provider;
@@ -83,13 +83,13 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
 }
 
 
-public interface IJsonIndexStorage
+public interface IIndexStorageProvider
 {
     Directory Get();
     void Delete();
 }
 
-public class RamJsonIndexStorage : IJsonIndexStorage
+public class RamIndexStorageProvider : IIndexStorageProvider
 {
 
     public Directory Get() => new RAMDirectory();
@@ -100,11 +100,11 @@ public class RamJsonIndexStorage : IJsonIndexStorage
     }
 }
 
-public class SimpleFsJsonIndexStorage : IJsonIndexStorage
+public class SimpleFsIndexStorageProvider : IIndexStorageProvider
 {
     private readonly string path;
 
-    public SimpleFsJsonIndexStorage(string path)
+    public SimpleFsIndexStorageProvider(string path)
     {
         this.path = path;
     }

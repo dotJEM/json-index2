@@ -9,88 +9,95 @@ using Lucene.Net.Index;
 using Lucene.Net.Store;
 using Directory = Lucene.Net.Store.Directory;
 
-namespace DotJEM.Json.Index2.Snapshots
+namespace DotJEM.Json.Index2.Snapshots;
+
+public interface ISnapshot
 {
-    
-    public interface IIndexSnapshotHandler
+    long Generation { get; }
+
+    ISnapshotReader OpenReader();
+    ISnapshotWriter OpenWriter();
+}
+
+public interface IIndexSnapshotHandler
+{
+    Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage);
+    Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot source);
+}
+
+public class IndexSnapshotHandler : IIndexSnapshotHandler
+{
+    public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage)
     {
-        Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotTarget target);
-        Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshotSource source);
+        IndexWriter writer = index.WriterManager.Writer;
+        SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy;
+        if (sdp == null)
+            throw new InvalidOperationException("Index must use an implementation of the SnapshotDeletionPolicy.");
+
+        IndexCommit commit = null;
+        try
+        {
+            commit = sdp.Snapshot();
+            Directory dir = commit.Directory;
+
+            ISnapshot snapshot = storage.Open(commit);
+            using ISnapshotWriter snapshotWriter = snapshot.OpenWriter();
+            foreach (string fileName in commit.FileNames)
+                await snapshotWriter.WriteFileAsync(fileName, dir);
+            return snapshotWriter.Snapshot;
+        }
+        finally
+        {
+            if (commit != null)
+            {
+                sdp.Release(commit);
+            }
+        }
     }
 
-    public class IndexSnapshotHandler : IIndexSnapshotHandler
+    public async Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot snapshot)
     {
-        public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotTarget target)
+        index.Storage.Delete();
+        Directory dir = index.Storage.Directory;
+        using ISnapshotReader reader = snapshot.OpenReader();
+
+        ISnapshotFile segmentsFile = null;
+        List<string> files = new();
+        foreach (ISnapshotFile file in reader.ReadFiles())
         {
-            IndexWriter writer = index.WriterManager.Writer;
-            SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy;
-            if (sdp == null)
-                throw new InvalidOperationException("Index must use an implementation of the SnapshotDeletionPolicy.");
-
-            IndexCommit commit = null;
-            try
+            if (Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"))
             {
-                commit = sdp.Snapshot();
-                Directory dir = commit.Directory;
+                segmentsFile = file;
+                continue;
+            }
 
-                using ISnapshotWriter snapshotWriter = target.Open(commit);
-                foreach (string fileName in commit.FileNames)
-                    await snapshotWriter.WriteFileAsync(fileName, dir);
-                return snapshotWriter.Snapshot;
-            }
-            finally
-            {
-                if (commit != null)
-                {
-                    sdp.Release(commit);
-                }
-            }
+            using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
+            using Stream sourceStream = file.Open();
+            await sourceStream.CopyToAsync(output);
+            files.Add(file.Name);
         }
+        dir.Sync(files);
 
-        public async Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshotSource source)
+        if (segmentsFile == null)
+            throw new ArgumentException();
+
+        using IndexOutputStream segOutput = dir.CreateOutputStream(segmentsFile.Name, IOContext.DEFAULT);
+        using Stream segmentsSourceStream = segmentsFile.Open();
+        await segmentsSourceStream.CopyToAsync(segOutput);
+        segOutput.Dispose();
+        segmentsSourceStream.Dispose();
+        dir.Sync(new [] { segmentsFile.Name });
+
+        SegmentInfos.WriteSegmentsGen(dir, reader.Snapshot.Generation);
+
+        //NOTE: (jmd 2020-09-30) Not quite sure what this does at this time, but the Lucene Replicator does it so better keep it for now.
+        IndexCommit last = DirectoryReader.ListCommits(dir).Last();
+        if (last != null)
         {
-            index.Storage.Delete();
-            Directory dir = index.Storage.Directory;
-            using ISnapshotReader reader = source.Open();
-
-            ISnapshotFile segmentsFile = null;
-            List<string> files = new();
-            foreach (ISnapshotFile file in reader.ReadFiles())
-            {
-                if (Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"))
-                {
-                    segmentsFile = file;
-                    continue;
-                }
-
-                using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
-                using Stream sourceStream = file.Open();
-                await sourceStream.CopyToAsync(output);
-                files.Add(file.Name);
-            }
-            dir.Sync(files);
-
-            if (segmentsFile == null)
-                throw new ArgumentException();
-
-            using IndexOutputStream segOutput = dir.CreateOutputStream(segmentsFile.Name, IOContext.DEFAULT);
-            using Stream segmentsSourceStream = segmentsFile.Open();
-            await segmentsSourceStream.CopyToAsync(segOutput);
-            segOutput.Dispose();
-            segmentsSourceStream.Dispose();
-            dir.Sync(new [] { segmentsFile.Name });
-
-            SegmentInfos.WriteSegmentsGen(dir, reader.Snapshot.Generation);
-
-            //NOTE: (jmd 2020-09-30) Not quite sure what this does at this time, but the Lucene Replicator does it so better keep it for now.
-            IndexCommit last = DirectoryReader.ListCommits(dir).Last();
-            if (last != null)
-            {
-                ISet<string> commitFiles = new HashSet<string>(last.FileNames);
-                commitFiles.Add(IndexFileNames.SEGMENTS_GEN);
-            }
-            index.WriterManager.Close();
-            return reader.Snapshot;
+            ISet<string> commitFiles = new HashSet<string>(last.FileNames);
+            commitFiles.Add(IndexFileNames.SEGMENTS_GEN);
         }
+        index.WriterManager.Close();
+        return reader.Snapshot;
     }
 }

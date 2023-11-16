@@ -27,7 +27,7 @@ public class SimplifiedLuceneQueryParserTest
             .UsingMemmoryStorage()
             .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version, CharArraySet.EMPTY_SET))
             .WithFieldResolver(new FieldResolver("uuid", "type"))
-            .UseSimplifiedLuceneQueryParser()
+            .WithSimplifiedLuceneQueryParser()
             .Build();
 
         IJsonIndexWriter writer = index.CreateWriter();
@@ -50,7 +50,7 @@ public class SimplifiedLuceneQueryParserTest
             .UsingMemmoryStorage()
             .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version, CharArraySet.EMPTY_SET))
             .WithFieldResolver(new FieldResolver("uuid", "type"))
-            .UseSimplifiedLuceneQueryParser()
+            .WithSimplifiedLuceneQueryParser()
             .Build();
 
         IJsonIndexWriter writer = index.CreateWriter();
@@ -99,7 +99,7 @@ public class SimplifiedLuceneQueryParserTest
             //.WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version, CharArraySet.EMPTY_SET))
             .WithAnalyzer(cfg => new EnglishAnalyzer(cfg.Version, CharArraySet.EMPTY_SET))
             .WithFieldResolver(new FieldResolver("uuid", "type"))
-            .UseSimplifiedLuceneQueryParser()
+            .WithSimplifiedLuceneQueryParser()
             .Build();
 
         IJsonIndexWriter writer = index.CreateWriter();

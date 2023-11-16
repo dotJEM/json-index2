@@ -40,10 +40,10 @@ public class JsonIndex : IJsonIndex
     public IIndexWriterManager WriterManager => Storage.WriterManager;
     public IIndexSearcherManager SearcherManager => Storage.SearcherManager;
 
-    public JsonIndex(IJsonIndexStorage storage, IJsonIndexConfiguration configuration)
+    public JsonIndex(IIndexStorageProvider storageProvider, IJsonIndexConfiguration configuration)
     {
         Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-        Storage = new JsonIndexStorageManager(this, storage);
+        Storage = new JsonIndexStorageManager(this, storageProvider);
     }
 
     public IJsonIndexSearcher CreateSearcher()
@@ -68,7 +68,7 @@ public class JsonIndex : IJsonIndex
 
 public interface IJsonIndexBuilder
 {
-    IJsonIndexBuilder UsingStorage(IJsonIndexStorage storage);
+    IJsonIndexBuilder UsingStorage(IIndexStorageProvider storageProvider);
     IJsonIndexBuilder WithService<TService>(bool replace, Func<IJsonIndexConfiguration, TService> factory);
     IJsonIndex Build();
 }
@@ -76,7 +76,7 @@ public interface IJsonIndexBuilder
 public class JsonIndexBuilder : IJsonIndexBuilder
 {
     public string Name { get; } = Guid.NewGuid().ToString("D");
-    private IJsonIndexStorage storage = new RamJsonIndexStorage();
+    private IIndexStorageProvider storageProvider = new RamIndexStorageProvider();
     private readonly Dictionary<Type, Func<IJsonIndexConfiguration, object>> factories = new();
 
     public JsonIndexBuilder(string name)
@@ -84,9 +84,9 @@ public class JsonIndexBuilder : IJsonIndexBuilder
         this.Name = name;
     }
 
-    public IJsonIndexBuilder UsingStorage(IJsonIndexStorage storage)
+    public IJsonIndexBuilder UsingStorage(IIndexStorageProvider storageProvider)
     {
-        this.storage = storage;
+        this.storageProvider = storageProvider;
         return this;
     }
 
@@ -110,7 +110,7 @@ public class JsonIndexBuilder : IJsonIndexBuilder
 
     public IJsonIndex Build()
     {
-        return new JsonIndex(storage, new JsonIndexConfiguration(LuceneVersion.LUCENE_48, factories
+        return new JsonIndex(storageProvider, new JsonIndexConfiguration(LuceneVersion.LUCENE_48, factories
             .Select(pair => new ServiceDescriptor(pair.Key, pair.Value))));
     }
 }
@@ -118,9 +118,9 @@ public class JsonIndexBuilder : IJsonIndexBuilder
 public static class JsonIndexBuilderExt
 {
     public static IJsonIndexBuilder UsingSimpleFileStorage(this IJsonIndexBuilder self, string path)
-      => self.UsingStorage(new SimpleFsJsonIndexStorage(path));
+      => self.UsingStorage(new SimpleFsIndexStorageProvider(path));
     public static IJsonIndexBuilder UsingMemmoryStorage(this IJsonIndexBuilder self)
-        => self.UsingStorage(new RamJsonIndexStorage());
+        => self.UsingStorage(new RamIndexStorageProvider());
 
     public static IJsonIndexBuilder WithAnalyzer(this IJsonIndexBuilder self, Func<IJsonIndexConfiguration, Analyzer> analyzerProvider)
         => self.WithService(analyzerProvider);

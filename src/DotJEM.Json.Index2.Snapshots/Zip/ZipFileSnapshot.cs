@@ -5,13 +5,28 @@ namespace DotJEM.Json.Index2.Snapshots.Zip
 {
     public class ZipFileSnapshot : ISnapshot
     {
-        public string FilePath { get; }
         public long Generation { get; }
+        public string FilePath { get; }
 
-        public ZipFileSnapshot(string path)
+        public ISnapshotReader OpenReader()
+        {
+            return new ZipSnapshotReader(FilePath);
+        }
+
+        public ISnapshotWriter OpenWriter()
+        {
+            return new ZipSnapshotWriter(FilePath);
+        }
+
+        public ZipFileSnapshot(string path) 
+            : this(path, long.Parse(Path.GetFileNameWithoutExtension(path), NumberStyles.AllowHexSpecifier))
+        {
+        }
+
+        public ZipFileSnapshot(string path, long generation)
         {
             FilePath = path;
-            Generation = long.Parse(Path.GetFileNameWithoutExtension(path), NumberStyles.AllowHexSpecifier);
+            Generation = generation;
         }
     }
 }

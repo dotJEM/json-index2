@@ -28,10 +28,10 @@ namespace DotJEM.Json.Index2.Snapshots.Zip
             //return archive.Entries.Select(entry =>
             //{
             //    //using MemoryStream target = new MemoryStream();
-            //    //using Stream source = entry.Open();
+            //    //using Stream source = entry.OpenReader();
             //    //source.CopyTo(target);
 
-            //    return new LuceneFile(entry.Name, entry.Open);
+            //    return new LuceneFile(entry.Name, entry.OpenReader);
             //});
             return archive.Entries.Select(entry => new SnapshotFile(entry.Name, entry.Open));        }
 
