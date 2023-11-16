@@ -4,26 +4,24 @@ using System.IO;
 namespace DotJEM.Json.Index2.Snapshots
 {
     
-    public interface ILuceneFile
+    public interface ISnapshotFile
     {
         string Name { get; }
-        long Length { get; }
         Stream Open();
     }
 
-    public class LuceneFile : ILuceneFile
+    public class SnapshotFile : ISnapshotFile
     {
         private readonly Func<Stream> streamProvider;
+
         public string Name { get; }
-        public long Length { get; }
-
-
-        public LuceneFile(string name, Func<Stream> streamProvider)
+        
+        public SnapshotFile(string name, Func<Stream> streamProvider)
         {
             this.streamProvider = streamProvider;
             Name = name;
         }
-        public Stream Open()
-            => streamProvider.Invoke();
+
+        public Stream Open() => streamProvider.Invoke();
     }
 }

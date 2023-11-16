@@ -1,4 +1,5 @@
-﻿using DotJEM.Json.Index2.Configuration;
+﻿using System.Threading.Tasks;
+using DotJEM.Json.Index2.Configuration;
 
 namespace DotJEM.Json.Index2.Snapshots
 {
@@ -6,16 +7,16 @@ namespace DotJEM.Json.Index2.Snapshots
     {
         private static readonly IndexSnapshotHandler defaultHandler = new IndexSnapshotHandler();
 
-        public static ISnapshot Snapshot(this IJsonIndex self, ISnapshotTarget target)
+        public static async Task<ISnapshot> TakeSnapshotAsync(this IJsonIndex self, ISnapshotTarget target)
         {
             IIndexSnapshotHandler handler = self.Configuration.Get<IIndexSnapshotHandler>() ?? defaultHandler;
-            return handler.Snapshot(self, target);
+            return await handler.TakeSnapshotAsync(self, target);
         }
 
-        public static ISnapshot Restore(this IJsonIndex self, ISnapshotSource source)
+        public static async Task<ISnapshot> RestoreSnapshotAsync(this IJsonIndex self, ISnapshotSource source)
         {
             IIndexSnapshotHandler handler = self.Configuration.Get<IIndexSnapshotHandler>() ?? defaultHandler;
-            return handler.Restore(self, source);
+            return await handler.RestoreSnapshotAsync(self, source);
         }
     }
 }

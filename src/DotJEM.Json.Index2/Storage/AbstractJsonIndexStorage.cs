@@ -91,10 +91,12 @@ public interface IJsonIndexStorage
 
 public class RamJsonIndexStorage : IJsonIndexStorage
 {
+
     public Directory Get() => new RAMDirectory();
+    
     public void Delete()
     {
-        throw new System.NotImplementedException();
+
     }
 }
 
@@ -111,6 +113,5 @@ public class SimpleFsJsonIndexStorage : IJsonIndexStorage
 
     public void Delete()
     {
-        throw new System.NotImplementedException();
     }
 }

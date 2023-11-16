@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using DotJEM.Json.Index2.Snapshots.Streams;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
@@ -13,13 +14,13 @@ namespace DotJEM.Json.Index2.Snapshots
     
     public interface IIndexSnapshotHandler
     {
-        ISnapshot Snapshot(IJsonIndex index, ISnapshotTarget target);
-        ISnapshot Restore(IJsonIndex index, ISnapshotSource source);
+        Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotTarget target);
+        Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshotSource source);
     }
 
     public class IndexSnapshotHandler : IIndexSnapshotHandler
     {
-        public ISnapshot Snapshot(IJsonIndex index, ISnapshotTarget target)
+        public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotTarget target)
         {
             IndexWriter writer = index.WriterManager.Writer;
             SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy;
@@ -32,9 +33,9 @@ namespace DotJEM.Json.Index2.Snapshots
                 commit = sdp.Snapshot();
                 Directory dir = commit.Directory;
 
-                using ISnapshotWriter snapshotWriter = target.Open(commit.Generation);
+                using ISnapshotWriter snapshotWriter = target.Open(commit);
                 foreach (string fileName in commit.FileNames)
-                    snapshotWriter.WriteFileAsync(fileName, dir);
+                    await snapshotWriter.WriteFileAsync(fileName, dir);
                 return snapshotWriter.Snapshot;
             }
             finally
@@ -46,36 +47,38 @@ namespace DotJEM.Json.Index2.Snapshots
             }
         }
 
-        public ISnapshot Restore(IJsonIndex index, ISnapshotSource source)
+        public async Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshotSource source)
         {
             index.Storage.Delete();
             Directory dir = index.Storage.Directory;
             using ISnapshotReader reader = source.Open();
 
-            ILuceneFile sementsFile = null;
-            List<string> files = new List<string>();
-            foreach (ILuceneFile file in reader.ReadFiles())
+            ISnapshotFile segmentsFile = null;
+            List<string> files = new();
+            foreach (ISnapshotFile file in reader.ReadFiles())
             {
                 if (Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"))
                 {
-                    sementsFile = file;
+                    segmentsFile = file;
                     continue;
                 }
 
                 using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
                 using Stream sourceStream = file.Open();
-                sourceStream.CopyToAsync(output);
+                await sourceStream.CopyToAsync(output);
                 files.Add(file.Name);
             }
             dir.Sync(files);
 
-            if (sementsFile == null)
+            if (segmentsFile == null)
                 throw new ArgumentException();
 
-            using IndexOutputStream segOutput = dir.CreateOutputStream(sementsFile.Name, IOContext.DEFAULT);
-            using Stream sementsSourceStream = sementsFile.Open();
-            sementsSourceStream.CopyToAsync(segOutput);
-            dir.Sync(new [] { sementsFile.Name });
+            using IndexOutputStream segOutput = dir.CreateOutputStream(segmentsFile.Name, IOContext.DEFAULT);
+            using Stream segmentsSourceStream = segmentsFile.Open();
+            await segmentsSourceStream.CopyToAsync(segOutput);
+            segOutput.Dispose();
+            segmentsSourceStream.Dispose();
+            dir.Sync(new [] { segmentsFile.Name });
 
             SegmentInfos.WriteSegmentsGen(dir, reader.Snapshot.Generation);
 

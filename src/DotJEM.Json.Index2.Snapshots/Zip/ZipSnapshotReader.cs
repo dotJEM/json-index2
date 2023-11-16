@@ -23,7 +23,7 @@ namespace DotJEM.Json.Index2.Snapshots.Zip
             this.archive = ZipFile.Open(snapshot.FilePath, ZipArchiveMode.Read);
         }
 
-        public IEnumerable<ILuceneFile> ReadFiles()
+        public IEnumerable<ISnapshotFile> ReadFiles()
         {
             //return archive.Entries.Select(entry =>
             //{
@@ -33,7 +33,7 @@ namespace DotJEM.Json.Index2.Snapshots.Zip
 
             //    return new LuceneFile(entry.Name, entry.Open);
             //});
-            return archive.Entries.Select(entry => new LuceneFile(entry.Name, entry.Open));        }
+            return archive.Entries.Select(entry => new SnapshotFile(entry.Name, entry.Open));        }
 
 
         protected override void Dispose(bool disposing)

@@ -7,6 +7,6 @@ namespace DotJEM.Json.Index2.Snapshots
     {
         ISnapshot Snapshot { get; }
 
-        IEnumerable<ILuceneFile> ReadFiles();
+        IEnumerable<ISnapshotFile> ReadFiles();
     }
 }

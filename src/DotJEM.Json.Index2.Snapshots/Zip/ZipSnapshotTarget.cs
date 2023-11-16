@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Lucene.Net.Index;
 
 namespace DotJEM.Json.Index2.Snapshots.Zip
 {
@@ -15,7 +16,7 @@ namespace DotJEM.Json.Index2.Snapshots.Zip
             this.path = path;
         }
 
-        public ISnapshotWriter Open(long generation)
+        public ISnapshotWriter Open(IndexCommit generation)
         {
             string snapshotPath = Path.Combine(path, $"{generation:x8}.zip");
             snapShots.Add(new ZipFileSnapshot(snapshotPath));

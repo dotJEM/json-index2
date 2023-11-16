@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Lucene.Net.Index;
+using System.Collections.Generic;
 
 namespace DotJEM.Json.Index2.Snapshots
 {
     public interface ISnapshotTarget
     {
         IReadOnlyCollection<ISnapshot> Snapshots { get; }
-        ISnapshotWriter Open(long generation);
+        ISnapshotWriter Open(IndexCommit commit);
     }
 }

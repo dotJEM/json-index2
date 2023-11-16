@@ -23,9 +23,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index2.QueryPar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index2.Snapshots", "DotJEM.Json.Index2.Snapshots\DotJEM.Json.Index2.Snapshots.csproj", "{98FF81EC-F9B6-4B6C-9B02-2A5830756B05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotJEM.Json.Index2.Contexts.Test", "DotJEM.Json.Index2.Contexts.Test\DotJEM.Json.Index2.Contexts.Test.csproj", "{8F30DDCD-334C-4C47-AE47-9DCEB0CB4C73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index2.Contexts.Test", "DotJEM.Json.Index2.Contexts.Test\DotJEM.Json.Index2.Contexts.Test.csproj", "{8F30DDCD-334C-4C47-AE47-9DCEB0CB4C73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotJEM.Json.Index2.QueryParsers.Test", "DotJEM.Json.Index2.QueryParsers.Test\DotJEM.Json.Index2.QueryParsers.Test.csproj", "{10159BF9-8B8C-4BE1-8DB8-321839C6C267}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index2.QueryParsers.Test", "DotJEM.Json.Index2.QueryParsers.Test\DotJEM.Json.Index2.QueryParsers.Test.csproj", "{10159BF9-8B8C-4BE1-8DB8-321839C6C267}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotJEM.Json.Index2.Snapshots.Test", "DotJEM.Json.Index2.Snapshots.Test\DotJEM.Json.Index2.Snapshots.Test.csproj", "{36286BC4-5473-4736-BAC6-58DFCF2517EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +63,10 @@ Global
 		{10159BF9-8B8C-4BE1-8DB8-321839C6C267}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10159BF9-8B8C-4BE1-8DB8-321839C6C267}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10159BF9-8B8C-4BE1-8DB8-321839C6C267}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36286BC4-5473-4736-BAC6-58DFCF2517EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36286BC4-5473-4736-BAC6-58DFCF2517EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36286BC4-5473-4736-BAC6-58DFCF2517EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36286BC4-5473-4736-BAC6-58DFCF2517EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
