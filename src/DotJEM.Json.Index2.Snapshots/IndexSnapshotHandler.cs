@@ -40,7 +40,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             commit = sdp.Snapshot();
             Directory dir = commit.Directory;
 
-            ISnapshot snapshot = storage.Open(commit);
+            ISnapshot snapshot = storage.CreateSnapshot(commit);
             using ISnapshotWriter snapshotWriter = snapshot.OpenWriter();
             foreach (string fileName in commit.FileNames)
                 await snapshotWriter.WriteFileAsync(fileName, dir);

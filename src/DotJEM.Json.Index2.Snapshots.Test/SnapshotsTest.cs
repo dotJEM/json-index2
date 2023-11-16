@@ -61,7 +61,7 @@ public class FakeSnapshotStorage : ISnapshotStorage
 
     public IReadOnlyCollection<ISnapshot> Snapshots => new List<ISnapshot> { LastCreated };
 
-    public ISnapshot Open(IndexCommit commit)
+    public ISnapshot CreateSnapshot(IndexCommit commit)
     {
         return LastCreated = new FakeSnapshot(commit.Generation);
 

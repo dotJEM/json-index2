@@ -16,7 +16,7 @@ public class ZipSnapshotStorage : ISnapshotStorage
         this.path = path;
     }
      
-    public ISnapshot Open(IndexCommit commit)
+    public ISnapshot CreateSnapshot(IndexCommit commit)
     {
         string snapshotPath = Path.Combine(path, $"{commit.Generation:x8}.zip");
         ZipFileSnapshot snapshot = new ZipFileSnapshot(snapshotPath);

@@ -7,5 +7,5 @@ public interface ISnapshotStorage
 {
     IReadOnlyCollection<ISnapshot> Snapshots { get; }
 
-    ISnapshot Open(IndexCommit commit);
+    ISnapshot CreateSnapshot(IndexCommit commit);
 }
