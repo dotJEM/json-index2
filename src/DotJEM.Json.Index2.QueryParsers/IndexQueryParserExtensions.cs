@@ -14,21 +14,21 @@ public static class IndexQueryParserExtensions
 
     public static ISearch Search(this IJsonIndexSearcher self, string query)
     {
-        ILuceneQueryParser parser = self.Index.ResolveParser();
+        ILuceneQueryParser parser = self.Index.Configuration.ResolveParser();
         LuceneQueryInfo queryInfo = parser.Parse(query);
         return self.Search(queryInfo.Query).OrderBy(queryInfo.Sort);
     }
 
     public static ISearch Search(this IJsonIndex self, string query)
     {
-        ILuceneQueryParser parser = self.ResolveParser();
+        ILuceneQueryParser parser = self.Configuration.ResolveParser();
         LuceneQueryInfo queryInfo = parser.Parse(query);
         return self.CreateSearcher().Search(queryInfo.Query).OrderBy(queryInfo.Sort);
     }
 
-    private static ILuceneQueryParser ResolveParser(this IJsonIndex self)
+    private static ILuceneQueryParser ResolveParser(this IJsonIndexConfiguration self)
     {
-        return self.Configuration.Get<ILuceneQueryParser>() ?? throw new Exception("Query parser not configured.");
+        return self.Get<ILuceneQueryParser>() ?? throw new Exception("Query parser not configured.");
     }
 
 }

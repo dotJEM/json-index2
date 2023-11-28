@@ -15,12 +15,8 @@ using Lucene.Net.Util;
 
 namespace DotJEM.Json.Index2;
 
-public interface IJsonIndexSearcherProvider
-{
-    IJsonIndexSearcher CreateSearcher();
-}
 
-public interface IJsonIndex : IJsonIndexSearcherProvider
+public interface IJsonIndex 
 {
     IInfoStream InfoStream { get; }
     IJsonIndexStorageManager Storage { get; }
@@ -28,6 +24,7 @@ public interface IJsonIndex : IJsonIndexSearcherProvider
     IIndexWriterManager WriterManager { get; }
     IIndexSearcherManager SearcherManager { get; }
     IJsonIndexWriter CreateWriter();
+    IJsonIndexSearcher CreateSearcher();
 
     void Close();
 }

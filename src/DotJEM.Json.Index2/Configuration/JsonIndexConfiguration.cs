@@ -33,7 +33,7 @@ public class JsonIndexConfiguration : IJsonIndexConfiguration
         Serializer = new GZipJsonDocumentSerialier();
     }
 
-    internal JsonIndexConfiguration(LuceneVersion version, IEnumerable<ServiceDescriptor> services)
+    public JsonIndexConfiguration(LuceneVersion version, IEnumerable<ServiceDescriptor> services)
     {
         Services = new ServiceCollection(this, services);
         Version = version;
