@@ -155,6 +155,11 @@ public class FakeSnapshot : ISnapshot
         return new FakeSnapshotWriter(this);
     }
 
+    public void Delete()
+    {
+        throw new NotImplementedException();
+    }
+
     public void Dispose()
     {
         // TODO release managed resources here

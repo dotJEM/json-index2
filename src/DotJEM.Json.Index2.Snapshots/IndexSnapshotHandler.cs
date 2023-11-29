@@ -17,6 +17,7 @@ public interface ISnapshot
     long Generation { get; }
     ISnapshotReader OpenReader();
     ISnapshotWriter OpenWriter();
+    void Delete();
 }
 
 public interface IIndexSnapshotHandler

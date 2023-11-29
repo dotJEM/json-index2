@@ -12,7 +12,6 @@ public class ZipFileSnapshot : ISnapshot
     public ISnapshotReader OpenReader() => new ZipSnapshotReader(this);
 
     public ISnapshotWriter OpenWriter() => new ZipSnapshotWriter(this);
-
     public ZipFileSnapshot(string path)
         : this(path, long.Parse(Path.GetFileNameWithoutExtension(path), NumberStyles.AllowHexSpecifier))
     {
@@ -23,4 +22,10 @@ public class ZipFileSnapshot : ISnapshot
         FilePath = path;
         Generation = generation;
     }
+
+    public void Delete()
+    {
+        File.Delete(FilePath);
+    }
+
 }
