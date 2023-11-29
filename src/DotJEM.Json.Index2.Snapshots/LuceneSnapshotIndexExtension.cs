@@ -6,16 +6,16 @@ namespace DotJEM.Json.Index2.Snapshots;
 
 public static class LuceneSnapshotIndexExtension
 {
-    public static async Task<ISnapshot> TakeSnapshotAsync(this IJsonIndex self, ISnapshotStorage storage, bool leaveOpen = false)
+    public static async Task<ISnapshot> TakeSnapshotAsync(this IJsonIndex self, ISnapshotStorage storage)
     {
         IIndexSnapshotHandler handler = self.ResolveSnapshotHandler();
-        return await handler.TakeSnapshotAsync(self, storage, leaveOpen);
+        return await handler.TakeSnapshotAsync(self, storage);
     }
 
-    public static async Task<ISnapshot> RestoreSnapshotAsync(this IJsonIndex self, ISnapshot snapshot, bool leaveOpen = false)
+    public static async Task<ISnapshot> RestoreSnapshotAsync(this IJsonIndex self, ISnapshot snapshot)
     {
         IIndexSnapshotHandler handler = self.ResolveSnapshotHandler();
-        return await handler.RestoreSnapshotAsync(self, snapshot, leaveOpen);
+        return await handler.RestoreSnapshotAsync(self, snapshot);
     }
 
     public static IJsonIndexBuilder WithSnapshoting(this IJsonIndexBuilder self)

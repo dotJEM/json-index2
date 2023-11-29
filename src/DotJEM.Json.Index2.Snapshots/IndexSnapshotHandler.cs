@@ -12,7 +12,7 @@ using Directory = Lucene.Net.Store.Directory;
 
 namespace DotJEM.Json.Index2.Snapshots;
 
-public interface ISnapshot : IDisposable
+public interface ISnapshot
 {
     long Generation { get; }
     ISnapshotReader OpenReader();
@@ -21,13 +21,14 @@ public interface ISnapshot : IDisposable
 
 public interface IIndexSnapshotHandler
 {
-    Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage, bool leaveOpen = false);
-    Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot source, bool leaveOpen = false);
+    Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage);
+    Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot source);
 }
 
 public class IndexSnapshotHandler : IIndexSnapshotHandler
 {
-    public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage, bool leaveOpen = false)
+  
+    public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage)
     {
         IndexWriter writer = index.WriterManager.Writer;
         SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy;
@@ -41,14 +42,9 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             Directory dir = commit.Directory;
 
             ISnapshot snapshot = storage.CreateSnapshot(commit);
-            ISnapshotWriter snapshotWriter = snapshot.OpenWriter();
+            using ISnapshotWriter snapshotWriter = snapshot.OpenWriter();
             foreach (string fileName in commit.FileNames)
                 await snapshotWriter.WriteFileAsync(fileName, dir);
-            
-            if (leaveOpen)
-                return snapshot;
-
-            snapshot.Dispose();
             return snapshot;
         }
         finally
@@ -60,7 +56,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         }
     }
 
-    public async Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot snapshot, bool leaveOpen = false)
+    public async Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot snapshot)
     {
         index.Storage.Delete();
         Directory dir = index.Storage.Directory;
