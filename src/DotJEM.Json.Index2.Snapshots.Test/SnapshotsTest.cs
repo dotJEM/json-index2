@@ -73,20 +73,19 @@ public class FakeSnapshotWriter : ISnapshotWriter
     private readonly FakeSnapshot snapshot;
 
     public ISnapshot Snapshot => snapshot;
-
     public FakeSnapshotWriter(FakeSnapshot snapshot)
     {
         this.snapshot = snapshot;
     }
 
-    public async Task WriteFileAsync(string fileName, Directory dir)
+    public async Task WriteFileAsync(string fileName, Stream stream)
     {
-        IndexInputStream? stream = dir.OpenInputStream(fileName, IOContext.READ_ONCE);
-        FakeFile file = new FakeFile(stream.FileName);
+        FakeFile file = new FakeFile(fileName);
         await stream.CopyToAsync(file.Stream);
         file.Stream.Flush();
         snapshot.Files.Add(file);
     }
+
 
     public class FakeFile : ISnapshotFile
     {
