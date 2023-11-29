@@ -10,8 +10,8 @@ namespace DotJEM.Json.Index2.Snapshots.Zip;
 public class ZipSnapshotReader : Disposable, ISnapshotReader
 {
     private readonly ZipArchive archive;
-    public ISnapshot Snapshot { get; }
-        
+    private readonly ZipFileSnapshot snapshot;
+
     public ZipSnapshotReader(string path)
         :this(new ZipFileSnapshot(path))
     {
@@ -19,7 +19,7 @@ public class ZipSnapshotReader : Disposable, ISnapshotReader
 
     public ZipSnapshotReader(ZipFileSnapshot snapshot)
     {
-        this.Snapshot = snapshot;
+        this.snapshot = snapshot;
         this.archive = ZipFile.Open(snapshot.FilePath, ZipArchiveMode.Read);
     }
 
@@ -29,12 +29,10 @@ public class ZipSnapshotReader : Disposable, ISnapshotReader
         return archive.Entries.Select(entry => new SnapshotFile(entry.Name, entry.Open));
     }
 
-
     protected override void Dispose(bool disposing)
     {
         if (disposing)
             archive.Dispose();
         base.Dispose(disposing);
     }
-
 }
