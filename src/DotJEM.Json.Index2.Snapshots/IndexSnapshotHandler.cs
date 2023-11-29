@@ -90,7 +90,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         segmentsSourceStream.Dispose();
         dir.Sync(new [] { segmentsFile.Name });
 
-        SegmentInfos.WriteSegmentsGen(dir, reader.Snapshot.Generation);
+        SegmentInfos.WriteSegmentsGen(dir, snapshot.Generation);
 
         //NOTE: (jmd 2020-09-30) Not quite sure what this does at this time, but the Lucene Replicator does it so better keep it for now.
         IndexCommit last = DirectoryReader.ListCommits(dir).Last();
@@ -100,6 +100,6 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             commitFiles.Add(IndexFileNames.SEGMENTS_GEN);
         }
         index.WriterManager.Close();
-        return reader.Snapshot;
+        return snapshot;
     }
 }
