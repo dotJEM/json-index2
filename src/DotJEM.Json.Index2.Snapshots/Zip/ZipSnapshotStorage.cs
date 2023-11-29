@@ -21,7 +21,7 @@ public class ZipSnapshotStorage : ISnapshotStorage
         return snapshot;
     }
 
-    public IEnumerable<ISnapshot> loadSnapshots()
+    public IEnumerable<ISnapshot> LoadSnapshots()
     {
         return Directory.GetFiles(path, "*.zip")
             .Select(file => new ZipFileSnapshot(file))

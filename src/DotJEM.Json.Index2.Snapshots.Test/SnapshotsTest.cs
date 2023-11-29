@@ -65,7 +65,7 @@ public class FakeSnapshotStorage : ISnapshotStorage
 
     }
 
-    public IEnumerable<ISnapshot> loadSnapshots() => Enumerable.Repeat(LastCreated, 1);
+    public IEnumerable<ISnapshot> LoadSnapshots() => Enumerable.Repeat(LastCreated, 1);
 }
 
 public class FakeSnapshotWriter : ISnapshotWriter
