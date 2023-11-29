@@ -5,7 +5,6 @@ namespace DotJEM.Json.Index2.Snapshots;
 
 public interface ISnapshotStorage
 {
-    IReadOnlyCollection<ISnapshot> Snapshots { get; }
-
     ISnapshot CreateSnapshot(IndexCommit commit);
+    IEnumerable<ISnapshot> loadSnapshots();
 }

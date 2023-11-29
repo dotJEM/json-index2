@@ -4,7 +4,7 @@ namespace DotJEM.Json.Index2.Util;
 
 public class Disposable : IDisposable
 {
-    private bool disposed;
+    protected bool disposed;
 
     public void Dispose()
     {
@@ -14,13 +14,16 @@ public class Disposable : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposed)
-            return;
         disposed = true;
     }
 
     ~Disposable()
     {
         Dispose(false);
+    }
+
+    protected void EnsureNotDisposed()
+    {
+        if(disposed) throw new ObjectDisposedException(GetType().FullName);
     }
 }

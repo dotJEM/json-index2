@@ -19,8 +19,8 @@ public class LuceneIndexContextTest
         builder
             .ByDefault(x => x
                 .UsingMemmoryStorage()
-                .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
-                .WithFieldResolver(new FieldResolver("uuid", "type")));
+                .UsingAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
+                .UsingFieldResolver(new FieldResolver("uuid", "type")));
         //builder
         //    .For("IndexName", x => x
         //        .UsingMemmoryStorage()

@@ -7,13 +7,8 @@ using System.Xml.Linq;
 using DotJEM.Json.Index2.Configuration;
 using DotJEM.Json.Index2.Contexts.Searching;
 using DotJEM.Json.Index2.Contexts.Storage;
-using DotJEM.Json.Index2.Documents;
-using DotJEM.Json.Index2.Documents.Fields;
-using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.Json.Index2.Searching;
-using DotJEM.Json.Index2.Serialization;
 using DotJEM.Json.Index2.Storage;
-using Lucene.Net.Analysis;
 using Lucene.Net.Util;
 
 namespace DotJEM.Json.Index2.Contexts;
@@ -168,60 +163,4 @@ public class JsonIndexBuilderForContexts : IJsonIndexBuilderForContexts
         return new IndexGroupConfiguration(storageProviderFactory, new JsonIndexConfiguration(LuceneVersion.LUCENE_48, factories
             .Select(pair => new ServiceDescriptor(pair.Key, pair.Value))));
     }
-}
-
-public interface IStorageProviderFactory
-{
-    IIndexStorageProvider Create(string indexName);
-}
-
-public class RamStorageProviderFactory : IStorageProviderFactory
-{
-    private readonly IIndexStorageProvider provider = new RamIndexStorageProvider();
-
-    public IIndexStorageProvider Create(string indexName) => provider;
-}
-
-
-public class SimpleFsStorageProviderFactory : IStorageProviderFactory
-{
-    private readonly string root;
-
-    public SimpleFsStorageProviderFactory(string root)
-    {
-        this.root = root;
-    }
-
-    public IIndexStorageProvider Create(string indexName) => new SimpleFsIndexStorageProvider(Path.Combine(root, indexName));
-}
-
-
-public static class JsonIndexBuilderForContextsExt
-{
-    public static IJsonIndexBuilderForContexts UsingSimpleFileStorage(this IJsonIndexBuilderForContexts self, string path)
-        => self.UsingStorageProviderFactory(new SimpleFsStorageProviderFactory(path));
-
-    public static IJsonIndexBuilderForContexts UsingMemmoryStorage(this IJsonIndexBuilderForContexts self)
-        => self.UsingStorageProviderFactory(new RamStorageProviderFactory());
-
-    public static IJsonIndexBuilderForContexts WithAnalyzer(this IJsonIndexBuilderForContexts self, Func<IJsonIndexConfiguration, Analyzer> analyzerProvider)
-        => self.WithService(analyzerProvider);
-    public static IJsonIndexBuilderForContexts WithFieldResolver(this IJsonIndexBuilderForContexts self, IFieldResolver resolver)
-        => self.WithService(resolver);
-    public static IJsonIndexBuilderForContexts WithFieldInformationManager(this IJsonIndexBuilderForContexts self, Func<IJsonIndexConfiguration, IFieldInformationManager> managerProvider)
-        => self.WithService(managerProvider);
-    public static IJsonIndexBuilderForContexts WithDocumentFactory(this IJsonIndexBuilderForContexts self, Func<IJsonIndexConfiguration, ILuceneDocumentFactory> factoryProvider)
-        => self.WithService(factoryProvider);
-    public static IJsonIndexBuilderForContexts WithSerializer(this IJsonIndexBuilderForContexts self, IJsonDocumentSerializer serializer)
-        => self.WithService(serializer);
-
-
-    public static IJsonIndexBuilderForContexts WithService<TService>(this IJsonIndexBuilderForContexts self, TService impl)
-        => self.WithService(_ => impl);
-    public static IJsonIndexBuilderForContexts WithService<TService>(this IJsonIndexBuilderForContexts self, Func<IJsonIndexConfiguration, TService> factory)
-        => self.WithService(true, factory);
-    public static IJsonIndexBuilderForContexts TryWithService<TService>(this IJsonIndexBuilderForContexts self, TService impl)
-        => self.TryWithService(_ => impl);
-    public static IJsonIndexBuilderForContexts TryWithService<TService>(this IJsonIndexBuilderForContexts self, Func<IJsonIndexConfiguration, TService> factory)
-        => self.WithService(false, factory);
 }

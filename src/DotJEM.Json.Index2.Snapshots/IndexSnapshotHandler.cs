@@ -5,29 +5,29 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Snapshots.Streams;
+using DotJEM.Json.Index2.Snapshots.Zip;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
 using Directory = Lucene.Net.Store.Directory;
 
 namespace DotJEM.Json.Index2.Snapshots;
 
-public interface ISnapshot
+public interface ISnapshot : IDisposable
 {
     long Generation { get; }
-
     ISnapshotReader OpenReader();
     ISnapshotWriter OpenWriter();
 }
 
 public interface IIndexSnapshotHandler
 {
-    Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage);
-    Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot source);
+    Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage, bool leaveOpen = false);
+    Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot source, bool leaveOpen = false);
 }
 
 public class IndexSnapshotHandler : IIndexSnapshotHandler
 {
-    public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage)
+    public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage, bool leaveOpen = false)
     {
         IndexWriter writer = index.WriterManager.Writer;
         SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy;
@@ -41,10 +41,15 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             Directory dir = commit.Directory;
 
             ISnapshot snapshot = storage.CreateSnapshot(commit);
-            using ISnapshotWriter snapshotWriter = snapshot.OpenWriter();
+            ISnapshotWriter snapshotWriter = snapshot.OpenWriter();
             foreach (string fileName in commit.FileNames)
                 await snapshotWriter.WriteFileAsync(fileName, dir);
-            return snapshotWriter.Snapshot;
+            
+            if (leaveOpen)
+                return snapshot;
+
+            snapshot.Dispose();
+            return snapshot;
         }
         finally
         {
@@ -55,7 +60,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         }
     }
 
-    public async Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot snapshot)
+    public async Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot snapshot, bool leaveOpen = false)
     {
         index.Storage.Delete();
         Directory dir = index.Storage.Directory;

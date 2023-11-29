@@ -9,8 +9,6 @@ public class ZipSnapshotStorage : ISnapshotStorage
 {
     private readonly string path;
 
-    public IReadOnlyCollection<ISnapshot> Snapshots => InternalGetSnapshots();
-
     public ZipSnapshotStorage(string path)
     {
         this.path = path;
@@ -23,11 +21,11 @@ public class ZipSnapshotStorage : ISnapshotStorage
         return snapshot;
     }
 
-    private IReadOnlyCollection<ISnapshot> InternalGetSnapshots()
+    public IEnumerable<ISnapshot> loadSnapshots()
     {
         return Directory.GetFiles(path, "*.zip")
             .Select(file => new ZipFileSnapshot(file))
-            .OrderByDescending(f => f.Generation)
-            .ToList();
+            .OrderByDescending(f => f.Generation);
     }
+
 }

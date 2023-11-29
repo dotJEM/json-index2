@@ -16,13 +16,19 @@ namespace DotJEM.Json.Index2.Snapshots.Zip
         public ISnapshot Snapshot { get; }
 
         public ZipSnapshotWriter(string path)
+            : this(new ZipFileSnapshot(path))
         {
-            this.archive = ZipFile.Open(path, ZipArchiveMode.Create);
-            this.Snapshot = new ZipFileSnapshot(path);
+        }
+
+        public ZipSnapshotWriter(ZipFileSnapshot snapshot)
+        {
+            this.archive = ZipFile.Open(snapshot.FilePath, ZipArchiveMode.Create);
+            this.Snapshot = snapshot;
         }
 
         public async Task WriteFileAsync(string fileName, Directory dir)
         {
+            EnsureNotDisposed();
             using IndexInputStream source = dir.OpenInputStream(fileName, IOContext.READ_ONCE);
             using Stream target = archive.CreateEntry(fileName).Open();
             await source.CopyToAsync(target);

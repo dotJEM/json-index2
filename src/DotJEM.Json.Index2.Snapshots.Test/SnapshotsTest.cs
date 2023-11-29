@@ -59,13 +59,13 @@ public class FakeSnapshotStorage : ISnapshotStorage
 
     public ISnapshot LastCreated { get; private set; }
 
-    public IReadOnlyCollection<ISnapshot> Snapshots => new List<ISnapshot> { LastCreated };
-
     public ISnapshot CreateSnapshot(IndexCommit commit)
     {
         return LastCreated = new FakeSnapshot(commit.Generation);
 
     }
+
+    public IEnumerable<ISnapshot> loadSnapshots() => Enumerable.Repeat(LastCreated, 1);
 }
 
 public class FakeSnapshotWriter : ISnapshotWriter
@@ -156,4 +156,8 @@ public class FakeSnapshot : ISnapshot
         return new FakeSnapshotWriter(this);
     }
 
+    public void Dispose()
+    {
+        // TODO release managed resources here
+    }
 }
