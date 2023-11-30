@@ -18,7 +18,7 @@ public static class LuceneSnapshotIndexExtension
         return await handler.RestoreSnapshotAsync(self, snapshot);
     }
 
-    public static async Task<bool> RestoreSnapshotFromAsync(this IJsonIndex self, ISnapshotStorage storage)
+    public static async Task<ISnapshot> RestoreSnapshotFromAsync(this IJsonIndex self, ISnapshotStorage storage)
     {
         IIndexSnapshotHandler handler = self.ResolveSnapshotHandler();
         return await handler.RestoreSnapshotFromAsync(self, storage);

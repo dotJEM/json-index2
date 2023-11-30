@@ -25,7 +25,7 @@ public interface IIndexSnapshotHandler
 {
     Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage);
     Task<bool> RestoreSnapshotAsync(IJsonIndex index, ISnapshot source);
-    Task<bool> RestoreSnapshotFromAsync(IJsonIndex index, ISnapshotStorage storage);
+    Task<ISnapshot> RestoreSnapshotFromAsync(IJsonIndex index, ISnapshotStorage storage);
 }
 
 public class IndexSnapshotHandler : IIndexSnapshotHandler
@@ -106,7 +106,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         //return true;
     }
 
-    public async Task<bool> RestoreSnapshotFromAsync(IJsonIndex index, ISnapshotStorage storage)
+    public async Task<ISnapshot> RestoreSnapshotFromAsync(IJsonIndex index, ISnapshotStorage storage)
     {
         index.Storage.Delete();
         Directory dir = index.Storage.Directory;
@@ -115,7 +115,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             try
             {
                 if(await UnpackSnapshotAsync(index, snapshot, dir))
-                    return true;
+                    return snapshot;
             }
             catch (Exception e)
             {
@@ -124,7 +124,8 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
                 index.Storage.Delete();
             }
         }
-        return false;
+
+        return null;
     }
 
     private static async Task<bool> UnpackSnapshotAsync(IJsonIndex index, ISnapshot snapshot, Directory dir)
