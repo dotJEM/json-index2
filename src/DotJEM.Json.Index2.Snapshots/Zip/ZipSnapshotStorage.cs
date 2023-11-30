@@ -23,7 +23,7 @@ public class ZipSnapshotStorage : ISnapshotStorage
 
     public IEnumerable<ISnapshot> LoadSnapshots()
     {
-        return Directory.GetFiles(path, "*.zip")
+        return Directory.EnumerateFiles(path, "*.zip")
             .Select(file => new ZipFileSnapshot(file))
             .OrderByDescending(f => f.Generation);
     }

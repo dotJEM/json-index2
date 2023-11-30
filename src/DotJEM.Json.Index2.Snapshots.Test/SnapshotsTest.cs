@@ -48,7 +48,7 @@ public class SnapshotsTest
         Assert.That(index.Search(new MatchAllDocsQuery()).Count(), Is.EqualTo(0));
 
         ISnapshot snapshot = storage.LastCreated;
-        Assert.That(await index.RestoreSnapshotAsync(snapshot), Is.Not.Null);
+        Assert.That(await index.RestoreSnapshotAsync(snapshot), Is.True);
 
         Assert.That(index.Search(new MatchAllDocsQuery()).Count(), Is.EqualTo(9));
     }
@@ -158,6 +158,11 @@ public class FakeSnapshot : ISnapshot
     public void Delete()
     {
         throw new NotImplementedException();
+    }
+
+    public bool Verify()
+    {
+        return true;
     }
 
     public void Dispose()

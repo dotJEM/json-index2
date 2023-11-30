@@ -18,17 +18,18 @@ public interface ISnapshot
     ISnapshotReader OpenReader();
     ISnapshotWriter OpenWriter();
     void Delete();
+    bool Verify();
 }
 
 public interface IIndexSnapshotHandler
 {
     Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage);
-    Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot source);
+    Task<bool> RestoreSnapshotAsync(IJsonIndex index, ISnapshot source);
+    Task<bool> RestoreSnapshotFromAsync(IJsonIndex index, ISnapshotStorage storage);
 }
 
 public class IndexSnapshotHandler : IIndexSnapshotHandler
 {
-  
     public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage)
     {
         IndexWriter writer = index.WriterManager.Writer;
@@ -57,38 +58,106 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         }
     }
 
-    public async Task<ISnapshot> RestoreSnapshotAsync(IJsonIndex index, ISnapshot snapshot)
+    public async Task<bool> RestoreSnapshotAsync(IJsonIndex index, ISnapshot snapshot)
     {
         index.Storage.Delete();
         Directory dir = index.Storage.Directory;
-        using ISnapshotReader reader = snapshot.OpenReader();
+        return await UnpackSnapshotAsync(index, snapshot, dir);
+        
+        //using ISnapshotReader reader = snapshot.OpenReader();
 
-        ISnapshotFile segmentsFile = null;
-        List<string> files = new();
-        foreach (ISnapshotFile file in reader.ReadFiles())
+        //ISnapshotFile segmentsFile = null;
+        //List<string> files = new();
+        //foreach (ISnapshotFile file in reader.ReadFiles())
+        //{
+        //    if (Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"))
+        //    {
+        //        segmentsFile = file;
+        //        continue;
+        //    }
+
+        //    using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
+        //    using Stream sourceStream = file.Open();
+        //    await sourceStream.CopyToAsync(output);
+        //    files.Add(file.Name);
+        //}
+        //dir.Sync(files);
+
+        //if (segmentsFile == null)
+        //    throw new ArgumentException("Snapshot did not contain any segments file.", nameof(snapshot));
+
+        //using IndexOutputStream segOutput = dir.CreateOutputStream(segmentsFile.Name, IOContext.DEFAULT);
+        //using Stream segmentsSourceStream = segmentsFile.Open();
+        //await segmentsSourceStream.CopyToAsync(segOutput);
+        //segOutput.Dispose();
+        //segmentsSourceStream.Dispose();
+        //dir.Sync(new [] { segmentsFile.Name });
+
+        //SegmentInfos.WriteSegmentsGen(dir, snapshot.Generation);
+
+        ////NOTE: (jmd 2020-09-30) Not quite sure what this does at this time, but the Lucene Replicator does it so better keep it for now.
+        //IndexCommit last = DirectoryReader.ListCommits(dir).Last();
+        //if (last != null)
+        //{
+        //    ISet<string> commitFiles = new HashSet<string>(last.FileNames);
+        //    commitFiles.Add(IndexFileNames.SEGMENTS_GEN);
+        //}
+        //index.WriterManager.Close();
+        //return true;
+    }
+
+    public async Task<bool> RestoreSnapshotFromAsync(IJsonIndex index, ISnapshotStorage storage)
+    {
+        index.Storage.Delete();
+        Directory dir = index.Storage.Directory;
+        foreach (ISnapshot snapshot in storage.LoadSnapshots())
         {
-            if (Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"))
+            try
             {
-                segmentsFile = file;
-                continue;
+                if(await UnpackSnapshotAsync(index, snapshot, dir))
+                    return true;
             }
+            catch (Exception e)
+            {
+                //Note: if we get an exception the process of restoring has potentially already written files, otherwise we would
+                //      have gotten false sooner.
+                index.Storage.Delete();
+            }
+        }
+        return false;
+    }
 
+    private static async Task<bool> UnpackSnapshotAsync(IJsonIndex index, ISnapshot snapshot, Directory dir)
+    {
+        if(!snapshot.Verify())
+            return false;
+
+        using ISnapshotReader reader = snapshot.OpenReader();
+        List<ISnapshotFile> snapshotFiles = reader.ReadFiles().ToList();
+
+        ISnapshotFile segmentsFile = snapshotFiles
+            .FirstOrDefault(file => Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"));
+
+        if (segmentsFile == null)
+            return false;
+
+        List<string> files = new();
+        foreach (ISnapshotFile file in snapshotFiles.Except(new[] { segmentsFile }))
+        {
             using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
             using Stream sourceStream = file.Open();
             await sourceStream.CopyToAsync(output);
             files.Add(file.Name);
         }
-        dir.Sync(files);
 
-        if (segmentsFile == null)
-            throw new ArgumentException();
+        dir.Sync(files);
 
         using IndexOutputStream segOutput = dir.CreateOutputStream(segmentsFile.Name, IOContext.DEFAULT);
         using Stream segmentsSourceStream = segmentsFile.Open();
         await segmentsSourceStream.CopyToAsync(segOutput);
         segOutput.Dispose();
         segmentsSourceStream.Dispose();
-        dir.Sync(new [] { segmentsFile.Name });
+        dir.Sync(new[] { segmentsFile.Name });
 
         SegmentInfos.WriteSegmentsGen(dir, snapshot.Generation);
 
@@ -100,6 +169,6 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             commitFiles.Add(IndexFileNames.SEGMENTS_GEN);
         }
         index.WriterManager.Close();
-        return snapshot;
+        return true;
     }
 }
