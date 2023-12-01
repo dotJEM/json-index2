@@ -30,6 +30,11 @@ public interface IIndexSnapshotHandler
 
 public class IndexSnapshotHandler : IIndexSnapshotHandler
 {
+    //public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshot snapshot)
+    //{
+
+    //}
+
     public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage)
     {
         IndexWriter writer = index.WriterManager.Writer;
@@ -57,6 +62,9 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             }
         }
     }
+
+
+
 
     public async Task<bool> RestoreSnapshotAsync(IJsonIndex index, ISnapshot snapshot)
     {
@@ -142,14 +150,20 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         if (segmentsFile == null)
             return false;
 
-        List<string> files = new();
-        foreach (ISnapshotFile file in snapshotFiles.Except(new[] { segmentsFile }))
+        string[] files = await Task.WhenAll(snapshotFiles.Except(new[] { segmentsFile }).Select(async file =>
         {
             using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
             using Stream sourceStream = file.Open();
             await sourceStream.CopyToAsync(output);
-            files.Add(file.Name);
-        }
+            return file.Name;
+        }));
+        //foreach (ISnapshotFile file in snapshotFiles.Except(new[] { segmentsFile }))
+        //{
+        //    using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
+        //    using Stream sourceStream = file.Open();
+        //    await sourceStream.CopyToAsync(output);
+        //    files.Add(file.Name);
+        //}
 
         dir.Sync(files);
 

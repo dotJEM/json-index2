@@ -10,7 +10,8 @@ namespace DotJEM.Json.Index2.Snapshots;
 public interface ISnapshotWriter : IDisposable
 {
     ISnapshot Snapshot { get; }
-    Task WriteFileAsync(string fileName, Stream stream);
+
+    Stream OpenOutput(string name);
 }
 
 public static class SnapshotWriterExtensions
@@ -18,6 +19,12 @@ public static class SnapshotWriterExtensions
     public static async Task WriteFileAsync(this ISnapshotWriter writer, string fileName, Directory dir)
     {
         using IndexInputStream stream = dir.OpenInputStream(fileName, IOContext.READ_ONCE);
-        await writer.WriteFileAsync(fileName, stream);
+        await writer.CopyFileAsync(fileName, stream);
+    }
+    
+    public static async Task CopyFileAsync(this ISnapshotWriter writer, string fileName, Stream stream)
+    {
+        using Stream target = writer.OpenOutput(fileName);
+        await stream.CopyToAsync(target);
     }
 }

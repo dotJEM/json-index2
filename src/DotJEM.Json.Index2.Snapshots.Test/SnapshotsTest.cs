@@ -71,21 +71,18 @@ public class FakeSnapshotStorage : ISnapshotStorage
 public class FakeSnapshotWriter : ISnapshotWriter
 {
     private readonly FakeSnapshot snapshot;
-
     public ISnapshot Snapshot => snapshot;
     public FakeSnapshotWriter(FakeSnapshot snapshot)
     {
         this.snapshot = snapshot;
     }
 
-    public async Task WriteFileAsync(string fileName, Stream stream)
+    public Stream OpenOutput(string name)
     {
-        FakeFile file = new FakeFile(fileName);
-        await stream.CopyToAsync(file.Stream);
-        file.Stream.Flush();
+        FakeFile file = new FakeFile(name);
         snapshot.Files.Add(file);
+        return file.Stream;
     }
-
 
     public class FakeFile : ISnapshotFile
     {

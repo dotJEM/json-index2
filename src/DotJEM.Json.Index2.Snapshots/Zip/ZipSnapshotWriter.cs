@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.IO.Compression;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Util;
 
@@ -22,11 +23,10 @@ public class ZipSnapshotWriter : Disposable, ISnapshotWriter
         this.Snapshot = snapshot;
     }
 
-    public async Task WriteFileAsync(string fileName, Stream stream)
+    public Stream OpenOutput(string name)
     {
         EnsureNotDisposed();
-        using Stream target = archive.CreateEntry(fileName).Open();
-        await stream.CopyToAsync(target);
+        return archive.CreateEntry(name).Open();
     }
 
     protected override void Dispose(bool disposing)

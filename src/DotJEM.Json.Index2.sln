@@ -27,7 +27,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index2.Contexts
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index2.QueryParsers.Test", "DotJEM.Json.Index2.QueryParsers.Test\DotJEM.Json.Index2.QueryParsers.Test.csproj", "{10159BF9-8B8C-4BE1-8DB8-321839C6C267}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotJEM.Json.Index2.Snapshots.Test", "DotJEM.Json.Index2.Snapshots.Test\DotJEM.Json.Index2.Snapshots.Test.csproj", "{36286BC4-5473-4736-BAC6-58DFCF2517EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotJEM.Json.Index2.Snapshots.Test", "DotJEM.Json.Index2.Snapshots.Test\DotJEM.Json.Index2.Snapshots.Test.csproj", "{36286BC4-5473-4736-BAC6-58DFCF2517EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotJEM.Index2.Management", "DotJEM.Index2.Management\DotJEM.Index2.Management.csproj", "{D5887ED5-3263-4DB3-B1F8-63096322279B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Stress", "Stress", "{65A5C7D1-9A2B-41A2-B4B3-5761F395E536}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StressTester", "Stress\StressTester\StressTester.csproj", "{8E44834E-DA07-433E-886F-F0684580A733}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,9 +73,20 @@ Global
 		{36286BC4-5473-4736-BAC6-58DFCF2517EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36286BC4-5473-4736-BAC6-58DFCF2517EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36286BC4-5473-4736-BAC6-58DFCF2517EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5887ED5-3263-4DB3-B1F8-63096322279B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5887ED5-3263-4DB3-B1F8-63096322279B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5887ED5-3263-4DB3-B1F8-63096322279B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5887ED5-3263-4DB3-B1F8-63096322279B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E44834E-DA07-433E-886F-F0684580A733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E44834E-DA07-433E-886F-F0684580A733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E44834E-DA07-433E-886F-F0684580A733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E44834E-DA07-433E-886F-F0684580A733}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8E44834E-DA07-433E-886F-F0684580A733} = {65A5C7D1-9A2B-41A2-B4B3-5761F395E536}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7E7928A8-CADD-4F04-A69D-36EFE1A8D27B}
