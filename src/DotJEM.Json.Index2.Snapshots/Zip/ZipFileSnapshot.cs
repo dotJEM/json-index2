@@ -12,9 +12,10 @@ public class ZipFileSnapshot : ISnapshot
     public long Generation { get; }
     public string FilePath { get; }
 
-    public ISnapshotReader OpenReader() => new ZipSnapshotReader(this);
+    public virtual ISnapshotReader OpenReader() => new ZipSnapshotReader(this.FilePath);
 
-    public ISnapshotWriter OpenWriter() => new ZipSnapshotWriter(this);
+    public virtual ISnapshotWriter OpenWriter() => new ZipSnapshotWriter(this.FilePath);
+
     public ZipFileSnapshot(string path)
         : this(path, long.Parse(Path.GetFileNameWithoutExtension(path), NumberStyles.AllowHexSpecifier))
     {
@@ -26,12 +27,12 @@ public class ZipFileSnapshot : ISnapshot
         Generation = generation;
     }
 
-    public void Delete()
+    public virtual void Delete()
     {
         File.Delete(FilePath);
     }
 
-    public bool Verify()
+    public virtual bool Verify()
     {
         try
         {

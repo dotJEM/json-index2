@@ -6,14 +6,14 @@ namespace DotJEM.Index2.Management.Snapshots.Zip.Meta;
 
 public class ZipFileEvent : InfoStreamEvent
 {
-    private readonly ISnapshotFile file;
+    private readonly IIndexFile file;
 
     public FileEventType EventType { get; }
     public FileProgress Progress { get; }
 
     public string FileName => file.Name;
 
-    public ZipFileEvent(Type source, InfoLevel level, ISnapshotFile file, FileEventType eventType, string message, FileProgress progress, string callerMemberName, string callerFilePath, int callerLineNumber)
+    public ZipFileEvent(Type source, InfoLevel level, IIndexFile file, FileEventType eventType, string message, FileProgress progress, string callerMemberName, string callerFilePath, int callerLineNumber)
         : base(source, level, message, callerMemberName, callerFilePath, callerLineNumber)
     {
         this.file = file;

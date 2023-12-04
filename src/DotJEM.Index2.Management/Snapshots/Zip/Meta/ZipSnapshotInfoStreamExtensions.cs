@@ -16,12 +16,12 @@ public static class ZipSnapshotInfoStreamExtensions
     public static void WriteSnapshotCloseEvent<TSource>(this IInfoStream<TSource> self, MetaZipFileSnapshot snapshot, string message, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
         => self.WriteEvent(new ZipSnapshotEvent(typeof(TSource), InfoLevel.INFO, snapshot, FileEventType.CLOSE, message, callerMemberName, callerFilePath, callerLineNumber));
 
-    public static void WriteFileOpenEvent<TSource>(this IInfoStream<TSource> self, ISnapshotFile file, string message, FileProgress progress,[CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
+    public static void WriteFileOpenEvent<TSource>(this IInfoStream<TSource> self, IIndexFile file, string message, FileProgress progress,[CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
         => self.WriteEvent(new ZipFileEvent(typeof(TSource), InfoLevel.INFO, file, FileEventType.OPEN, message,progress, callerMemberName, callerFilePath, callerLineNumber));
 
-    public static void WriteFileCloseEvent<TSource>(this IInfoStream<TSource> self, ISnapshotFile file, string message, FileProgress progress,[CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
+    public static void WriteFileCloseEvent<TSource>(this IInfoStream<TSource> self, IIndexFile file, string message, FileProgress progress,[CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
         => self.WriteEvent(new ZipFileEvent(typeof(TSource), InfoLevel.INFO, file, FileEventType.CLOSE, message,progress, callerMemberName, callerFilePath, callerLineNumber));
-    public static void WriteFileProgressEvent<TSource>(this IInfoStream<TSource> self, ISnapshotFile file, string message, FileProgress progress, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
+    public static void WriteFileProgressEvent<TSource>(this IInfoStream<TSource> self, IIndexFile file, string message, FileProgress progress, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
         => self.WriteEvent(new ZipFileEvent(typeof(TSource), InfoLevel.INFO, file, FileEventType.PROGRESS, message, progress, callerMemberName, callerFilePath, callerLineNumber));
 }
 

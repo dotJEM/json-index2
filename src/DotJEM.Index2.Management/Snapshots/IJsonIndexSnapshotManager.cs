@@ -79,10 +79,9 @@ public class JsonIndexSnapshotManager : IJsonIndexSnapshotManager
             
             index.Commit();
             ISnapshot snapshot = await index.TakeSnapshotAsync(target);
-
-            //using ISnapshotWriter writer = snapshot.OpenWriter();
-            //using JsonTextWriter wr = new JsonTextWriter(new StreamWriter(writer.OpenOutput("metadata.json")));
-            //await json.WriteToAsync(wr);
+            using ISnapshotWriter writer = snapshot.OpenWriter();
+            using JsonTextWriter wr = new JsonTextWriter(new StreamWriter(writer.OpenStream("metadata.json")));
+            await json.WriteToAsync(wr);
 
 
             infoStream.WriteInfo($"Created snapshot");

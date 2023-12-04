@@ -50,8 +50,10 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
 
             ISnapshot snapshot = storage.CreateSnapshot(commit);
             using ISnapshotWriter snapshotWriter = snapshot.OpenWriter();
-            foreach (string fileName in commit.FileNames)
-                await snapshotWriter.WriteFileAsync(fileName, dir);
+            List<IndexFile> files = commit.FileNames
+                .Select(fileName => new IndexFile(fileName, () => dir.OpenInputStream(fileName, IOContext.READ_ONCE)))
+                .ToList();
+            await snapshotWriter.WriteIndexAsync(files);
             return snapshot;
         }
         finally
@@ -74,9 +76,9 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         
         //using ISnapshotReader reader = snapshot.OpenReader();
 
-        //ISnapshotFile segmentsFile = null;
+        //IIndexFile segmentsFile = null;
         //List<string> files = new();
-        //foreach (ISnapshotFile file in reader.ReadFiles())
+        //foreach (IIndexFile file in reader.GetIndexFiles())
         //{
         //    if (Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"))
         //    {
@@ -142,9 +144,9 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             return false;
 
         using ISnapshotReader reader = snapshot.OpenReader();
-        List<ISnapshotFile> snapshotFiles = reader.ReadFiles().ToList();
+        List<IIndexFile> snapshotFiles = reader.GetIndexFiles().ToList();
 
-        ISnapshotFile segmentsFile = snapshotFiles
+        IIndexFile segmentsFile = snapshotFiles
             .FirstOrDefault(file => Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"));
 
         if (segmentsFile == null)
@@ -157,7 +159,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             await sourceStream.CopyToAsync(output);
             return file.Name;
         }));
-        //foreach (ISnapshotFile file in snapshotFiles.Except(new[] { segmentsFile }))
+        //foreach (IIndexFile file in snapshotFiles.Except(new[] { segmentsFile }))
         //{
         //    using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
         //    using Stream sourceStream = file.Open();
