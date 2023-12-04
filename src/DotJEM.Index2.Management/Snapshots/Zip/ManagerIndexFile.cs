@@ -16,11 +16,12 @@ public class ManagerIndexFile : IIndexFile
 
     private readonly ZipArchiveEntry entry;
 
-    public string Name => entry.Name;
+    public string Name { get; init; }
 
     public ManagerIndexFile(ZipArchiveEntry entry)
     {
         this.entry = entry;
+        this.Name = entry.Name.Remove(6);
     }
 
     public Stream Open()

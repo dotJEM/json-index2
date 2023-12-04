@@ -10,19 +10,18 @@ namespace DotJEM.Json.Index2.Snapshots.Zip;
 
 public class ZipSnapshotWriter : Disposable, ISnapshotWriter
 {
-    private readonly ZipArchive archive;
-
+    protected ZipArchive Archive { get; }
 
     public ZipSnapshotWriter(string path)
     {
-        this.archive = ZipFile.Open(path, File.Exists(path)
+        this.Archive = ZipFile.Open(path, File.Exists(path)
             ? ZipArchiveMode.Update : ZipArchiveMode.Create);
     }
 
     public virtual Stream OpenStream(string name)
     {
         EnsureNotDisposed();
-        return archive.CreateEntry(name).Open();
+        return Archive.CreateEntry(name).Open();
     }
 
     public virtual async Task WriteIndexAsync(IReadOnlyCollection<IIndexFile> files)
@@ -31,14 +30,14 @@ public class ZipSnapshotWriter : Disposable, ISnapshotWriter
         foreach (IIndexFile file in files)
         {
             using Stream input = file.Open();
-            using Stream output = archive.CreateEntry($"index/{file.Name}").Open();
+            using Stream output = Archive.CreateEntry($"index/{file.Name}").Open();
             await input.CopyToAsync(output).ConfigureAwait(false);
         }
     }
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing) archive?.Dispose();
+        if (disposing) Archive?.Dispose();
         base.Dispose(disposing);
     }
 }

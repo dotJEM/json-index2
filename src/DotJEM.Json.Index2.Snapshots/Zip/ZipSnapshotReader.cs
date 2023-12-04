@@ -9,35 +9,39 @@ namespace DotJEM.Json.Index2.Snapshots.Zip;
 
 public class ZipSnapshotReader : Disposable, ISnapshotReader
 {
-    private readonly ZipArchive archive;
+    protected ZipArchive Archive { get; }
 
     public IReadOnlyCollection<string> FileNames { get; }
 
     public ZipSnapshotReader(string path)
     {
-        this.archive = ZipFile.Open(path, ZipArchiveMode.Read);
-        this.FileNames = archive.Entries.Select(entry => entry.Name).ToList();
+        this.Archive = ZipFile.Open(path, ZipArchiveMode.Read);
+        this.FileNames = Archive.Entries.Select(entry => entry.Name).ToList();
     }
 
     public virtual Stream OpenStream(string fileName)
     {
         EnsureNotDisposed();
-        ZipArchiveEntry entry = archive.GetEntry(fileName);
+        ZipArchiveEntry entry = Archive.GetEntry(fileName);
         if (entry == null)
             throw new FileNotFoundException("", fileName);
-        return archive.GetEntry(fileName).Open();
+        return Archive.GetEntry(fileName).Open();
     }
 
     public virtual IEnumerable<IIndexFile> GetIndexFiles()
     {
         EnsureNotDisposed();
-        return archive.Entries.Select(entry => new IndexFile(entry.Name, ()=>OpenStream(entry.Name)));
+        return Archive.Entries
+            .Where(entry => entry.Name.StartsWith("index/"))
+            .Select(entry => new IndexFile(entry.Name.Remove(6), ()=>OpenStream(entry.Name)));
+
+
     }
 
     protected override void Dispose(bool disposing)
     {
         if (disposing)
-            archive.Dispose();
+            Archive.Dispose();
         base.Dispose(disposing);
     }
 }

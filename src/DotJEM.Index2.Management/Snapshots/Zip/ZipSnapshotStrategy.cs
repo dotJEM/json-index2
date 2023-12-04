@@ -87,9 +87,6 @@ public class MetaZipFileSnapshot : ZipFileSnapshot
     public IInfoStream InfoStream => infoStream;
 
 
-    public long Generation { get; }
-    public string FilePath { get; }
-
     public override ISnapshotReader OpenReader()
     {
         infoStream.WriteSnapshotOpenEvent(this, "");
@@ -129,7 +126,6 @@ public class MetaZipSnapshotReader : ZipSnapshotReader
     private readonly InfoStream<MetaZipSnapshotReader> infoStream = new();
     public IInfoStream InfoStream => infoStream;
 
-    private readonly ZipArchive archive;
 
     public MetaZipSnapshotReader(string path) : base(path)
     {
@@ -138,9 +134,11 @@ public class MetaZipSnapshotReader : ZipSnapshotReader
     public override IEnumerable<IIndexFile> GetIndexFiles()
     {
         EnsureNotDisposed();
-        return archive.Entries.Select(entry =>
+        return Archive.Entries
+            .Where(entry => entry.Name.StartsWith("index/"))
+            .Select(entry =>
         {
-            ManagerIndexFile file = new (entry);
+            ManagerIndexFile file = new(entry);
             file.InfoStream.Subscribe(infoStream);
             infoStream.WriteFileOpenEvent(file, $"Restoring file {entry.Name}.", new FileProgress(entry.Length, 0));
             return file;
@@ -150,7 +148,7 @@ public class MetaZipSnapshotReader : ZipSnapshotReader
     protected override void Dispose(bool disposing)
     {
         if (disposing)
-            archive.Dispose();
+            Archive.Dispose();
         base.Dispose(disposing);
     }
 }
