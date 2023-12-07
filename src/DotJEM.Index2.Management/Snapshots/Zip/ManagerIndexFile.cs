@@ -21,7 +21,7 @@ public class ManagerIndexFile : IIndexFile
     public ManagerIndexFile(ZipArchiveEntry entry)
     {
         this.entry = entry;
-        this.Name = entry.Name.Remove(6);
+        this.Name = entry.Name;
     }
 
     public Stream Open()

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using DotJEM.Index2.Management.Tracking;
 using DotJEM.ObservableExtensions.InfoStreams;
+using Newtonsoft.Json;
 
 namespace DotJEM.Index2.Management;
 
@@ -28,9 +29,13 @@ public static class IndexManagerInfoStreamExtensions
 
 public record struct StorageIngestState(StorageAreaIngestState[] Areas): ITrackerState
 {
+    [JsonProperty(Order = -10)]
     public DateTime StartTime => Areas.Min(x => x.StartTime);
+    [JsonProperty(Order = -8)]
     public TimeSpan Duration => Areas.Max(x => x.Duration);
+    [JsonProperty(Order = -6)]
     public long IngestedCount => Areas.Sum(x => x.IngestedCount);
+    [JsonProperty(Order = -4)]
     public GenerationInfo Generation => Areas.Select(x => x.Generation).Aggregate((left, right) => left + right);
 
     public override string ToString()
@@ -87,7 +92,7 @@ public record StorageAreaIngestState(
     private const long TeraByte = GigaByte * KiloByte;
     private string FormatBytes(long amount)
     {
-        const int offset = 100;
+        const int offset = 10;
         switch (amount)
         {
             case (< KiloByte * offset):

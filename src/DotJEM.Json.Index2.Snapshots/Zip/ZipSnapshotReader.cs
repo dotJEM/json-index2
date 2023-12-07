@@ -32,10 +32,8 @@ public class ZipSnapshotReader : Disposable, ISnapshotReader
     {
         EnsureNotDisposed();
         return Archive.Entries
-            .Where(entry => entry.Name.StartsWith("index/"))
-            .Select(entry => new IndexFile(entry.Name.Remove(6), ()=>OpenStream(entry.Name)));
-
-
+            .Where(entry => entry.FullName.StartsWith("index/"))
+            .Select(entry => new IndexFile(entry.Name, ()=>OpenStream(entry.FullName)));
     }
 
     protected override void Dispose(bool disposing)

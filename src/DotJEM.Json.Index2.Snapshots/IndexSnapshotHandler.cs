@@ -151,22 +151,15 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
 
         if (segmentsFile == null)
             return false;
-
-        string[] files = await Task.WhenAll(snapshotFiles.Except(new[] { segmentsFile }).Select(async file =>
+        
+        List<string> files = new List<string>();
+        foreach (IIndexFile file in snapshotFiles.Except(new[] { segmentsFile }))
         {
             using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
             using Stream sourceStream = file.Open();
-            await sourceStream.CopyToAsync(output);
-            return file.Name;
-        }));
-        //foreach (IIndexFile file in snapshotFiles.Except(new[] { segmentsFile }))
-        //{
-        //    using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
-        //    using Stream sourceStream = file.Open();
-        //    await sourceStream.CopyToAsync(output);
-        //    files.Add(file.Name);
-        //}
-
+            await sourceStream.CopyToAsync(output).ConfigureAwait(false);
+            files.Add(file.Name);
+        }
         dir.Sync(files);
 
         using IndexOutputStream segOutput = dir.CreateOutputStream(segmentsFile.Name, IOContext.DEFAULT);

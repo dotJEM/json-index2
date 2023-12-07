@@ -10,6 +10,7 @@ namespace DotJEM.Json.Index2.Snapshots.Zip;
 public class ZipFileSnapshot : ISnapshot
 {
     public long Generation { get; }
+    public string FileName { get; }
     public string FilePath { get; }
 
     public virtual ISnapshotReader OpenReader() => new ZipSnapshotReader(this.FilePath);
@@ -25,6 +26,7 @@ public class ZipFileSnapshot : ISnapshot
     {
         FilePath = path;
         Generation = generation;
+        FileName = Path.GetFileName(path);
     }
 
     public virtual void Delete()
@@ -40,9 +42,12 @@ public class ZipFileSnapshot : ISnapshot
             ReadOnlyCollection<ZipArchiveEntry> _ = zipFile.Entries;
             return true;
         }
-        catch (InvalidDataException)
+        catch (InvalidDataException ex)
         {
             return false;
         }
     }
+
+    public override string ToString()
+        => FileName;
 }

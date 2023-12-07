@@ -107,16 +107,35 @@ public class Initialization
     public static Task WhenInitializationComplete(IIngestProgressTracker tracker)
     {
         TaskCompletionSource<bool> completionSource = new ();
-        tracker.ForEachAsync(state => {
-            if(state is not StorageIngestState ingestState)
-                return;
+        tracker.SkipWhile(state =>
+        {
+            if (state is not StorageIngestState ingestState)
+                return true;
 
             JsonSourceEventType[] states = ingestState.Areas
                 .Select(x => x.LastEvent)
                 .ToArray();
-            if (states.All(state => state is JsonSourceEventType.Updated or JsonSourceEventType.Initialized))
-                completionSource.SetResult(true);
-        }, CancellationToken.None);
+            if (!states.All(state => state is JsonSourceEventType.Updated or JsonSourceEventType.Initialized))
+                return true;
+
+            return false;
+        }).FirstAsync(state => {
+            completionSource.SetResult(true);
+            return true;
+        });
+
+        //tracker.Subscribe(state => {
+        //    if(state is not StorageIngestState ingestState)
+        //        return;
+
+        //    JsonSourceEventType[] states = ingestState.Areas
+        //        .Select(x => x.LastEvent)
+        //        .ToArray();
+        //    if (states.All(state => state is JsonSourceEventType.Updated or JsonSourceEventType.Initialized))
+        //        completionSource.SetResult(true);
+
+            
+        //}, CancellationToken.None);
         return completionSource.Task;
     }
 

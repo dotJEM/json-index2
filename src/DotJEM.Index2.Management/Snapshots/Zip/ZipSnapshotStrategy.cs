@@ -112,7 +112,7 @@ public class MetaZipFileSnapshot : ZipFileSnapshot
 
     public void Delete()
     {
-        File.Delete(FilePath);
+        //File.Delete(FilePath);
     }
 
     public bool Verify()
@@ -135,7 +135,7 @@ public class MetaZipSnapshotReader : ZipSnapshotReader
     {
         EnsureNotDisposed();
         return Archive.Entries
-            .Where(entry => entry.Name.StartsWith("index/"))
+            .Where(entry => entry.FullName.StartsWith("index/"))
             .Select(entry =>
         {
             ManagerIndexFile file = new(entry);

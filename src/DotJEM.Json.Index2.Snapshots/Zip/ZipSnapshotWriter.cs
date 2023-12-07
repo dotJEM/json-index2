@@ -32,6 +32,7 @@ public class ZipSnapshotWriter : Disposable, ISnapshotWriter
             using Stream input = file.Open();
             using Stream output = Archive.CreateEntry($"index/{file.Name}").Open();
             await input.CopyToAsync(output).ConfigureAwait(false);
+
         }
     }
 

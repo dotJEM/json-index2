@@ -120,7 +120,7 @@ public static class Reporter
                 Console.WriteLine(error.Exception);
                 return;
 
-            case TrackerStateInfoStreamEvent ievt :
+            case TrackerStateInfoStreamEvent ievt:
                 lastState = ievt.State;
                 break;
 
