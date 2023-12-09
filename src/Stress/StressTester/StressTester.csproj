@@ -8,6 +8,7 @@
     <LangVersion>latest</LangVersion>
     <IsPublishable>False</IsPublishable>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
