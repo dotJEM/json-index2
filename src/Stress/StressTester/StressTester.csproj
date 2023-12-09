@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net481</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotJEM.Json.Storage" Version="0.4.50" />
+    <PackageReference Include="DotJEM.ObservableExtensions" Version="0.0.13" />
+    <PackageReference Include="DotJEM.Web.Scheduler" Version="0.0.7" />
+    <PackageReference Include="objecthydrator" Version="1.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DotJEM.Json.Index2.Management\DotJEM.Json.Index2.Management.csproj" />
+    <ProjectReference Include="..\..\DotJEM.Json.Index2.Snapshots\DotJEM.Json.Index2.Snapshots.csproj" />
+    <ProjectReference Include="..\..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
+  </ItemGroup>
+
+</Project>

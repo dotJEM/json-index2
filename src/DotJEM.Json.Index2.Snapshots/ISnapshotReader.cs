@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace DotJEM.Json.Index2.Snapshots
 {
     public interface ISnapshotReader : IDisposable
     {
-        IEnumerable<ISnapshotFile> ReadFiles();
+        IReadOnlyCollection<string> FileNames { get; }
+        Stream OpenStream(string fileName);
+        IEnumerable<IIndexFile> GetIndexFiles();
     }
 }

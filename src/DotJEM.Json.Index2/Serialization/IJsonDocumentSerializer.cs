@@ -20,7 +20,7 @@ namespace DotJEM.Json.Index2.Serialization
         JObject DeserializeFrom(Document document);
     }
 
-    public class GZipJsonDocumentSerialier : IJsonDocumentSerializer
+    public class DefaultJsonDocumentSerialier : IJsonDocumentSerializer
     {
         private const string FIELD_NAME = "$$RAW$$";
 
@@ -39,8 +39,7 @@ namespace DotJEM.Json.Index2.Serialization
         public JObject Deserialize(byte[] value)
         {
             using MemoryStream stream = new MemoryStream(value);
-            using GZipStream zip = new GZipStream(stream, CompressionMode.Decompress);
-            using JsonTextReader reader = new JsonTextReader(new StreamReader(zip));
+            using JsonTextReader reader = new JsonTextReader(new StreamReader(stream));
 
             var entity = (JObject)JToken.ReadFrom(reader);
             reader.Close();
@@ -50,8 +49,7 @@ namespace DotJEM.Json.Index2.Serialization
         public byte[] Serialize(JObject json)
         {
             using MemoryStream stream = new MemoryStream();
-            using GZipStream zip = new GZipStream(stream, CompressionLevel.Optimal);
-            using JsonTextWriter jsonWriter = new JsonTextWriter(new StreamWriter(zip));
+            using JsonTextWriter jsonWriter = new JsonTextWriter(new StreamWriter(stream));
             
             json.WriteTo(jsonWriter);
             jsonWriter.Flush();

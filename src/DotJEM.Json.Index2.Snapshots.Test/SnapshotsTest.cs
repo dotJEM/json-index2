@@ -71,25 +71,31 @@ public class FakeSnapshotStorage : ISnapshotStorage
 public class FakeSnapshotWriter : ISnapshotWriter
 {
     private readonly FakeSnapshot snapshot;
-
     public ISnapshot Snapshot => snapshot;
     public FakeSnapshotWriter(FakeSnapshot snapshot)
     {
         this.snapshot = snapshot;
     }
 
-    public async Task WriteFileAsync(string fileName, Stream stream)
+    public Stream OpenStream(string name)
     {
-        FakeFile file = new FakeFile(fileName);
-        await stream.CopyToAsync(file.Stream);
-        file.Stream.Flush();
+        FakeFile file = new FakeFile(name);
         snapshot.Files.Add(file);
+        return file.Stream;
     }
 
-
-    public class FakeFile : ISnapshotFile
+    public async Task WriteIndexAsync(IReadOnlyCollection<IIndexFile> files)
     {
+        foreach (IIndexFile file in files)
+        {
+            using Stream input = file.Open();
+            Stream output = OpenStream(file.Name);
+            await input.CopyToAsync(output).ConfigureAwait(false);
+        }
+    }
 
+    public class FakeFile : IIndexFile
+    {
         public string Name { get; }
         public long Length { get; }
         public MemoryStream Stream { get; } = new MemoryStream();
@@ -103,9 +109,7 @@ public class FakeSnapshotWriter : ISnapshotWriter
             Stream.Seek(0, SeekOrigin.Begin);
             return Stream;
         }
-
     }
-
 
     public void Dispose()
     {
@@ -122,7 +126,15 @@ public class FakeSnapshotReader : ISnapshotReader
     {
         this.snapshot = snapshot;
     }
-    public IEnumerable<ISnapshotFile> ReadFiles()
+
+    public IReadOnlyCollection<string> FileNames { get; }
+
+    public Stream OpenStream(string fileName)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IEnumerable<IIndexFile> GetIndexFiles()
     {
         return snapshot.Files;
     }
@@ -137,12 +149,12 @@ public class FakeSnapshot : ISnapshot
 {
     public long Generation { get; }
 
-    public List<ISnapshotFile> Files { get; }
+    public List<IIndexFile> Files { get; }
 
     public FakeSnapshot(long generation)
     {
         Generation = generation;
-        Files = new List<ISnapshotFile>();
+        Files = new List<IIndexFile>();
 
     }
     public ISnapshotReader OpenReader()

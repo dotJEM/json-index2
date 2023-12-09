@@ -3,19 +3,19 @@ using System.IO;
 
 namespace DotJEM.Json.Index2.Snapshots;
 
-public interface ISnapshotFile
+public interface IIndexFile
 {
     string Name { get; }
     Stream Open();
 }
 
-public class SnapshotFile : ISnapshotFile
+public class IndexFile : IIndexFile
 {
     private readonly Func<Stream> streamProvider;
 
     public string Name { get; }
         
-    public SnapshotFile(string name, Func<Stream> streamProvider)
+    public IndexFile(string name, Func<Stream> streamProvider)
     {
         this.streamProvider = streamProvider;
         Name = name;

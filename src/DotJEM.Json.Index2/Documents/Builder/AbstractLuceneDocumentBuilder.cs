@@ -56,7 +56,7 @@ namespace DotJEM.Json.Index2.Documents.Builder
         {
             this.resolver = resolver ?? new FieldResolver();
             this.eventInfoStream = new InfoStream<AbstractLuceneDocumentBuilder>();
-            this.documentSerializer = documentSerializer ?? new GZipJsonDocumentSerialier();
+            this.documentSerializer = documentSerializer ?? new DefaultJsonDocumentSerialier();
         }
 
         public virtual ILuceneDocument Build(JObject json)
