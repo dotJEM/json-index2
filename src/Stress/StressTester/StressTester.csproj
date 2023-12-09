@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DotJEM.Index2.Management\DotJEM.Index2.Management.csproj" />
+    <ProjectReference Include="..\..\DotJEM.Json.Index2.Management\DotJEM.Json.Index2.Management.csproj" />
     <ProjectReference Include="..\..\DotJEM.Json.Index2.Snapshots\DotJEM.Json.Index2.Snapshots.csproj" />
     <ProjectReference Include="..\..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
   </ItemGroup>

@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using DotJEM.Index2.Management.Tracking;
+using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
 
-namespace DotJEM.Index2.Management.Snapshots.Zip.Meta;
+namespace DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 
 public static class ZipSnapshotInfoStreamExtensions
 {

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using DotJEM.Index2.Management.Snapshots;
-using DotJEM.Index2.Management.Tracking;
-using DotJEM.Index2.Management.Writer;
+using DotJEM.Json.Index2.Management.Snapshots;
+using DotJEM.Json.Index2.Management.Tracking;
+using DotJEM.Json.Index2.Management.Writer;
 using DotJEM.ObservableExtensions.InfoStreams;
 
-namespace DotJEM.Index2.Management;
+namespace DotJEM.Json.Index2.Management;
 
 public interface IJsonIndexManager
 {

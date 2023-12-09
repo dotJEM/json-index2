@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DotJEM.Index2.Management;
+using DotJEM.Json.Index2.Management;
 using DotJEM.Json.Storage;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;

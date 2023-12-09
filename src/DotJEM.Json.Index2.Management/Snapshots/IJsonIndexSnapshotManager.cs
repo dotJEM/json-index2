@@ -1,15 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using DotJEM.Index2.Management.Tracking;
-using DotJEM.Json.Index2;
+using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Index2.Management.Snapshots;
+namespace DotJEM.Json.Index2.Management.Snapshots;
 
 public interface IJsonIndexSnapshotManager
 {

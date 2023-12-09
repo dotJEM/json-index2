@@ -2,7 +2,7 @@
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
 
-namespace DotJEM.Index2.Management.Snapshots.Zip.Meta;
+namespace DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 
 public class ZipFileEvent : InfoStreamEvent
 {

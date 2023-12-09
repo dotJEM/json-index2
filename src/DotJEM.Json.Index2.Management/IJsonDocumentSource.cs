@@ -4,7 +4,7 @@ using DotJEM.ObservableExtensions;
 using DotJEM.ObservableExtensions.InfoStreams;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Index2.Management;
+namespace DotJEM.Json.Index2.Management;
 
 
 public interface IJsonDocumentSource

@@ -2,14 +2,14 @@
 
 
 using System.Reactive.Linq;
-using DotJEM.Index2.Management;
-using DotJEM.Index2.Management.Snapshots;
-using DotJEM.Index2.Management.Snapshots.Zip;
-using DotJEM.Index2.Management.Tracking;
-using DotJEM.Index2.Management.Writer;
 using DotJEM.Json.Index2;
 using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.IO;
+using DotJEM.Json.Index2.Management;
+using DotJEM.Json.Index2.Management.Snapshots;
+using DotJEM.Json.Index2.Management.Snapshots.Zip;
+using DotJEM.Json.Index2.Management.Tracking;
+using DotJEM.Json.Index2.Management.Writer;
 using DotJEM.Json.Index2.Searching;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.Json.Storage;

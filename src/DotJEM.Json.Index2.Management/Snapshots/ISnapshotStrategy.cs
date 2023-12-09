@@ -1,7 +1,7 @@
 ﻿using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
 
-namespace DotJEM.Index2.Management.Snapshots;
+namespace DotJEM.Json.Index2.Management.Snapshots;
 
 public interface ISnapshotStrategy
 {

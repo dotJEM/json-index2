@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using DotJEM.Json.Index2;
 using DotJEM.Json.Index2.Documents;
 using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.Web.Scheduler;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Index2.Management.Writer;
+namespace DotJEM.Json.Index2.Management.Writer;
 
 public interface IManagerJsonIndexWriter 
 {

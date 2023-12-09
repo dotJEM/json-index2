@@ -3,11 +3,11 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
-using DotJEM.Index2.Management.Snapshots.Zip.Meta;
+using DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
 
-namespace DotJEM.Index2.Management.Snapshots.Zip;
+namespace DotJEM.Json.Index2.Management.Snapshots.Zip;
 
 public class ManagerIndexFile : IIndexFile
 {

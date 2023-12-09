@@ -3,11 +3,11 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using DotJEM.Index2.Management.Snapshots.Zip.Meta;
+using DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 using DotJEM.ObservableExtensions;
 using DotJEM.ObservableExtensions.InfoStreams;
 
-namespace DotJEM.Index2.Management.Tracking;
+namespace DotJEM.Json.Index2.Management.Tracking;
 
 // ReSharper disable once PossibleInterfaceMemberAmbiguity -> Just dictates implementation must be explicit which is OK.
 public interface IIngestProgressTracker : IObserver<IJsonDocumentChange>, IObserver<IInfoStreamEvent>, IObservable<ITrackerState>

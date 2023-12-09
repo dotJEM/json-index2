@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using DotJEM.Index2.Management.Snapshots.Zip.Meta;
+using DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.Json.Index2.Snapshots.Zip;
-using DotJEM.Json.Index2.Util;
 using DotJEM.ObservableExtensions.InfoStreams;
 using Lucene.Net.Index;
 
-namespace DotJEM.Index2.Management.Snapshots.Zip;
+namespace DotJEM.Json.Index2.Management.Snapshots.Zip;
 
 public class ZipSnapshotStrategy : ISnapshotStrategy
 {

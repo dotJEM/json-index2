@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using DotJEM.Index2.Management.Tracking;
+using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.ObservableExtensions.InfoStreams;
 using Newtonsoft.Json;
 
-namespace DotJEM.Index2.Management;
+namespace DotJEM.Json.Index2.Management;
 
 public static class IndexManagerInfoStreamExtensions
 {
