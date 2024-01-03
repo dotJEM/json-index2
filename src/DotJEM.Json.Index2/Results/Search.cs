@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Searching;
 using DotJEM.Json.Index2.Serialization;
@@ -87,8 +88,7 @@ public sealed class Search : ISearch
     private SearchResults Execute(Query query, int skip, int take, Sort sort, Filter filter, bool doDocScores, bool doMaxScores)
     {
         //TODO: Replace yield
-        infoStream.WriteDebug($"Execute search for query '{query}' (skip={skip}, take={take}, sort={sort}, filter={filter}, doDocScores={doDocScores}, doMaxScores={doMaxScores})");
-
+        infoStream.WriteSearchStartEvent("", new SearchInfo(query, skip, take, sort, filter,doDocScores,doMaxScores), TimeSpan.Zero);
         Stopwatch timer = Stopwatch.StartNew();
         using IIndexSearcherContext context = manager.Acquire();
         IndexSearcher searcher = context.Searcher;
@@ -109,8 +109,7 @@ public sealed class Search : ISearch
 
         TopFieldDocs topDocs = searcher.Search(query, filter, take, sort, doDocScores, doMaxScores);
 
-        TimeSpan searchTime = timer.Elapsed;
-        infoStream.WriteInfo($"Search took {searchTime.TotalMilliseconds} ms");
+        infoStream.WriteSearchCompletedEvent("", new SearchInfo(query, skip, take, sort, filter, doDocScores, doMaxScores), timer.Elapsed);
         IEnumerable<SearchResult> loaded =
             from hit in topDocs.ScoreDocs.Skip(skip)
             let document = searcher.Doc(hit.Doc, serializer.FieldsToLoad)
@@ -122,7 +121,7 @@ public sealed class Search : ISearch
         SearchResult[] results = loaded.ToArray();
 
         TimeSpan loadTime = timer.Elapsed;
-        infoStream.WriteInfo($"Data load took: {loadTime.TotalMilliseconds} ms");
+        infoStream.WriteSearchDataLoadedEvent("", new SearchInfo(query, skip, take, sort, filter, doDocScores, doMaxScores), timer.Elapsed);
         return new SearchResults(results, topDocs.TotalHits);
     }
 }
@@ -140,5 +139,58 @@ public class SearchResults : IEnumerable<SearchResult>
 
     public IEnumerator<SearchResult> GetEnumerator() => Hits.AsEnumerable().GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+public static class InfoStreamSearchExtensions
+{
+    public static void WriteSearchStartEvent<TSource>(this IInfoStream<TSource> self, string message, SearchInfo search, TimeSpan elapsed, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
+    {
+        self.WriteEvent(
+            new SearchInfoStreamEvent(typeof(TSource), InfoLevel.INFO, message, SearchEventType.Start, search, elapsed, callerMemberName, callerFilePath, callerLineNumber)
+        );
+    }
+    public static void WriteSearchCompletedEvent<TSource>(this IInfoStream<TSource> self, string message, SearchInfo search, TimeSpan elapsed, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
+    {
+        self.WriteEvent(
+            new SearchInfoStreamEvent(typeof(TSource), InfoLevel.INFO, message, SearchEventType.SearchCompleted, search, elapsed, callerMemberName, callerFilePath, callerLineNumber)
+        );
+    }
+    public static void WriteSearchDataLoadedEvent<TSource>(this IInfoStream<TSource> self, string message, SearchInfo search, TimeSpan elapsed, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
+    {
+        self.WriteEvent(
+            new SearchInfoStreamEvent(typeof(TSource), InfoLevel.INFO, message, SearchEventType.DataLoaded, search, elapsed, callerMemberName, callerFilePath, callerLineNumber)
+        );
+    }
+}
+
+public readonly record struct SearchInfo(Query query, int skip, int take, Sort sort, Filter filter, bool doDocScores, bool doMaxScores)
+{
+}
+
+public enum SearchEventType
+{
+    Start,
+    SearchCompleted,
+    DataLoaded
+}
+
+public class SearchInfoStreamEvent : InfoStreamEvent
+{
+    public TimeSpan Elapsed { get; }
+    public SearchEventType EventType { get; }
+    public SearchInfo SearchInfo { get; }
+
+    public SearchInfoStreamEvent(Type source, InfoLevel level, string message, SearchEventType eventType, SearchInfo search, TimeSpan elapsed, string callerMemberName, string callerFilePath, int callerLineNumber)
+        : base(source, level, message, callerMemberName, callerFilePath, callerLineNumber)
+    {
+        EventType = eventType;
+        SearchInfo = search;
+        Elapsed = elapsed;
+    }
+
+    public override string ToString()
+    {
+        return $"[{Level}] {EventType}:{Message} ({SearchInfo})";
+    }
 }
 
