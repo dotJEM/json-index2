@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 using DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 using DotJEM.ObservableExtensions;
 using DotJEM.ObservableExtensions.InfoStreams;
@@ -16,9 +18,9 @@ public interface IIngestProgressTracker : IObserver<IJsonDocumentChange>, IObser
     StorageIngestState IngestState { get; }
     SnapshotRestoreState RestoreState { get; }
     void UpdateState(StorageAreaIngestState state);
+    Task WhenComplete();
 }
 public interface ITrackerState {}
-
 
 public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgressTracker
 {
@@ -242,4 +244,28 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
             return this;
         }
     }
+
+    public Task WhenComplete()
+    {
+        TaskCompletionSource<bool> completionSource = new ();
+        this.SkipWhile(state =>
+        {
+            if (state is not StorageIngestState ingestState)
+                return true;
+
+            JsonSourceEventType[] states = ingestState.Areas
+                .Select(x => x.LastEvent)
+                .ToArray();
+            if (!states.All(state => state is JsonSourceEventType.Updated or JsonSourceEventType.Initialized))
+                return true;
+
+            return false;
+        }).FirstAsync(state => {
+            completionSource.SetResult(true);
+            return true;
+        });
+        return completionSource.Task;
+    }
 }
+
+

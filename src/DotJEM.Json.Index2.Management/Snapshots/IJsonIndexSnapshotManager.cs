@@ -60,7 +60,7 @@ public class JsonIndexSnapshotManager : IJsonIndexSnapshotManager
 
     public async Task RunAsync(IIngestProgressTracker tracker, bool restoredFromSnapshot)
     {
-        await Initialization.WhenInitializationComplete(tracker).ConfigureAwait(false);
+        await tracker.WhenComplete().ConfigureAwait(false);
         if (!restoredFromSnapshot)
         {
             infoStream.WriteInfo("Taking snapshot after initialization.");
@@ -77,11 +77,11 @@ public class JsonIndexSnapshotManager : IJsonIndexSnapshotManager
             ISnapshotStorage target = strategy.Storage;
             
             index.Commit();
-            ISnapshot snapshot = await index.TakeSnapshotAsync(target);
+            ISnapshot snapshot = await index.TakeSnapshotAsync(target).ConfigureAwait(false);
             using ISnapshotWriter writer = snapshot.OpenWriter();
             using JsonTextWriter wr = new (new StreamWriter(writer.OpenStream("manifest.json")));
-            await json.WriteToAsync(wr);
-            await wr.FlushAsync();
+            await json.WriteToAsync(wr).ConfigureAwait(false);
+            await wr.FlushAsync().ConfigureAwait(false);
 
             infoStream.WriteInfo($"Created snapshot");
             return true;
@@ -114,11 +114,11 @@ public class JsonIndexSnapshotManager : IJsonIndexSnapshotManager
                 count++;
                 try
                 {
-                    if (snapshot.Verify() && await index.RestoreSnapshotAsync(snapshot))
+                    if (snapshot.Verify() && await index.RestoreSnapshotAsync(snapshot).ConfigureAwait(false))
                     {
                         using ISnapshotReader reader = snapshot.OpenReader();
                         using Stream manifestStream = reader.OpenStream("manifest.json");
-                        JObject manifest = await JObject.LoadAsync(new JsonTextReader(new StreamReader(manifestStream)));
+                        JObject manifest = await JObject.LoadAsync(new JsonTextReader(new StreamReader(manifestStream))).ConfigureAwait(false);
                         if (manifest["Areas"] is not JArray areas) continue;
                         return new RestoreSnapshotResult(true, new StorageIngestState(areas.ToObject<StorageAreaIngestState[]>()));
                     }
