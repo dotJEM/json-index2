@@ -15,14 +15,14 @@ public static class IndexManagerInfoStreamExtensions
         self.WriteEvent(new StorageObserverInfoStreamEvent(typeof(TSource), InfoLevel.INFO, eventType, area, message, callerMemberName, callerFilePath, callerLineNumber));
     }
 
-    public static void WriteStorageIngestStateEvent<TSource>(this IInfoStream<TSource> self, StorageIngestState state, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
+    public static void WriteStorageIngestStateEvent<TSource>(this IInfoStream<TSource> self, StorageIngestState state, string message,[CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
     {
-        self.WriteEvent(new StorageIngestStateInfoStreamEvent(typeof(TSource), InfoLevel.INFO, state, callerMemberName, callerFilePath, callerLineNumber));
+        self.WriteEvent(new StorageIngestStateInfoStreamEvent(typeof(TSource), InfoLevel.INFO, state,message, callerMemberName, callerFilePath, callerLineNumber));
     }
 
-    public static void WriteTrackerStateEvent<TSource>(this IInfoStream<TSource> self, ITrackerState state, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
+    public static void WriteTrackerStateEvent<TSource>(this IInfoStream<TSource> self, ITrackerState state, string message, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
     {
-        self.WriteEvent(new TrackerStateInfoStreamEvent(typeof(TSource), InfoLevel.INFO, state, callerMemberName, callerFilePath, callerLineNumber));
+        self.WriteEvent(new TrackerStateInfoStreamEvent(typeof(TSource), InfoLevel.INFO, state, message, callerMemberName, callerFilePath, callerLineNumber));
 
     }
 }
@@ -113,8 +113,8 @@ public class TrackerStateInfoStreamEvent : InfoStreamEvent
 {
     public ITrackerState State { get; }
 
-    public TrackerStateInfoStreamEvent(Type source, InfoLevel level, ITrackerState state, string callerMemberName, string callerFilePath, int callerLineNumber)
-        : base(source, level, state.ToString, callerMemberName, callerFilePath, callerLineNumber)
+    public TrackerStateInfoStreamEvent(Type source, InfoLevel level, ITrackerState state, string message, string callerMemberName, string callerFilePath, int callerLineNumber)
+        : base(source, level, message, callerMemberName, callerFilePath, callerLineNumber)
     {
         State = state;
     }
@@ -125,8 +125,8 @@ public class StorageIngestStateInfoStreamEvent : InfoStreamEvent
 {
     public StorageIngestState State { get; }
 
-    public StorageIngestStateInfoStreamEvent(Type source, InfoLevel level, StorageIngestState state, string callerMemberName, string callerFilePath, int callerLineNumber)
-        : base(source, level, state.ToString, callerMemberName, callerFilePath, callerLineNumber)
+    public StorageIngestStateInfoStreamEvent(Type source, InfoLevel level, StorageIngestState state, string message,  string callerMemberName, string callerFilePath, int callerLineNumber)
+        : base(source, level, message, callerMemberName, callerFilePath, callerLineNumber)
     {
         State = state;
     }

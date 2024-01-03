@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DotJEM.ObservableExtensions;
 using DotJEM.ObservableExtensions.InfoStreams;
@@ -7,10 +8,32 @@ using Newtonsoft.Json.Linq;
 namespace DotJEM.Json.Index2.Management;
 
 
+public interface IObservableValue<T> : IObservable<T>
+{
+    T Value { get; set; }
+}
+public class ObservableValue<T> : BasicSubject<T>, IObservableValue<T>
+{
+    private T value;
+
+    public T Value
+    {
+        get => value;
+        set
+        {
+            if(EqualityComparer<T>.Default.Equals(this.value, value))
+                return;
+
+            Publish(this.value = value);
+        }
+    }
+}
+
 public interface IJsonDocumentSource
 {
     IInfoStream InfoStream { get; }
-    IObservable<IJsonDocumentChange> Observable { get; }
+    IObservable<IJsonDocumentChange> DocumentChanges { get; }
+    IObservableValue<bool> Initialized { get; }
     Task RunAsync();
     void UpdateGeneration(string area, long generation);
 }

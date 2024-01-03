@@ -2,6 +2,8 @@
 
 
 using System.Reactive.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using DotJEM.Json.Index2;
 using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.IO;
@@ -74,6 +76,18 @@ Task run = Task.WhenAll(
 );
 
 
+jsonIndexManager.Tracker.WhenState(IngestInitializationState.Initialized).ContinueWith(task =>
+{
+    Console.Clear();
+    Console.WriteLine("COMPLETED");
+    Console.WriteLine("COMPLETED");
+    Console.WriteLine("COMPLETED");
+    Console.WriteLine("COMPLETED");
+    Console.WriteLine("COMPLETED");
+    Console.WriteLine("COMPLETED");
+
+});
+
 while (true)
 {
     string? input = Console.ReadLine();
@@ -88,7 +102,20 @@ while (true)
             break;
 
         case 'C':
-            index.Commit();
+            jsonIndexManager.Tracker.WhenState(IngestInitializationState.Initialized).ContinueWith(task =>
+            {
+                Console.Clear();
+                Console.WriteLine("COMPLETED");
+            });
+
+            break;
+
+        case 'I':
+            Console.Clear();
+            break;
+
+        case 'L':
+            Console.Clear();
             break;
 
         case 'Q':
@@ -112,8 +139,17 @@ public static class Reporter
     private static IInfoStreamEvent lastEvent;
     private static DateTime lastReport = DateTime.Now;
 
+    private static readonly Queue<string> messages = new Queue<string>();
+
     public static void CaptureInfo(IInfoStreamEvent evt)
     {
+        lock (messages)
+        {
+            messages.Enqueue(evt.Message);
+            if (messages.Count > 50)
+                messages.Dequeue();
+        }
+
         switch (evt)
         {
             case InfoStreamExceptionEvent error:
@@ -125,6 +161,7 @@ public static class Reporter
                 break;
 
             default:
+
                 lastEvent = evt;
                 break;
         }
@@ -132,19 +169,36 @@ public static class Reporter
     }
 
     private static string CleanLine = new string(' ', Console.BufferWidth);
+    private static StringBuilder buffer = new StringBuilder();
+    private static Regex nl = new Regex("\n|\r\n", RegexOptions.Compiled);
 
     public static void Report(bool force = false)
     {
         if(!force && DateTime.Now - lastReport < TimeSpan.FromSeconds(30))
             return;
-
         lastReport = DateTime.Now;
+        int lines = nl.Matches(buffer.ToString()).Count;
+        buffer.Clear();
         Console.SetCursorPosition(0,0);
-        for (int i = 0; i < 20; i++)
-            Console.WriteLine(CleanLine);                                                                            
+        for (int i = 0; i < lines; i++)
+            buffer.AppendLine(CleanLine);       
+        Console.WriteLine(buffer);
         Console.SetCursorPosition(0,0);
+        buffer.Clear();
+        string[] msgs;
+        lock (messages)
+        {
+            msgs = messages.ToArray();
+        }
 
-        Console.WriteLine(lastEvent.Message);
-        Console.WriteLine(lastState);
+        foreach (string message in msgs)
+        {
+            buffer.AppendLine(message);
+        }
+
+        buffer.AppendLine();
+        //Console.WriteLine(lastEvent.Message);
+        buffer.AppendLine(lastState.ToString());
+        Console.WriteLine(buffer);
     }
 }

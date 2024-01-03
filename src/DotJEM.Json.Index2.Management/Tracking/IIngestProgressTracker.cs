@@ -11,14 +11,26 @@ using DotJEM.ObservableExtensions.InfoStreams;
 
 namespace DotJEM.Json.Index2.Management.Tracking;
 
-// ReSharper disable once PossibleInterfaceMemberAmbiguity -> Just dictates implementation must be explicit which is OK.
-public interface IIngestProgressTracker : IObserver<IJsonDocumentChange>, IObserver<IInfoStreamEvent>, IObservable<ITrackerState>
+public enum IngestInitializationState
 {
+    Started,
+    Restoring,
+    Ingesting,
+    Initialized
+}
+
+// ReSharper disable once PossibleInterfaceMemberAmbiguity -> Just dictates implementation must be explicit which is OK.
+public interface IIngestProgressTracker :
+    IObserver<IJsonDocumentChange>, 
+    IObserver<IInfoStreamEvent>, IObservable<ITrackerState>
+{
+    IngestInitializationState InitializationState { get; }
     IInfoStream InfoStream { get; }
     StorageIngestState IngestState { get; }
     SnapshotRestoreState RestoreState { get; }
     void UpdateState(StorageAreaIngestState state);
-    Task WhenComplete();
+    void SetInitialized(bool initialized);
+    Task WhenState(IngestInitializationState state);
 }
 public interface ITrackerState {}
 
@@ -29,24 +41,61 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
     private readonly ConcurrentDictionary<string, StorageAreaIngestStateTracker> observerTrackers = new();
     private readonly ConcurrentDictionary<string, IndexFileRestoreStateTracker> restoreTrackers = new();
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
+    private IngestInitializationState initializationState;
 
     public IInfoStream InfoStream => infoStream;
+
+    public IngestInitializationState InitializationState
+    {
+        get => initializationState;
+        private set
+        {
+            if(initializationState == value) return;
+
+            initializationState = value;
+            TaskCompletionSource<bool> target = value switch
+            {
+                IngestInitializationState.Started => startedEntered,
+                IngestInitializationState.Restoring => restoringEntered,
+                IngestInitializationState.Ingesting => ingestingEntered,
+                IngestInitializationState.Initialized => initializedEntered,
+                _ => null
+            };
+            target?.TrySetResult(true);
+        }
+    }
+
+    private readonly TaskCompletionSource<bool> startedEntered = new ();
+    private readonly TaskCompletionSource<bool> restoringEntered = new ();
+    private readonly TaskCompletionSource<bool> ingestingEntered = new ();
+    private readonly TaskCompletionSource<bool> initializedEntered = new ();
+
 
     // TODO: We are adding a number of computational cycles here on each single update, this should be improved as well.
     //       So we don't have to do a loop on each turn, but later with that.
     public StorageIngestState IngestState => new (observerTrackers.Select(kv => kv.Value.State).ToArray());
     public SnapshotRestoreState RestoreState => new (restoreTrackers.Select(kv => kv.Value.State).ToArray());
 
+    public IngestProgressTracker()
+    {
+        InitializationState = IngestInitializationState.Started;
+    }
+
     public void OnNext(IJsonDocumentChange value)
     {
         observerTrackers.AddOrUpdate(value.Area, _ => throw new InvalidDataException(), (_, state) => state.UpdateState(value.Generation, value.Size));
-        Publish(IngestState);
+        InternalPublish(IngestState);
     }
 
     public void UpdateState(StorageAreaIngestState state)
     {
         observerTrackers.AddOrUpdate(state.Area, s => new StorageAreaIngestStateTracker(s, JsonSourceEventType.Initialized).UpdateState(state)
             , (s, tracker) => tracker.UpdateState(state));
+    }
+
+    public void SetInitialized(bool initialized)
+    {
+        if (initialized) this.InitializationState = IngestInitializationState.Initialized;
     }
 
     public void OnNext(IInfoStreamEvent value)
@@ -87,7 +136,6 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
                 break;
 
             case FileEventType.PROGRESS:
-                
                 restoreTrackers.AddOrUpdate(
                     sne.FileName,
                     name => new IndexFileRestoreStateTracker(name, sne.Progress),
@@ -99,25 +147,12 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        Publish(RestoreState);
+        InternalPublish(RestoreState);
     }
 
     private void OnZipSnapshotEvent(ZipSnapshotEvent sne)
     {
-        switch (sne.EventType)
-        {
-            case FileEventType.OPEN:
-                //restoreTrackers.TryAdd(sne.SegmentsFileName, new IndexFileRestoreStateTracker(sne.SegmentsFileName));
-                //restoreTrackers.TryAdd(sne.SegmentsGenFileName, new IndexFileRestoreStateTracker(sne.SegmentsGenFileName));
-                //foreach (string file in sne.SnapshotFiles)
-                //    restoreTrackers.TryAdd(file, new IndexFileRestoreStateTracker(file));
-                break;
-            case FileEventType.CLOSE:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-        Publish(RestoreState);
+        InternalPublish(RestoreState);
     }
 
     private void OnStorageObserverInfoStreamEvent(StorageObserverInfoStreamEvent soe)
@@ -139,8 +174,36 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
 
         // TODO: We are adding a number of computational cycles here on each single update, this should be improved as well.
         //       So we don't have to do a loop on each turn, but later with that.
-        Publish(IngestState);
+        InternalPublish(IngestState);
     }
+
+    private void InternalPublish(ITrackerState state)
+    {
+        if (InitializationState == IngestInitializationState.Initialized)
+        {
+            Publish(state);
+            return;
+        }
+
+        switch (state)
+        {
+            case SnapshotRestoreState:
+                InitializationState = IngestInitializationState.Restoring;
+                break;
+
+            case StorageIngestState storageIngestState:
+                JsonSourceEventType[] states = storageIngestState.Areas
+                    .Select(x => x.LastEvent)
+                    .ToArray();
+                InitializationState = states.All(state => state is JsonSourceEventType.Updated or JsonSourceEventType.Updating or JsonSourceEventType.Initialized) 
+                    ? IngestInitializationState.Initialized
+                    : IngestInitializationState.Ingesting;
+                break;
+
+        }
+        Publish(state);
+    }
+
 
     void IObserver<IInfoStreamEvent>.OnError(Exception error) { }
     void IObserver<IInfoStreamEvent>.OnCompleted() { }
@@ -245,26 +308,16 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
         }
     }
 
-    public Task WhenComplete()
+    public Task WhenState(IngestInitializationState state)
     {
-        TaskCompletionSource<bool> completionSource = new ();
-        this.SkipWhile(state =>
+        return state switch
         {
-            if (state is not StorageIngestState ingestState)
-                return true;
-
-            JsonSourceEventType[] states = ingestState.Areas
-                .Select(x => x.LastEvent)
-                .ToArray();
-            if (!states.All(state => state is JsonSourceEventType.Updated or JsonSourceEventType.Initialized))
-                return true;
-
-            return false;
-        }).FirstAsync(state => {
-            completionSource.SetResult(true);
-            return true;
-        });
-        return completionSource.Task;
+            IngestInitializationState.Started => startedEntered.Task,
+            IngestInitializationState.Restoring => restoringEntered.Task,
+            IngestInitializationState.Ingesting => ingestingEntered.Task,
+            IngestInitializationState.Initialized => initializedEntered.Task,
+            _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+        };
     }
 }
 

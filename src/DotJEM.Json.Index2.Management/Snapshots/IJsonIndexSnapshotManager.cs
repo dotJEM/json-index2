@@ -60,7 +60,7 @@ public class JsonIndexSnapshotManager : IJsonIndexSnapshotManager
 
     public async Task RunAsync(IIngestProgressTracker tracker, bool restoredFromSnapshot)
     {
-        await tracker.WhenComplete().ConfigureAwait(false);
+        await tracker.WhenState(IngestInitializationState.Initialized).ConfigureAwait(false);
         if (!restoredFromSnapshot)
         {
             infoStream.WriteInfo("Taking snapshot after initialization.");

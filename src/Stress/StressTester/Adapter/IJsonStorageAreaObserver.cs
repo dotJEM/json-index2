@@ -1,21 +1,20 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Management;
 using DotJEM.Json.Storage.Adapter;
 using DotJEM.Json.Storage.Adapter.Materialize.ChanceLog.ChangeObjects;
 using DotJEM.Json.Storage.Adapter.Observable;
+using DotJEM.ObservableExtensions;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
 
 namespace Stress.Adapter;
 
-public interface IJsonStorageAreaObserver
+public interface IJsonStorageAreaObserver : IJsonDocumentSource
 {
     string AreaName { get; }
-    IInfoStream InfoStream { get; }
-    IObservable<IJsonDocumentChange> Observable { get; }
-    Task RunAsync();
-    void UpdateGeneration(long generation);
 }
 
 public class JsonStorageAreaObserver : IJsonStorageAreaObserver
@@ -25,15 +24,15 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
     private readonly IStorageAreaLog log;
     private readonly ChangeStream observable = new();
     private readonly IInfoStream<JsonStorageAreaObserver> infoStream = new InfoStream<JsonStorageAreaObserver>();
-
+    
     private long generation = 0;
-    private bool initialized = false;
     private IScheduledTask task;
     public IStorageArea StorageArea { get; }
 
     public string AreaName => StorageArea.Name;
     public IInfoStream InfoStream => infoStream;
-    public IObservable<IJsonDocumentChange> Observable => observable;
+    public IObservable<IJsonDocumentChange> DocumentChanges => observable;
+    public IObservableValue<bool> Initialized { get; } = new ObservableValue<bool>();
 
     public JsonStorageAreaObserver(IStorageArea storageArea, IWebTaskScheduler scheduler, string pollInterval = "10s")
     {
@@ -58,32 +57,37 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
         infoStream.WriteJsonSourceEvent(JsonSourceEventType.Stopped, StorageArea.Name, $"Initializing for storageArea '{StorageArea.Name}'.");
     }
 
-    public void UpdateGeneration(long value)
+    public void UpdateGeneration(string area, long value)
     {
+        if(!AreaName.Equals(area))
+            return;
+
         generation = value;
-        initialized = true;
+        Initialized.Value = true;
     }
 
     public void RunUpdateCheck()
     {
         long latestGeneration = log.LatestGeneration;
-        if (!initialized)
+        
+        Stopwatch timer = Stopwatch.StartNew();
+        if (!Initialized.Value)
         {
             BeforeInitialize();
             infoStream.WriteJsonSourceEvent(JsonSourceEventType.Initializing, StorageArea.Name, $"Initializing for storageArea '{StorageArea.Name}'.");
-            using IStorageAreaLogReader changes = log.OpenLogReader(generation, initialized);
+            using IStorageAreaLogReader changes = log.OpenLogReader(generation, Initialized.Value );
             PublishChanges(changes, _ => JsonChangeType.Create);
-            initialized = true;
-            infoStream.WriteJsonSourceEvent(JsonSourceEventType.Initialized, StorageArea.Name, $"Initialization complete for storageArea '{StorageArea.Name}'.");
+            Initialized.Value  = true;
+            infoStream.WriteJsonSourceEvent(JsonSourceEventType.Initialized, StorageArea.Name, $"Initialization complete for storageArea '{StorageArea.Name}' in {timer.Elapsed}.");
             AfterInitialize();
         }
         else
         {
             BeforeUpdate();
             infoStream.WriteJsonSourceEvent(JsonSourceEventType.Updating, StorageArea.Name, $"Checking updates for storageArea '{StorageArea.Name}'.");
-            using IStorageAreaLogReader changes = log.OpenLogReader(generation, initialized);
+            using IStorageAreaLogReader changes = log.OpenLogReader(generation, Initialized.Value );
             PublishChanges(changes, row => MapChange(row.Type));
-            infoStream.WriteJsonSourceEvent(JsonSourceEventType.Updated, StorageArea.Name, $"Done checking updates for storageArea '{StorageArea.Name}'.");
+            infoStream.WriteJsonSourceEvent(JsonSourceEventType.Updated, StorageArea.Name, $"Done checking updates for storageArea '{StorageArea.Name}' in {timer.Elapsed}.");
             AfterUpdate();
         }
 

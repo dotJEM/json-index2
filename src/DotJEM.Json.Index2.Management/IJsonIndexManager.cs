@@ -33,18 +33,19 @@ public class JsonIndexManager : IJsonIndexManager
         this.jsonDocumentSource = jsonDocumentSource;
         this.snapshots = snapshots;
         this.writer = writer;
-        
-        jsonDocumentSource.Observable.ForEachAsync(CaptureChange);
+        Tracker = new IngestProgressTracker();
+
+        jsonDocumentSource.DocumentChanges.ForEachAsync(CaptureChange);
         jsonDocumentSource.InfoStream.Subscribe(infoStream);
+        jsonDocumentSource.Initialized.Subscribe(Tracker.SetInitialized);
         snapshots.InfoStream.Subscribe(infoStream);
 
-        Tracker = new IngestProgressTracker();
         jsonDocumentSource.InfoStream.Subscribe(Tracker);
-        jsonDocumentSource.Observable.Subscribe(Tracker);
+        jsonDocumentSource.DocumentChanges.Subscribe(Tracker);
         snapshots.InfoStream.Subscribe(Tracker);
 
         Tracker.InfoStream.Subscribe(infoStream);
-        Tracker.ForEachAsync(state => infoStream.WriteTrackerStateEvent(state));
+        Tracker.ForEachAsync(state => infoStream.WriteTrackerStateEvent(state, "Tracker state updated"));
     }
 
     public async Task RunAsync()
