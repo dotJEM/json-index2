@@ -20,12 +20,12 @@ public class JsonIndexManager : IJsonIndexManager
 {
     private readonly IJsonDocumentSource jsonDocumentSource;
     private readonly IJsonIndexSnapshotManager snapshots;
-    private readonly IIngestProgressTracker tracker;
     private readonly IManagerJsonIndexWriter writer;
     
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
 
     public IInfoStream InfoStream => infoStream;
+    public IIngestProgressTracker Tracker { get; }
 
     public JsonIndexManager(IJsonDocumentSource jsonDocumentSource, IJsonIndexSnapshotManager snapshots, IManagerJsonIndexWriter writer)
     {
@@ -37,13 +37,13 @@ public class JsonIndexManager : IJsonIndexManager
         jsonDocumentSource.InfoStream.Subscribe(infoStream);
         snapshots.InfoStream.Subscribe(infoStream);
 
-        tracker = new IngestProgressTracker();
-        jsonDocumentSource.InfoStream.Subscribe(tracker);
-        jsonDocumentSource.Observable.Subscribe(tracker);
-        snapshots.InfoStream.Subscribe(tracker);
+        Tracker = new IngestProgressTracker();
+        jsonDocumentSource.InfoStream.Subscribe(Tracker);
+        jsonDocumentSource.Observable.Subscribe(Tracker);
+        snapshots.InfoStream.Subscribe(Tracker);
 
-        tracker.InfoStream.Subscribe(infoStream);
-        tracker.ForEachAsync(state => infoStream.WriteTrackerStateEvent(state));
+        Tracker.InfoStream.Subscribe(infoStream);
+        Tracker.ForEachAsync(state => infoStream.WriteTrackerStateEvent(state));
     }
 
     public async Task RunAsync()
@@ -51,13 +51,13 @@ public class JsonIndexManager : IJsonIndexManager
         bool restoredFromSnapshot = await RestoreSnapshotAsync();
         infoStream.WriteInfo($"Index restored from a snapshot: {restoredFromSnapshot}.");
         await Task.WhenAll(
-            snapshots.RunAsync(tracker, restoredFromSnapshot), 
+            snapshots.RunAsync(Tracker, restoredFromSnapshot), 
             jsonDocumentSource.RunAsync()).ConfigureAwait(false);
     }
 
     public async Task<bool> TakeSnapshotAsync()
     {
-        StorageIngestState state = tracker.IngestState;
+        StorageIngestState state = Tracker.IngestState;
         return await snapshots.TakeSnapshotAsync(state);
     }
 
@@ -70,7 +70,7 @@ public class JsonIndexManager : IJsonIndexManager
         foreach (StorageAreaIngestState state in restoreResult.State.Areas)
         {
             jsonDocumentSource.UpdateGeneration(state.Area, state.Generation.Current);
-            tracker.UpdateState(state);
+            Tracker.UpdateState(state);
         }
 
         return true;
