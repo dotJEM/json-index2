@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace DotJEM.Json.Index2.Management.Writer;
 
-public interface IManagerJsonIndexWriter 
+public interface IJsonIndexWriter 
 {
     void Write(JObject entity);
     void Create(JObject entity);
@@ -19,32 +19,21 @@ public interface IManagerJsonIndexWriter
     void MaybeMerge();
 }
 
-public class ManagerJsonIndexWriter : IManagerJsonIndexWriter
+public class JsonIndexWriter : IJsonIndexWriter
 {
     private readonly IJsonIndex index;
     private readonly ILuceneDocumentFactory mapper;
     private readonly IFieldInformationManager resolver;
     private readonly IndexCommitter committer;
 
-    private IndexWriter writer;
+    private IndexWriter Writer => index.WriterManager.Writer;
 
-    private IndexWriter Writer
-    {
-        get
-        {
-            if (writer == index.WriterManager.Writer) return writer;
-            writer = index.WriterManager.Writer;
-            return writer;
-        }
-    }
-
-    public ManagerJsonIndexWriter(IJsonIndex index, IWebTaskScheduler scheduler, string commitInterval = "10s", int batchSize = 20000, double ramBufferSize = 1024)
+    public JsonIndexWriter(IJsonIndex index, IWebTaskScheduler scheduler, string commitInterval = "10s", int batchSize = 20000, double ramBufferSize = 1024)
     {
         this.index = index;
         this.mapper = index.Configuration.DocumentFactory;
         this.resolver = index.Configuration.FieldInformationManager;
         this.committer = new IndexCommitter(this, AdvParsers.AdvParser.ParseTimeSpan(commitInterval), batchSize);
-
         scheduler.Schedule(nameof(IndexCommitter), _ => committer.Increment(), commitInterval);
     }
 
@@ -79,12 +68,12 @@ public class ManagerJsonIndexWriter : IManagerJsonIndexWriter
     {
         private readonly int batchSize;
         private readonly TimeSpan commitInterval;
-        private readonly IManagerJsonIndexWriter owner;
+        private readonly IJsonIndexWriter owner;
 
         private long writes = 0;
         private readonly Stopwatch time = Stopwatch.StartNew();
 
-        public IndexCommitter(IManagerJsonIndexWriter owner, TimeSpan commitInterval, int batchSize)
+        public IndexCommitter(IJsonIndexWriter owner, TimeSpan commitInterval, int batchSize)
         {
             this.owner = owner;
             this.commitInterval = commitInterval;

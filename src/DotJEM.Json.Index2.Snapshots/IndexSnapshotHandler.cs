@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Snapshots.Streams;
-using DotJEM.Json.Index2.Snapshots.Zip;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
 using Directory = Lucene.Net.Store.Directory;
@@ -30,24 +29,16 @@ public interface IIndexSnapshotHandler
 
 public class IndexSnapshotHandler : IIndexSnapshotHandler
 {
-    //public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshot snapshot)
-    //{
-
-    //}
-
     public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage)
     {
         IndexWriter writer = index.WriterManager.Writer;
-        SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy;
-        if (sdp == null)
-            throw new InvalidOperationException("Index must use an implementation of the SnapshotDeletionPolicy.");
-
+        SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy
+                                     ?? throw new InvalidOperationException("Index must use an implementation of the SnapshotDeletionPolicy.");
         IndexCommit commit = null;
         try
         {
             commit = sdp.Snapshot();
             Directory dir = commit.Directory;
-
             ISnapshot snapshot = storage.CreateSnapshot(commit);
             using ISnapshotWriter snapshotWriter = snapshot.OpenWriter();
             List<IndexFile> files = commit.FileNames
@@ -65,55 +56,11 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         }
     }
 
-
-
-
     public async Task<bool> RestoreSnapshotAsync(IJsonIndex index, ISnapshot snapshot)
     {
         index.Storage.Delete();
         Directory dir = index.Storage.Directory;
         return await UnpackSnapshotAsync(index, snapshot, dir);
-        
-        //using ISnapshotReader reader = snapshot.OpenReader();
-
-        //IIndexFile segmentsFile = null;
-        //List<string> files = new();
-        //foreach (IIndexFile file in reader.GetIndexFiles())
-        //{
-        //    if (Regex.IsMatch(file.Name, "^" + IndexFileNames.SEGMENTS + "_.*$"))
-        //    {
-        //        segmentsFile = file;
-        //        continue;
-        //    }
-
-        //    using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);
-        //    using Stream sourceStream = file.Open();
-        //    await sourceStream.CopyToAsync(output);
-        //    files.Add(file.Name);
-        //}
-        //dir.Sync(files);
-
-        //if (segmentsFile == null)
-        //    throw new ArgumentException("Snapshot did not contain any segments file.", nameof(snapshot));
-
-        //using IndexOutputStream segOutput = dir.CreateOutputStream(segmentsFile.Name, IOContext.DEFAULT);
-        //using Stream segmentsSourceStream = segmentsFile.Open();
-        //await segmentsSourceStream.CopyToAsync(segOutput);
-        //segOutput.Dispose();
-        //segmentsSourceStream.Dispose();
-        //dir.Sync(new [] { segmentsFile.Name });
-
-        //SegmentInfos.WriteSegmentsGen(dir, snapshot.Generation);
-
-        ////NOTE: (jmd 2020-09-30) Not quite sure what this does at this time, but the Lucene Replicator does it so better keep it for now.
-        //IndexCommit last = DirectoryReader.ListCommits(dir).Last();
-        //if (last != null)
-        //{
-        //    ISet<string> commitFiles = new HashSet<string>(last.FileNames);
-        //    commitFiles.Add(IndexFileNames.SEGMENTS_GEN);
-        //}
-        //index.WriterManager.Close();
-        //return true;
     }
 
     public async Task<ISnapshot> RestoreSnapshotFromAsync(IJsonIndex index, ISnapshotStorage storage)
@@ -134,7 +81,6 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
                 index.Storage.Delete();
             }
         }
-
         return null;
     }
 
@@ -152,7 +98,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         if (segmentsFile == null)
             return false;
         
-        List<string> files = new List<string>();
+        List<string> files = new();
         foreach (IIndexFile file in snapshotFiles.Except(new[] { segmentsFile }))
         {
             using IndexOutputStream output = dir.CreateOutputStream(file.Name, IOContext.DEFAULT);

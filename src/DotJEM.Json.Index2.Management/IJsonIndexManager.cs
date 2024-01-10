@@ -13,28 +13,37 @@ public interface IJsonIndexManager
 {
     IInfoStream InfoStream { get; }
     IIngestProgressTracker Tracker { get; }
-    Task RunAsync();
+    IObservable<IJsonDocumentChange> DocumentChanges { get; }
     Task<bool> TakeSnapshotAsync();
+    Task RunAsync();
+    Task UpdateGenerationAsync(string area, int generation);
+    Task ResetIndexAsync();
 }
 
 public class JsonIndexManager : IJsonIndexManager
 {
     private readonly IJsonDocumentSource jsonDocumentSource;
     private readonly IJsonIndexSnapshotManager snapshots;
-    private readonly IManagerJsonIndexWriter writer;
+    private readonly IJsonIndexWriter writer;
     
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
+    private readonly DocumentChangesStream changesStream = new();
 
     public IInfoStream InfoStream => infoStream;
     public IIngestProgressTracker Tracker { get; }
+    public IObservable<IJsonDocumentChange> DocumentChanges => changesStream;
 
-    public JsonIndexManager(IJsonDocumentSource jsonDocumentSource, IJsonIndexSnapshotManager snapshots, IManagerJsonIndexWriter writer)
+    public JsonIndexManager(
+        IJsonDocumentSource jsonDocumentSource,
+        IJsonIndexSnapshotManager snapshots,
+        //TODO: Allow multiple indexes and something that can shard
+        IJsonIndexWriter writer)
     {
         this.jsonDocumentSource = jsonDocumentSource;
         this.snapshots = snapshots;
         this.writer = writer;
-        Tracker = new IngestProgressTracker();
 
+        Tracker = new IngestProgressTracker();
         jsonDocumentSource.DocumentChanges.ForEachAsync(CaptureChange);
         jsonDocumentSource.InfoStream.Subscribe(infoStream);
         jsonDocumentSource.Initialized.Subscribe(Tracker.SetInitialized);
@@ -78,6 +87,17 @@ public class JsonIndexManager : IJsonIndexManager
         return true;
     }
 
+    public Task UpdateGenerationAsync(string area, int generation)
+    {
+        jsonDocumentSource.UpdateGeneration(area, generation);
+        return Task.CompletedTask;
+    }
+
+    public async Task ResetIndexAsync()
+    {
+        await jsonDocumentSource.ResetAsync();
+    }
+
     private void CaptureChange(IJsonDocumentChange change)
     {
         try
@@ -94,6 +114,8 @@ public class JsonIndexManager : IJsonIndexManager
                     writer.Delete(change.Entity);
                     break;
             }
+
+            changesStream.Publish(change);
         }
         catch (Exception ex)
         {

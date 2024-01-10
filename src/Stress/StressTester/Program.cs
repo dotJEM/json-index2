@@ -22,6 +22,7 @@ using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Analysis.Util;
 using Lucene.Net.Search;
 using Stress.Adapter;
+using JsonIndexWriter = DotJEM.Json.Index2.Management.Writer.JsonIndexWriter;
 
 //TraceSource trace; 
 
@@ -66,7 +67,7 @@ IWebTaskScheduler scheduler = new WebTaskScheduler();
 IJsonIndexManager jsonIndexManager = new JsonIndexManager(
     new JsonStorageDocumentSource(new JsonStorageAreaObserverFactory(storage, scheduler,areas)),
     new JsonIndexSnapshotManager(index, new ZipSnapshotStrategy(".\\app_data\\snapshots"), scheduler, "30m"),
-    new ManagerJsonIndexWriter(index, scheduler)
+    new JsonIndexWriter(index, scheduler)
 );
 
 Task run = Task.WhenAll(

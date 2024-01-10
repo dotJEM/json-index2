@@ -22,7 +22,7 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
     private readonly string pollInterval;
     private readonly IWebTaskScheduler scheduler;
     private readonly IStorageAreaLog log;
-    private readonly ChangeStream observable = new();
+    private readonly DocumentChangesStream observable = new();
     private readonly IInfoStream<JsonStorageAreaObserver> infoStream = new InfoStream<JsonStorageAreaObserver>();
     
     private long generation = 0;
@@ -64,6 +64,11 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
 
         generation = value;
         Initialized.Value = true;
+    }
+
+    public async Task ResetAsync()
+    {
+        
     }
 
     public void RunUpdateCheck()
