@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using DotJEM.ObservableExtensions;
 
-namespace DotJEM.Json.Index2.Management;
+namespace DotJEM.Json.Index2.Management.Observables;
 
 public class ObservableValue<T> : BasicSubject<T>, IObservableValue<T>
 {
@@ -12,7 +12,7 @@ public class ObservableValue<T> : BasicSubject<T>, IObservableValue<T>
         get => value;
         set
         {
-            if(EqualityComparer<T>.Default.Equals(this.value, value))
+            if (EqualityComparer<T>.Default.Equals(this.value, value))
                 return;
 
             Publish(this.value = value);

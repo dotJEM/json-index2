@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using DotJEM.Json.Index2.Management.Observables;
 using DotJEM.Json.Index2.Management.Snapshots;
+using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Management.Writer;
 using DotJEM.ObservableExtensions.InfoStreams;
@@ -16,7 +18,7 @@ public interface IJsonIndexManager
     IObservable<IJsonDocumentChange> DocumentChanges { get; }
     Task<bool> TakeSnapshotAsync();
     Task RunAsync();
-    Task UpdateGenerationAsync(string area, int generation);
+    Task UpdateGenerationAsync(string area, long generation);
     Task ResetIndexAsync();
 }
 
@@ -87,7 +89,7 @@ public class JsonIndexManager : IJsonIndexManager
         return true;
     }
 
-    public Task UpdateGenerationAsync(string area, int generation)
+    public Task UpdateGenerationAsync(string area, long generation)
     {
         jsonDocumentSource.UpdateGeneration(area, generation);
         return Task.CompletedTask;

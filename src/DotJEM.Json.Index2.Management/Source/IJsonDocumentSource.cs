@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DotJEM.Json.Index2.Management.Observables;
 using DotJEM.ObservableExtensions.InfoStreams;
 
-namespace DotJEM.Json.Index2.Management;
+namespace DotJEM.Json.Index2.Management.Source;
 
 public interface IJsonDocumentSource
 {
@@ -10,7 +11,7 @@ public interface IJsonDocumentSource
 
     IObservable<IJsonDocumentChange> DocumentChanges { get; }
     IObservableValue<bool> Initialized { get; }
-    
+
     Task RunAsync();
     void UpdateGeneration(string area, long generation);
     Task ResetAsync();
