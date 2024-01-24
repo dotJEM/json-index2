@@ -28,6 +28,7 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
     private readonly IInfoStream<JsonStorageAreaObserver> infoStream = new InfoStream<JsonStorageAreaObserver>();
     
     private long generation = 0;
+    private long initialGeneration = 0;
     private IScheduledTask task;
     public IStorageArea StorageArea { get; }
 
@@ -65,11 +66,13 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
             return;
 
         generation = value;
+        initialGeneration = value;
         Initialized.Value = true;
     }
 
     public async Task ResetAsync()
     {
+        UpdateGeneration(AreaName, initialGeneration);
         
     }
 
@@ -116,8 +119,13 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
                 generation = change.Generation;
                 if (change.Type == ChangeType.Faulty)
                     continue;
-
-                observable.Publish(new JsonDocumentChange(change.Area, changeTypeGetter(change), change.CreateEntity(), change.Size, new GenerationInfo(change.Generation, latestGeneration)));
+                
+                observable.Publish(new JsonDocumentChange(
+                    change.Area, 
+                    changeTypeGetter(change), 
+                    change.CreateEntity(), 
+                    change.Size, 
+                    new GenerationInfo(change.Generation, latestGeneration)));
             }
         }
     }
