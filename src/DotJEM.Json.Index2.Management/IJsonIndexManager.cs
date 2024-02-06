@@ -61,7 +61,7 @@ public class JsonIndexManager : IJsonIndexManager
 
     public async Task RunAsync()
     {
-        bool restoredFromSnapshot = await RestoreSnapshotAsync();
+        bool restoredFromSnapshot = await RestoreSnapshotAsync().ConfigureAwait(false);
         infoStream.WriteInfo($"Index restored from a snapshot: {restoredFromSnapshot}.");
 
         Task ingestTask = jsonDocumentSource.RunAsync();
@@ -75,12 +75,12 @@ public class JsonIndexManager : IJsonIndexManager
     public async Task<bool> TakeSnapshotAsync()
     {
         StorageIngestState state = Tracker.IngestState;
-        return await snapshots.TakeSnapshotAsync(state);
+        return await snapshots.TakeSnapshotAsync(state).ConfigureAwait(false);
     }
 
     public async Task<bool> RestoreSnapshotAsync()
     {
-        RestoreSnapshotResult restoreResult = await snapshots.RestoreSnapshotAsync();
+        RestoreSnapshotResult restoreResult = await snapshots.RestoreSnapshotAsync().ConfigureAwait(false);
         if (!restoreResult.RestoredFromSnapshot)
             return false;
 
@@ -101,7 +101,7 @@ public class JsonIndexManager : IJsonIndexManager
 
     public async Task ResetIndexAsync()
     {
-        await jsonDocumentSource.ResetAsync();
+        await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
     }
 
     private void CaptureChange(IJsonDocumentChange change)

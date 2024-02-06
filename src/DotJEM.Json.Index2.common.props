@@ -24,7 +24,8 @@
 	
 		<PackageIcon>avatar.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-	  
+
+    <WarningsAsErrors>CA2007</WarningsAsErrors>
 	</PropertyGroup>
   
 	<ItemGroup>

@@ -1,18 +1,14 @@
-﻿using System;
-using System.Diagnostics;
-using System.Reactive.Subjects;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using DotJEM.Json.Index2.Management;
 using DotJEM.Json.Index2.Management.Observables;
 using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Storage.Adapter;
 using DotJEM.Json.Storage.Adapter.Materialize.ChanceLog.ChangeObjects;
 using DotJEM.Json.Storage.Adapter.Observable;
-using DotJEM.ObservableExtensions;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
 
-namespace Stress.Adapter;
+namespace StressTester.Adapter;
 
 public interface IJsonStorageAreaObserver : IJsonDocumentSource
 {
@@ -50,13 +46,13 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
         infoStream.WriteJsonSourceEvent(JsonSourceEventType.Starting, StorageArea.Name, $"Ingest starting for storageArea '{StorageArea.Name}'.");
         task = scheduler.Schedule($"JsonStorageAreaObserver:{StorageArea.Name}", _ => RunUpdateCheck(), pollInterval);
         task.InfoStream.Subscribe(infoStream);
-        await task;
+        await task.WhenCompleted();
     }
 
     public async Task StopAsync()
     {
         task.Dispose();
-        await task;
+        await task.WhenCompleted();
         infoStream.WriteJsonSourceEvent(JsonSourceEventType.Stopped, StorageArea.Name, $"Initializing for storageArea '{StorageArea.Name}'.");
     }
 

@@ -8,6 +8,7 @@ using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Storage;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
+using StressTester.Adapter;
 
 namespace Stress.Adapter;
 

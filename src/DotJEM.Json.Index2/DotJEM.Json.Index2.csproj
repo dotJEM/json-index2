@@ -27,6 +27,7 @@
 	
 	<PackageIcon>avatar.png</PackageIcon>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<AnalysisLevel>6.0</AnalysisLevel>
 	  
   </PropertyGroup>
   
