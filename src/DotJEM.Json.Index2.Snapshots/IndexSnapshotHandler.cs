@@ -44,7 +44,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             List<IndexFile> files = commit.FileNames
                 .Select(fileName => new IndexFile(fileName, () => dir.OpenInputStream(fileName, IOContext.READ_ONCE)))
                 .ToList();
-            await snapshotWriter.WriteIndexAsync(files);
+            await snapshotWriter.WriteIndexAsync(files).ConfigureAwait(false);
             return snapshot;
         }
         finally
@@ -60,7 +60,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
     {
         index.Storage.Delete();
         Directory dir = index.Storage.Directory;
-        return await UnpackSnapshotAsync(index, snapshot, dir);
+        return await UnpackSnapshotAsync(index, snapshot, dir).ConfigureAwait(false);
     }
 
     public async Task<ISnapshot> RestoreSnapshotFromAsync(IJsonIndex index, ISnapshotStorage storage)
@@ -71,7 +71,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         {
             try
             {
-                if(await UnpackSnapshotAsync(index, snapshot, dir))
+                if(await UnpackSnapshotAsync(index, snapshot, dir).ConfigureAwait(false))
                     return snapshot;
             }
             catch (Exception e)
@@ -110,7 +110,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
 
         using IndexOutputStream segOutput = dir.CreateOutputStream(segmentsFile.Name, IOContext.DEFAULT);
         using Stream segmentsSourceStream = segmentsFile.Open();
-        await segmentsSourceStream.CopyToAsync(segOutput);
+        await segmentsSourceStream.CopyToAsync(segOutput).ConfigureAwait(false);
         segOutput.Dispose();
         segmentsSourceStream.Dispose();
         dir.Sync(new[] { segmentsFile.Name });

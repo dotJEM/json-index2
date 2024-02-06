@@ -63,9 +63,13 @@ public class JsonIndexManager : IJsonIndexManager
     {
         bool restoredFromSnapshot = await RestoreSnapshotAsync();
         infoStream.WriteInfo($"Index restored from a snapshot: {restoredFromSnapshot}.");
-        await Task.WhenAll(
-            snapshots.RunAsync(Tracker, restoredFromSnapshot), 
-            jsonDocumentSource.RunAsync()).ConfigureAwait(false);
+
+        Task ingestTask = jsonDocumentSource.RunAsync();
+        await Tracker.WhenState(IngestInitializationState.Started);
+
+        await Task
+            .WhenAll(snapshots.RunAsync(Tracker, restoredFromSnapshot), ingestTask)
+            .ConfigureAwait(false);
     }
 
     public async Task<bool> TakeSnapshotAsync()

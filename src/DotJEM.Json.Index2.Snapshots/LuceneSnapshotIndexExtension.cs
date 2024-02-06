@@ -9,19 +9,19 @@ public static class LuceneSnapshotIndexExtension
     public static async Task<ISnapshot> TakeSnapshotAsync(this IJsonIndex self, ISnapshotStorage storage)
     {
         IIndexSnapshotHandler handler = self.ResolveSnapshotHandler();
-        return await handler.TakeSnapshotAsync(self, storage);
+        return await handler.TakeSnapshotAsync(self, storage).ConfigureAwait(false);
     }
 
     public static async Task<bool> RestoreSnapshotAsync(this IJsonIndex self, ISnapshot snapshot)
     {
         IIndexSnapshotHandler handler = self.ResolveSnapshotHandler();
-        return await handler.RestoreSnapshotAsync(self, snapshot);
+        return await handler.RestoreSnapshotAsync(self, snapshot).ConfigureAwait(false);
     }
 
     public static async Task<ISnapshot> RestoreSnapshotFromAsync(this IJsonIndex self, ISnapshotStorage storage)
     {
         IIndexSnapshotHandler handler = self.ResolveSnapshotHandler();
-        return await handler.RestoreSnapshotFromAsync(self, storage);
+        return await handler.RestoreSnapshotFromAsync(self, storage).ConfigureAwait(false);
     }
 
     public static IJsonIndexBuilder WithSnapshoting(this IJsonIndexBuilder self)
