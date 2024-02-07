@@ -3,10 +3,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Management.Info;
-using DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 using DotJEM.Json.Index2.Management.Source;
 using DotJEM.ObservableExtensions;
 using DotJEM.ObservableExtensions.InfoStreams;
@@ -108,28 +106,28 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
                 OnStorageObserverInfoStreamEvent(evt);
                 break;
                 
-            case ZipSnapshotEvent evt:
-                OnZipSnapshotEvent(evt);
+            case SnapshotInfoEvent evt:
+                OnSnapshotEvent(evt);
                 break;
                 
-            case ZipFileEvent evt:
-                OnZipFileEvent(evt);
+            case FileInfoEvent evt:
+                OnFileEvent(evt);
                 break;
         }
     }
 
-    private void OnZipFileEvent(ZipFileEvent sne)
+    private void OnFileEvent(FileInfoEvent sne)
     {
-        switch (sne.EventType)
+        switch (sne)
         {
-            case FileEventType.OPEN:
+            case FileOpenedInfoEvent:
                 restoreTrackers.AddOrUpdate(
                     sne.FileName,
                     name => new IndexFileRestoreStateTracker(name, sne.Progress),
                     (name, tracker) => tracker.Restoring(sne.Progress)
                 );
                 break;
-            case FileEventType.CLOSE:
+            case FileClosedInfoEvent:
                 restoreTrackers.AddOrUpdate(
                     sne.FileName,
                     name => new IndexFileRestoreStateTracker(name, sne.Progress),
@@ -137,7 +135,7 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
                 );
                 break;
 
-            case FileEventType.PROGRESS:
+            case FileProgressInfoEvent:
                 restoreTrackers.AddOrUpdate(
                     sne.FileName,
                     name => new IndexFileRestoreStateTracker(name, sne.Progress),
@@ -152,7 +150,7 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
         InternalPublish(RestoreState);
     }
 
-    private void OnZipSnapshotEvent(ZipSnapshotEvent sne)
+    private void OnSnapshotEvent(SnapshotInfoEvent sne)
     {
         InternalPublish(RestoreState);
     }

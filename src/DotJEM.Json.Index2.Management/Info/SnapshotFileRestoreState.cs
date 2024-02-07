@@ -1,5 +1,4 @@
 ﻿using System;
-using DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 
 namespace DotJEM.Json.Index2.Management.Info;
 

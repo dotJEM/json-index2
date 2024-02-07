@@ -4,7 +4,6 @@ using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Management.Info;
-using DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
 
