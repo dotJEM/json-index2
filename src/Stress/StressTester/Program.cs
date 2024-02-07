@@ -27,7 +27,7 @@ using JsonIndexWriter = DotJEM.Json.Index2.Management.Writer.JsonIndexWriter;
 
 //TraceSource trace; 
 
-IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=SSN3DB;Integrated Security=True");
+IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=nsw;Integrated Security=True");
 //IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=STRESS;Integrated Security=True");
 storage.Configure.MapField(JsonField.Id, "id");
 storage.Configure.MapField(JsonField.ContentType, "contentType");
@@ -67,7 +67,7 @@ string[] areas = new[] { "content", "settings", "diagnostic", "emsaqueue", "stat
 IWebTaskScheduler scheduler = new WebTaskScheduler();
 IJsonIndexManager jsonIndexManager = new JsonIndexManager(
     new JsonStorageDocumentSource(new JsonStorageAreaObserverFactory(storage, scheduler,areas)),
-    new JsonIndexSnapshotManager(index, new ZipSnapshotStrategy(".\\app_data\\snapshots"), scheduler, "30m"),
+    new JsonIndexSnapshotManager(index, new ZipSnapshotStrategy(".\\app_data\\snapshots"), scheduler, "10s"),
     new JsonIndexWriter(index, scheduler)
 );
 
