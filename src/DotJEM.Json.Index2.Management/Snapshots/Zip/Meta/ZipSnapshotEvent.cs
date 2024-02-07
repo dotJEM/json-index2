@@ -25,7 +25,17 @@ public class SnapshotCreatedEvent : InfoStreamEvent
 
     public FileEventType EventType { get; }
 
-    //public IEnumerable<string> SnapshotFiles => snapshot.Files.Select(file => file.Name);
+    public SnapshotCreatedEvent(Type source, InfoLevel level, ISnapshot snapshot, string message, string callerMemberName, string callerFilePath, int callerLineNumber)
+        : base(source, level, message, callerMemberName, callerFilePath, callerLineNumber)
+    {
+        this.Snapshot = snapshot;
+    }
+}
+public class SnapshotDeletedEvent : InfoStreamEvent
+{
+    public ISnapshot Snapshot { get; }
+
+    public FileEventType EventType { get; }
 
     public SnapshotCreatedEvent(Type source, InfoLevel level, ISnapshot snapshot, string message, string callerMemberName, string callerFilePath, int callerLineNumber)
         : base(source, level, message, callerMemberName, callerFilePath, callerLineNumber)

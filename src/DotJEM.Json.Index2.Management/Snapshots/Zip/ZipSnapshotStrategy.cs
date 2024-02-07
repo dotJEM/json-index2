@@ -34,7 +34,7 @@ public class ZipSnapshotStrategy : ISnapshotStrategy
             try
             {
                 snapshot.Delete();
-                infoStream.WriteInfo($"Deleted snapshot: {snapshot}");
+                infoStream.WriteSnapshotCreatedEvent(snapshot, $"Snapshot {snapshot} was deleted");
             }
             catch (Exception ex)
             {

@@ -92,4 +92,17 @@ public static class ZipSnapshotInfoStreamExtensions
     public static void WriteSnapshotCreatedEvent<TSource>(this IInfoStream<TSource> self, ISnapshot snapshot, string message, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
         => self.WriteEvent(new SnapshotCreatedEvent(typeof(TSource), InfoLevel.INFO, snapshot, message, callerMemberName, callerFilePath, callerLineNumber));
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TSource"></typeparam>
+    /// <param name="self"></param>
+    /// <param name="snapshot"></param>
+    /// <param name="message"></param>
+    /// <param name="callerMemberName"></param>
+    /// <param name="callerFilePath"></param>
+    /// <param name="callerLineNumber"></param>
+    public static void WriteSnapshotDeletedEvent<TSource>(this IInfoStream<TSource> self, ISnapshot snapshot, string message, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
+        => self.WriteEvent(new SnapshotDeletedEvent(typeof(TSource), InfoLevel.INFO, snapshot, message, callerMemberName, callerFilePath, callerLineNumber));
+
 }
