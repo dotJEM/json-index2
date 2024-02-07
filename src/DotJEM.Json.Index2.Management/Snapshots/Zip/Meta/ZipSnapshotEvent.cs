@@ -37,7 +37,7 @@ public class SnapshotDeletedEvent : InfoStreamEvent
 
     public FileEventType EventType { get; }
 
-    public SnapshotCreatedEvent(Type source, InfoLevel level, ISnapshot snapshot, string message, string callerMemberName, string callerFilePath, int callerLineNumber)
+    public SnapshotDeletedEvent(Type source, InfoLevel level, ISnapshot snapshot, string message, string callerMemberName, string callerFilePath, int callerLineNumber)
         : base(source, level, message, callerMemberName, callerFilePath, callerLineNumber)
     {
         this.Snapshot = snapshot;
