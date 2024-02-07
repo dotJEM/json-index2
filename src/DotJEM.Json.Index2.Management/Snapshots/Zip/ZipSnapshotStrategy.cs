@@ -58,6 +58,7 @@ public class MetaZipSnapshotStorage : ISnapshotStorage
 
     public ISnapshot CreateSnapshot(IndexCommit commit)
     {
+        Directory.CreateDirectory(path);
         string snapshotPath = Path.Combine(path, $"{commit.Generation:x8}.zip");
         return CreateSnapshot(snapshotPath);
     }
