@@ -93,9 +93,9 @@ public class MetaZipFileSnapshot : ZipFileSnapshot
 
     public override ISnapshotWriter OpenWriter()
     {
-       ManagerZipSnapshotWriter writer= new(this.FilePath);
-       writer.InfoStream.Subscribe(infoStream);
-       return writer;
+        ManagerZipSnapshotWriter writer= new(this.FilePath);
+        writer.InfoStream.Subscribe(infoStream);
+        return writer;
     }
 
     public MetaZipFileSnapshot(string path) : base(path)

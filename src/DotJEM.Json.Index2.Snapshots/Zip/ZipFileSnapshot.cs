@@ -13,6 +13,8 @@ public class ZipFileSnapshot : ISnapshot
     public string FileName { get; }
     public string FilePath { get; }
 
+    public bool Exists => File.Exists(FilePath);
+
     public virtual ISnapshotReader OpenReader() => new ZipSnapshotReader(this.FilePath);
 
     public virtual ISnapshotWriter OpenWriter() => new ZipSnapshotWriter(this.FilePath);

@@ -13,6 +13,7 @@ namespace DotJEM.Json.Index2.Snapshots;
 
 public interface ISnapshot
 {
+    bool Exists { get; }
     long Generation { get; }
     ISnapshotReader OpenReader();
     ISnapshotWriter OpenWriter();
@@ -40,6 +41,9 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
             commit = sdp.Snapshot();
             Directory dir = commit.Directory;
             ISnapshot snapshot = storage.CreateSnapshot(commit);
+            if (snapshot.Exists)
+                throw new InvalidOperationException("Can't write to an existing snapshot.");
+
             using ISnapshotWriter snapshotWriter = snapshot.OpenWriter();
             List<IndexFile> files = commit.FileNames
                 .Select(fileName => new IndexFile(fileName, () => dir.OpenInputStream(fileName, IOContext.READ_ONCE)))
