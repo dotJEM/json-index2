@@ -2,5 +2,7 @@
 
 public enum FileEventType
 {
-    OPEN, CLOSE, PROGRESS
+    OPEN, 
+    CLOSE,
+    PROGRESS
 }

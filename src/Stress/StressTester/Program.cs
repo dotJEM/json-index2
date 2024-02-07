@@ -8,6 +8,7 @@ using DotJEM.Json.Index2;
 using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.IO;
 using DotJEM.Json.Index2.Management;
+using DotJEM.Json.Index2.Management.Info;
 using DotJEM.Json.Index2.Management.Snapshots;
 using DotJEM.Json.Index2.Management.Snapshots.Zip;
 using DotJEM.Json.Index2.Management.Tracking;

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using DotJEM.Json.Index2.Management.Info;
 using DotJEM.Json.Index2.Management.Snapshots.Zip.Meta;
 using DotJEM.Json.Index2.Management.Source;
 using DotJEM.ObservableExtensions;

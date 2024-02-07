@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using DotJEM.Json.Index2.Management.Info;
 using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
@@ -74,15 +75,16 @@ public class JsonIndexSnapshotManager : IJsonIndexSnapshotManager
         {
             JObject json = JObject.FromObject(state);
             ISnapshotStorage target = strategy.Storage;
-            
+                        
             index.Commit();
             ISnapshot snapshot = await index.TakeSnapshotAsync(target).ConfigureAwait(false);
-            using ISnapshotWriter writer = snapshot.OpenWriter();
-            using JsonTextWriter wr = new (new StreamWriter(writer.OpenStream("manifest.json")));
-            await json.WriteToAsync(wr).ConfigureAwait(false);
-            await wr.FlushAsync().ConfigureAwait(false);
-
-            infoStream.WriteInfo($"Created snapshot");
+            using (ISnapshotWriter writer = snapshot.OpenWriter())
+            {
+                using JsonTextWriter wr = new(new StreamWriter(writer.OpenStream("manifest.json")));
+                await json.WriteToAsync(wr).ConfigureAwait(false);
+                await wr.FlushAsync().ConfigureAwait(false);
+            }
+            infoStream.WriteSnapshotCreatedEvent(snapshot, "Snapshot created.");
             return true;
         }
         catch (Exception exception)
