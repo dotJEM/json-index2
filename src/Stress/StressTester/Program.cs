@@ -22,6 +22,7 @@ using DotJEM.Web.Scheduler;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Analysis.Util;
 using Lucene.Net.Search;
+using Newtonsoft.Json.Linq;
 using Stress.Adapter;
 using JsonIndexWriter = DotJEM.Json.Index2.Management.Writer.JsonIndexWriter;
 
@@ -123,6 +124,10 @@ while (true)
         case 'Q':
             int matches = index.Search(new MatchAllDocsQuery()).Count();
             Console.WriteLine($"Matched documents: {matches}");
+            break;
+
+        case 'W':
+            storage.Area().Insert("test", new JObject { ["name"] = "Foo" });
             break;
 
         default:

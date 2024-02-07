@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using DotJEM.Json.Index2.Documents;
 using DotJEM.Json.Index2.Documents.Info;
+using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
@@ -11,6 +13,7 @@ namespace DotJEM.Json.Index2.Management.Writer;
 
 public interface IJsonIndexWriter 
 {
+    IInfoStream InfoStream { get; }
     void Write(JObject entity);
     void Create(JObject entity);
     void Delete(JObject entity);
@@ -25,8 +28,11 @@ public class JsonIndexWriter : IJsonIndexWriter
     private readonly ILuceneDocumentFactory mapper;
     private readonly IFieldInformationManager resolver;
     private readonly IndexCommitter committer;
+    private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
 
     private IndexWriter Writer => index.WriterManager.Writer;
+
+    public IInfoStream InfoStream => infoStream;
 
     public JsonIndexWriter(IJsonIndex index, IWebTaskScheduler scheduler, string commitInterval = "10s", int batchSize = 20000, double ramBufferSize = 1024)
     {
@@ -43,6 +49,7 @@ public class JsonIndexWriter : IJsonIndexWriter
         LuceneDocumentEntry doc = mapper.Create(entity);
         Writer.UpdateDocument(term, doc.Document);
         committer.Increment();
+        DebugInfo();
     }
 
     public void Create(JObject entity)
@@ -50,6 +57,7 @@ public class JsonIndexWriter : IJsonIndexWriter
         LuceneDocumentEntry doc = mapper.Create(entity);
         Writer.AddDocument(doc.Document);
         committer.Increment();
+        DebugInfo();
     }
 
     public void Delete(JObject entity)
@@ -57,12 +65,29 @@ public class JsonIndexWriter : IJsonIndexWriter
         Term term = resolver.Resolver.Identity(entity);
         Writer.DeleteDocuments(term);
         committer.Increment();
+        DebugInfo();
     }
 
 
-    public void Commit() => Writer.Commit();
-    public void Flush(bool triggerMerge, bool applyAllDeletes) => Writer.Flush(triggerMerge, applyAllDeletes);
-    public void MaybeMerge() => Writer.MaybeMerge();
+    public void Commit()
+    {
+        Writer.Commit();
+        DebugInfo();
+    }
+    public void Flush(bool triggerMerge, bool applyAllDeletes)
+    {
+        Writer.Flush(triggerMerge, applyAllDeletes);
+        DebugInfo();
+    }
+
+    public void MaybeMerge()
+    {
+        Writer.MaybeMerge();
+        DebugInfo();
+    }
+
+    private void DebugInfo([CallerMemberName] string caller = null) => infoStream.WriteDebug($"{nameof(JsonIndexWriter)}.{caller} called.");
+
 
     private class IndexCommitter
     {
