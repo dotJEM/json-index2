@@ -53,7 +53,6 @@ public class JsonIndexSnapshotManager : IJsonIndexSnapshotManager
         
         this.scheduler = scheduler;
         this.schedule = schedule;
-
         this.strategy = snapshotStrategy;
         this.strategy.InfoStream.Subscribe(infoStream);
     }

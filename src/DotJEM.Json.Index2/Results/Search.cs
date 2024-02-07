@@ -107,7 +107,7 @@ public sealed class Search : ISearch
         //collector2.GetTopDocs()
         IJsonDocumentSerializer serializer = manager.Serializer;
 
-        TopFieldDocs topDocs = searcher.Search(query, filter, take, sort, doDocScores, doMaxScores);
+        TopFieldDocs topDocs = searcher.Search(query, filter, take + skip, sort, doDocScores, doMaxScores);
 
         infoStream.WriteSearchCompletedEvent("", new SearchInfo(query, skip, take, sort, filter, doDocScores, doMaxScores), timer.Elapsed);
         IEnumerable<SearchResult> loaded =
@@ -120,7 +120,6 @@ public sealed class Search : ISearch
 
         SearchResult[] results = loaded.ToArray();
 
-        TimeSpan loadTime = timer.Elapsed;
         infoStream.WriteSearchDataLoadedEvent("", new SearchInfo(query, skip, take, sort, filter, doDocScores, doMaxScores), timer.Elapsed);
         return new SearchResults(results, topDocs.TotalHits);
     }

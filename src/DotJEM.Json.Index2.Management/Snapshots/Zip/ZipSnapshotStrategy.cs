@@ -82,7 +82,6 @@ public class MetaZipFileSnapshot : ZipFileSnapshot
     private readonly InfoStream<MetaZipFileSnapshot> infoStream = new();
     public IInfoStream InfoStream => infoStream;
 
-
     public override ISnapshotReader OpenReader()
     {
         infoStream.WriteSnapshotOpenEvent(this, "");
