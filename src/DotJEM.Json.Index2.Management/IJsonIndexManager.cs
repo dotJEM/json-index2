@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Management.Info;
 using DotJEM.Json.Index2.Management.Observables;
@@ -9,6 +12,7 @@ using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Management.Writer;
 using DotJEM.ObservableExtensions.InfoStreams;
+using DotJEM.Web.Scheduler;
 
 namespace DotJEM.Json.Index2.Management;
 
@@ -118,6 +122,9 @@ public class JsonIndexManager : IJsonIndexManager
                     break;
                 case JsonChangeType.Delete:
                     writer.Delete(change.Entity);
+                    break;
+                case JsonChangeType.Commit:
+                    writer.Commit();
                     break;
             }
 

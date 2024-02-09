@@ -69,7 +69,7 @@ IWebTaskScheduler scheduler = new WebTaskScheduler();
 IJsonIndexManager jsonIndexManager = new JsonIndexManager(
     new JsonStorageDocumentSource(new JsonStorageAreaObserverFactory(storage, scheduler,areas)),
     new JsonIndexSnapshotManager(index, new ZipSnapshotStrategy(".\\app_data\\snapshots"), scheduler, "10s"),
-    new JsonIndexWriter(index, scheduler)
+    new JsonIndexWriter(index)
 );
 
 Task run = Task.WhenAll(

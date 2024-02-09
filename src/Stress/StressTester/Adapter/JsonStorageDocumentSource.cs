@@ -29,15 +29,25 @@ public class JsonStorageDocumentSource : IJsonDocumentSource
 
     public JsonStorageDocumentSource(IJsonStorageAreaObserverFactory factory)
     {
-        observers = factory.CreateAll()
+        observers = factory
+            .CreateAll()
             .Select(observer =>
             {
-                observer.DocumentChanges.Subscribe(observable);
+                observer.DocumentChanges.Subscribe(Forward);
                 observer.InfoStream.Subscribe(infoStream);
                 observer.Initialized.Subscribe(_ => InitializedChanged());
-
                 return observer;
-            }).ToDictionary(x => x.AreaName);
+            })
+            .ToDictionary(x => x.AreaName);
+    }
+
+    private void Forward(IJsonDocumentChange change)
+    {
+        //Only pass a commit signal through once all are initialized.
+        if(change.Type == JsonChangeType.Commit && !Initialized.Value)
+            return;
+
+        observable.Publish(change);
     }
 
     private void InitializedChanged()

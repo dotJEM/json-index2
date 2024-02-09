@@ -2,5 +2,8 @@
 
 public enum JsonChangeType
 {
-    Create, Update, Delete
+    Create, 
+    Update, 
+    Delete,
+    Commit
 }

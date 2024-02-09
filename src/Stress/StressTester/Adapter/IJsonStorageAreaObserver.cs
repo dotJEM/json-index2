@@ -86,6 +86,7 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
             Initialized.Value  = true;
             infoStream.WriteJsonSourceEvent(JsonSourceEventType.Initialized, StorageArea.Name, $"Initialization complete for storageArea '{StorageArea.Name}' in {timer.Elapsed}.");
             AfterInitialize();
+
         }
         else
         {
@@ -96,6 +97,7 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
             infoStream.WriteJsonSourceEvent(JsonSourceEventType.Updated, StorageArea.Name, $"Done checking updates for storageArea '{StorageArea.Name}' in {timer.Elapsed}.");
             AfterUpdate();
         }
+        PublishCommitSignal();
 
         JsonChangeType MapChange(ChangeType type)
         {
@@ -106,6 +108,11 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
                 ChangeType.Delete => JsonChangeType.Delete,
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
+        }
+
+        void PublishCommitSignal()
+        {
+            observable.Publish(new CommitSignal(AreaName));
         }
 
         void PublishChanges(IStorageAreaLogReader changes, Func<IChangeLogRow, JsonChangeType> changeTypeGetter)

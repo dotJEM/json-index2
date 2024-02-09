@@ -83,6 +83,9 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
 
     public void OnNext(IJsonDocumentChange value)
     {
+        if (value is not JsonDocumentChange)
+            return;
+
         observerTrackers.AddOrUpdate(value.Area, _ => throw new InvalidDataException(), (_, state) => state.UpdateState(value.Generation, value.Size));
         InternalPublish(IngestState);
     }

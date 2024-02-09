@@ -11,3 +11,13 @@ public record JsonDocumentChange(string Area, JsonChangeType Type, JObject Entit
     public JObject Entity { get; } = Entity;
     public int Size { get; } = Size;
 }
+
+public record CommitSignal(string Area)
+    : IJsonDocumentChange
+{
+    public GenerationInfo Generation { get; } = new GenerationInfo();
+    public JsonChangeType Type => JsonChangeType.Commit;
+    public string Area { get; } = Area;
+    public JObject Entity => null;
+    public int Size => 0;
+}

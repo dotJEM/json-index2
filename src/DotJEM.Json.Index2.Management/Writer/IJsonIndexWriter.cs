@@ -27,20 +27,17 @@ public class JsonIndexWriter : IJsonIndexWriter
     private readonly IJsonIndex index;
     private readonly ILuceneDocumentFactory mapper;
     private readonly IFieldInformationManager resolver;
-    private readonly IndexCommitter committer;
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
 
     private IndexWriter Writer => index.WriterManager.Writer;
 
     public IInfoStream InfoStream => infoStream;
 
-    public JsonIndexWriter(IJsonIndex index, IWebTaskScheduler scheduler, string commitInterval = "10s", int batchSize = 20000, double ramBufferSize = 1024)
+    public JsonIndexWriter(IJsonIndex index)
     {
         this.index = index;
         this.mapper = index.Configuration.DocumentFactory;
         this.resolver = index.Configuration.FieldInformationManager;
-        this.committer = new IndexCommitter(this, AdvParsers.AdvParser.ParseTimeSpan(commitInterval), batchSize);
-        scheduler.Schedule(nameof(IndexCommitter), _ => committer.Increment(), commitInterval);
     }
 
     public void Write(JObject entity)
@@ -48,7 +45,6 @@ public class JsonIndexWriter : IJsonIndexWriter
         Term term = resolver.Resolver.Identity(entity);
         LuceneDocumentEntry doc = mapper.Create(entity);
         Writer.UpdateDocument(term, doc.Document);
-        committer.Increment();
         DebugInfo();
     }
 
@@ -56,7 +52,6 @@ public class JsonIndexWriter : IJsonIndexWriter
     {
         LuceneDocumentEntry doc = mapper.Create(entity);
         Writer.AddDocument(doc.Document);
-        committer.Increment();
         DebugInfo();
     }
 
@@ -64,7 +59,6 @@ public class JsonIndexWriter : IJsonIndexWriter
     {
         Term term = resolver.Resolver.Identity(entity);
         Writer.DeleteDocuments(term);
-        committer.Increment();
         DebugInfo();
     }
 
@@ -87,36 +81,5 @@ public class JsonIndexWriter : IJsonIndexWriter
     }
 
     private void DebugInfo([CallerMemberName] string caller = null) => infoStream.WriteDebug($"{nameof(JsonIndexWriter)}.{caller} called.");
-
-
-    private class IndexCommitter
-    {
-        private readonly int batchSize;
-        private readonly TimeSpan commitInterval;
-        private readonly IJsonIndexWriter owner;
-
-        private long writes = 0;
-        private readonly Stopwatch time = Stopwatch.StartNew();
-
-        public IndexCommitter(IJsonIndexWriter owner, TimeSpan commitInterval, int batchSize)
-        {
-            this.owner = owner;
-            this.commitInterval = commitInterval;
-            this.batchSize = batchSize;
-        }
-
-        public void Increment()
-        {
-            long value  = Interlocked.Increment(ref writes);
-            if(value % batchSize == 0 || time.Elapsed > commitInterval)
-                Commit();
-        }
-
-        private void Commit()
-        {
-            owner.Commit();
-            time.Restart();
-        }
     }
-}
 
