@@ -34,7 +34,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.Integer)
                                       ?? new Int64FieldStrategy();
             Add(strategy.CreateFields(json, context));
-            base.VisitInteger(json, context);
         }
 
         protected override void VisitFloat(JValue json, IPathContext context)
@@ -42,7 +41,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.Float)
                                       ?? new DoubleFieldStrategy();
             Add(strategy.CreateFields(json, context));
-            base.VisitFloat(json, context);
         }
 
         protected override void VisitString(JValue json, IPathContext context)
@@ -51,7 +49,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.String)
                                       ?? new TextFieldStrategy();
             Add(strategy.CreateFields(json, context));
-            base.VisitString(json, context);
         }
 
         protected override void VisitBoolean(JValue json, IPathContext context)
@@ -59,7 +56,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.Boolean)
                                       ?? new BooleanFieldStrategy();
             Add(strategy.CreateFields(json, context));
-            base.VisitBoolean(json, context);
         }
 
         protected override void VisitNull(JValue json, IPathContext context)
@@ -67,7 +63,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.Null)
                                       ?? new NullFieldStrategy("$$NULL$$");
             Add(strategy.CreateFields(json, context));
-            base.VisitNull(json, context);
         }
 
         protected override void VisitUndefined(JValue json, IPathContext context)
@@ -75,7 +70,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.Undefined)
                                       ?? new NullFieldStrategy("$$UNDEFINED$$");
             Add(strategy.CreateFields(json, context));
-            base.VisitUndefined(json, context);
         }
 
         protected override void VisitDate(JValue json, IPathContext context)
@@ -83,7 +77,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.Date)
                                       ?? new ExpandedDateTimeFieldStrategy();
             Add(strategy.CreateFields(json, context));
-            base.VisitDate(json, context);
         }
 
         protected override void VisitGuid(JValue json, IPathContext context)
@@ -91,7 +84,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.Guid)
                                       ?? new IdentityFieldStrategy();
             Add(strategy.CreateFields(json, context));
-            base.VisitGuid(json, context);
         }
 
         protected override void VisitUri(JValue json, IPathContext context)
@@ -99,7 +91,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.Uri)
                                       ?? new TextFieldStrategy();
             Add(strategy.CreateFields(json, context));
-            base.VisitUri(json, context);
         }
 
         protected override void VisitTimeSpan(JValue json, IPathContext context)
@@ -107,7 +98,6 @@ namespace DotJEM.Json.Index2.Documents.Builder
             IFieldStrategy strategy = ResolveStrategy(context, JTokenType.TimeSpan)
                                       ?? new ExpandedTimeSpanFieldStrategy();
             Add(strategy.CreateFields(json, context));
-            base.VisitTimeSpan(json, context);
         }
     }
 }

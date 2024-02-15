@@ -18,7 +18,7 @@ using NUnit.Framework;
 
 namespace DotJEM.Json.Index2.QueryParsers.Test;
 
-public class SimplifiedLuceneQueryParserTest
+public class SimplifiedLuceneQueryParserIntegrationTest
 {
     [Test]
     public async Task SayHello_ReturnsHello()
