@@ -147,7 +147,7 @@ public class FakeSnapshotReader : ISnapshotReader
 
 public class FakeSnapshot : ISnapshot
 {
-    public bool Exists { get; } = true;
+    public bool Exists { get; } = false;
     public long Generation { get; }
 
     public List<IIndexFile> Files { get; }
