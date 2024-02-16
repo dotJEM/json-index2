@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using DotJEM.Json.Index2.Documents.Data;
 using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.Serialization;
 using DotJEM.Json.Visitor;
@@ -7,102 +8,72 @@ using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
 
-namespace DotJEM.Json.Index2.Documents.Builder
+namespace DotJEM.Json.Index2.Documents.Builder;
+
+public interface ILuceneDocumentBuilder
 {
-    public interface ILuceneDocumentBuilder
+    IInfoStream EventInfoStream { get; }
+    IIndexableJsonDocument Build(JObject json);
+}
+
+public abstract class AbstractLuceneDocumentBuilder : JValueVisitor<IPathContext>, ILuceneDocumentBuilder
+{
+    private readonly IFieldResolver resolver;
+    private readonly IJsonDocumentSerializer documentSerializer;
+    private readonly IInfoStream<AbstractLuceneDocumentBuilder> eventInfoStream;
+
+    private IIndexableJsonDocument document;
+
+    public IInfoStream EventInfoStream => eventInfoStream;
+
+    protected AbstractLuceneDocumentBuilder(IFieldResolver resolver = null, IJsonDocumentSerializer documentSerializer = null)
     {
-        IInfoStream EventInfoStream { get; }
-        ILuceneDocument Build(JObject json);
+        this.resolver = resolver ?? new FieldResolver();
+        this.eventInfoStream = new InfoStream<AbstractLuceneDocumentBuilder>();
+        this.documentSerializer = documentSerializer ?? new DefaultJsonDocumentSerialier();
     }
 
-    public interface ILuceneDocument
+    public virtual IIndexableJsonDocument Build(JObject json)
     {
-        Document Document { get; } 
-        IContentTypeInfo Info { get; } 
-        void Add(IIndexableJsonField field);
+        document = new IndexableJsonDocument(resolver.ContentType(json));
+        PathContext context = new PathContext(this);
+        documentSerializer.SerializeTo(json, document.Document);
+        Visit(json, context);
+        return document;
     }
 
-    public class LuceneDocument : ILuceneDocument
+    protected override void Visit(JArray json, IPathContext context)
     {
-        public Document Document { get; } = new Document();
+        int num = 0;
+        foreach (JToken self in json)
+            self.Accept(this, context.Next(num++));
+    }
+
+    protected override void Visit(JProperty json, IPathContext context)
+        => json.Value.Accept(this, context.Next(json.Name));
         
-        public IContentTypeInfo Info { get; }
+    protected virtual void Add(IIndexableJsonField field) 
+        => document.Add(field);
 
-        public LuceneDocument(string contentType)
-        {
-            Info = new ContentTypeInfo(contentType);
-        }
-
-        public void Add(IIndexableJsonField field)
-        {
-            foreach (IIndexableField x in field.LuceneFields)
-                Document.Add(x);
-
-            Info.Add(field.Info());
-        }
+    protected virtual void Add(IEnumerable<IIndexableJsonField> fields)
+    {
+        foreach (IIndexableJsonField field in fields)
+            Add(field);
     }
 
-    public abstract class AbstractLuceneDocumentBuilder : JValueVisitor<IPathContext>, ILuceneDocumentBuilder
+    private class PathContext : IPathContext
     {
-        private readonly IFieldResolver resolver;
-        private readonly IJsonDocumentSerializer documentSerializer;
-        private readonly IInfoStream<AbstractLuceneDocumentBuilder> eventInfoStream;
+        private readonly AbstractLuceneDocumentBuilder builder;
 
-        private ILuceneDocument document;
+        public string Path { get; }
 
-        public IInfoStream EventInfoStream => eventInfoStream;
-
-        protected AbstractLuceneDocumentBuilder(IFieldResolver resolver = null, IJsonDocumentSerializer documentSerializer = null)
+        public PathContext(AbstractLuceneDocumentBuilder builder, string path = "")
         {
-            this.resolver = resolver ?? new FieldResolver();
-            this.eventInfoStream = new InfoStream<AbstractLuceneDocumentBuilder>();
-            this.documentSerializer = documentSerializer ?? new DefaultJsonDocumentSerialier();
+            Path = path;
+            this.builder = builder;
         }
 
-        public virtual ILuceneDocument Build(JObject json)
-        {
-            document = new LuceneDocument(resolver.ContentType(json));
-            PathContext context = new PathContext(this);
-            documentSerializer.SerializeTo(json, document.Document);
-            Visit(json, context);
-            return document;
-        }
-
-        protected override void Visit(JArray json, IPathContext context)
-        {
-            int num = 0;
-            foreach (JToken self in json)
-                self.Accept(this, context.Next(num++));
-        }
-
-        protected override void Visit(JProperty json, IPathContext context)
-            => json.Value.Accept(this, context.Next(json.Name));
-        
-        protected void Add(IIndexableJsonField field) 
-            => document.Add(field);
-
-        protected void Add(IEnumerable<IIndexableJsonField> fields)
-        {
-            foreach (IIndexableJsonField field in fields)
-            {
-                Add(field);
-            }
-        }
-
-        public class PathContext : IPathContext
-        {
-            private readonly AbstractLuceneDocumentBuilder builder;
-
-            public string Path { get; }
-
-            public PathContext(AbstractLuceneDocumentBuilder builder, string path = "")
-            {
-                Path = path;
-                this.builder = builder;
-            }
-
-            public IPathContext Next(int index)  => new PathContext(builder, Path);
-            public IPathContext Next(string name) => new PathContext(builder, Path == "" ? name : Path + "." + name);
-        }
+        public IPathContext Next(int index)  => new PathContext(builder, Path);
+        public IPathContext Next(string name) => new PathContext(builder, Path == "" ? name : Path + "." + name);
     }
 }

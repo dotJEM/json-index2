@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DotJEM.Json.Index2.Configuration;
 using DotJEM.Json.Index2.Documents.Builder;
+using DotJEM.Json.Index2.Documents.Data;
 using DotJEM.Json.Index2.Documents.Info;
 using Newtonsoft.Json.Linq;
 
@@ -36,7 +37,7 @@ namespace DotJEM.Json.Index2.Documents
             ILuceneDocumentBuilder builder = builderFactory.Create();
             string contentType = fieldsInfo.Resolver.ContentType(entity);
 
-            ILuceneDocument doc = builder.Build(entity);
+            IIndexableJsonDocument doc = builder.Build(entity);
             fieldsInfo.Merge(contentType, doc.Info);
 
             return new LuceneDocumentEntry(fieldsInfo.Resolver.Identity(entity), contentType, doc.Document);

@@ -6,8 +6,6 @@ using Lucene.Net.Search;
 namespace DotJEM.Json.Index2.QueryParsers.Query.Copy;
 
 using AtomicReaderContext = Lucene.Net.Index.AtomicReaderContext;
-using BooleanWeight = BooleanQuery.BooleanWeight;
-
 
 internal sealed class CopyOfBooleanScorer : BulkScorer
 {

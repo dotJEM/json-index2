@@ -1,9 +1,7 @@
 ﻿using System;
 using DotJEM.Json.Index2.Configuration;
-using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.Json.Index2.Results;
 using DotJEM.Json.Index2.Searching;
-using Lucene.Net.Analysis;
 
 namespace DotJEM.Json.Index2.QueryParsers;
 

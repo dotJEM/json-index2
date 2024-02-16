@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DotJEM.Json.Index2.Documents.Builder;
+using DotJEM.Json.Index2.Documents.Data;
 using Newtonsoft.Json.Linq;
 
 namespace DotJEM.Json.Index2.Documents.Strategies
