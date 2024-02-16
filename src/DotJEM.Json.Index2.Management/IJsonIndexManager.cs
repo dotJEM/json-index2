@@ -118,7 +118,7 @@ public class JsonIndexManager : IJsonIndexManager
                     writer.Create(change.Entity);
                     break;
                 case JsonChangeType.Update:
-                    writer.Write(change.Entity);
+                    writer.Update(change.Entity);
                     break;
                 case JsonChangeType.Delete:
                     writer.Delete(change.Entity);

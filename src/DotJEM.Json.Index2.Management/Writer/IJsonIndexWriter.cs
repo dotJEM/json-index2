@@ -1,21 +1,17 @@
-﻿using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Threading;
+﻿using System.Runtime.CompilerServices;
 using DotJEM.Json.Index2.Documents;
 using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.ObservableExtensions.InfoStreams;
-using DotJEM.Web.Scheduler;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
 
 namespace DotJEM.Json.Index2.Management.Writer;
 
-public interface IJsonIndexWriter 
+public interface IJsonIndexWriter
 {
     IInfoStream InfoStream { get; }
-    void Write(JObject entity);
     void Create(JObject entity);
+    void Update(JObject entity);
     void Delete(JObject entity);
     void Commit();
     void Flush(bool triggerMerge, bool applyAllDeletes);
@@ -40,46 +36,47 @@ public class JsonIndexWriter : IJsonIndexWriter
         this.resolver = index.Configuration.FieldInformationManager;
     }
 
-    public void Write(JObject entity)
+    public void Update(JObject entity)
     {
         Term term = resolver.Resolver.Identity(entity);
         LuceneDocumentEntry doc = mapper.Create(entity);
         Writer.UpdateDocument(term, doc.Document);
-        DebugInfo();
+        DebugInfo($"Writer.UpdateDocument({term}, <doc>)");
     }
 
     public void Create(JObject entity)
     {
         LuceneDocumentEntry doc = mapper.Create(entity);
         Writer.AddDocument(doc.Document);
-        DebugInfo();
+        DebugInfo($"Writer.AddDocument(<doc>)");
     }
 
     public void Delete(JObject entity)
     {
         Term term = resolver.Resolver.Identity(entity);
         Writer.DeleteDocuments(term);
-        DebugInfo();
+        DebugInfo($"Writer.UpdateDocuments({term})");
     }
 
 
     public void Commit()
     {
         Writer.Commit();
-        DebugInfo();
+        DebugInfo($"Writer.Commit()");
     }
+
     public void Flush(bool triggerMerge, bool applyAllDeletes)
     {
         Writer.Flush(triggerMerge, applyAllDeletes);
-        DebugInfo();
+        DebugInfo($"Writer.Flush({triggerMerge}, {applyAllDeletes})");
     }
 
     public void MaybeMerge()
     {
         Writer.MaybeMerge();
-        DebugInfo();
+        DebugInfo($"Writer.MaybeMerge()");
     }
 
-    private void DebugInfo([CallerMemberName] string caller = null) => infoStream.WriteDebug($"{nameof(JsonIndexWriter)}.{caller} called.");
-    }
-
+    private void DebugInfo(string message, [CallerMemberName] string caller = null)
+        => infoStream.WriteDebug(message, caller);
+}

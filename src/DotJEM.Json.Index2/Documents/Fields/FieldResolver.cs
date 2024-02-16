@@ -26,12 +26,12 @@ namespace DotJEM.Json.Index2.Documents.Fields
             IndentityField = indentityField;
             ContentTypeField = contentTypeField;
             indentityFieldLookup = UseSelect(indentityField)
-                ? new Func<JObject, Term>(obj => new Term(indentityField, (string)obj.SelectToken(indentityField)))
-                : new Func<JObject, Term>(obj => new Term(indentityField, (string)obj[indentityField]));
+                ? obj => new (indentityField, (string)obj.SelectToken(indentityField))
+                : obj => new (indentityField, (string)obj[indentityField]);
 
             contentTypeFieldLookup = UseSelect(contentTypeField)
-                ? new Func<JObject, string>(obj => (string)obj.SelectToken(contentTypeField))
-                : new Func<JObject, string>(obj => (string)obj[contentTypeField]);
+                ? obj => (string)obj.SelectToken(contentTypeField)
+                : obj => (string)obj[contentTypeField];
         }
 
         private static bool UseSelect(string indentityField)
