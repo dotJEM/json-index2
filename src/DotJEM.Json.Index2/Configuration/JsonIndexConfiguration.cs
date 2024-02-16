@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using DotJEM.Json.Index2.Analysis;
 using DotJEM.Json.Index2.Documents;
 using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.Documents.Info;
@@ -22,22 +23,12 @@ public class JsonIndexConfiguration : IJsonIndexConfiguration
 
     public IServiceCollection Services { get; }
 
-    public JsonIndexConfiguration() 
-    {
-        Services = new ServiceCollection(this, Enumerable.Empty<ServiceDescriptor>());
-        Version = LuceneVersion.LUCENE_48;
-        Analyzer = new StandardAnalyzer(Version, CharArraySet.EMPTY_SET);
-        FieldResolver = new FieldResolver();
-        FieldInformationManager = new DefaultFieldInformationManager(FieldResolver);
-        DocumentFactory = new LuceneDocumentFactory(FieldInformationManager);
-        Serializer = new DefaultJsonDocumentSerialier();
-    }
 
     public JsonIndexConfiguration(LuceneVersion version, IEnumerable<ServiceDescriptor> services)
     {
         Services = new ServiceCollection(this, services);
         Version = version;
-        Analyzer = Services.Get<Analyzer>() ?? new StandardAnalyzer(Version, CharArraySet.EMPTY_SET);
+        Analyzer = Services.Get<Analyzer>() ?? new JsonAnalyzer(Version);
         FieldResolver = Services.Get<IFieldResolver>() ?? new FieldResolver();
         FieldInformationManager = Services.Get<IFieldInformationManager>() ?? new DefaultFieldInformationManager(FieldResolver);
         DocumentFactory = Services.Get<ILuceneDocumentFactory>() ?? new LuceneDocumentFactory(FieldInformationManager);
