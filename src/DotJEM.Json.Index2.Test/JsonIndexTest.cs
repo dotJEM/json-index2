@@ -13,6 +13,28 @@ namespace DotJEM.Json.Index2.Test;
 public class JsonIndexTest
 {
     [Test]
+    public async Task Create_AddsDocument()
+    {
+        IJsonIndex index = new JsonIndexBuilder("myIndex")
+            .UsingMemmoryStorage()
+            .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
+            .WithFieldResolver(new FieldResolver("uuid", "type"))
+            .Build();
+
+        IJsonIndexWriter writer = index.CreateWriter();
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        writer.Commit();
+
+        IJsonIndexSearcher? searcher = index.CreateSearcher();
+        int count = searcher.Search(new TermQuery(new Term("type", "car"))).Count();
+        //int count = searcher.Search(new MatchAllDocsQuery()).Count();
+        Assert.AreEqual(5, count);
+    }
+    [Test]
     public async Task SayHello_ReturnsHello()
     {
         IJsonIndex index = new JsonIndexBuilder("myIndex")
@@ -22,16 +44,19 @@ public class JsonIndexTest
             .Build();
 
         IJsonIndexWriter writer = index.CreateWriter();
-        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type="CAR" }));
-        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type="CAR" }));
-        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type="CAR" }));
-        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type="CAR" }));
-        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type="CAR" }));
+        Guid uuid = Guid.NewGuid();
+        writer.Update(JObject.FromObject(new { uuid, type = "CAR" }));
+        writer.Update(JObject.FromObject(new { uuid, type = "CAR" }));
+        writer.Update(JObject.FromObject(new { uuid, type = "CAR" }));
+        writer.Update(JObject.FromObject(new { uuid, type = "CAR" }));
+        writer.Update(JObject.FromObject(new { uuid, type = "CAR" }));
         writer.Commit();
 
+
+
         IJsonIndexSearcher? searcher = index.CreateSearcher();
-        int count = searcher.Search(new TermQuery(new Term("type", "car"))).Count();
-        //int count = searcher.Search(new MatchAllDocsQuery()).Count();
-        Assert.AreEqual(5, count);
+        //int count = searcher.Search(new TermQuery(new Term("type", "car"))).Count();
+        int count = searcher.Search(new MatchAllDocsQuery()).Count();
+        Assert.AreEqual(1, count);
     }
 }
