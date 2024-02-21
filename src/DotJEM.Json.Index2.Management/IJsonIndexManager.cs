@@ -32,7 +32,8 @@ public class JsonIndexManager : IJsonIndexManager
     private readonly IJsonDocumentSource jsonDocumentSource;
     private readonly IJsonIndexSnapshotManager snapshots;
     private readonly IJsonIndexWriter writer;
-    
+    private readonly IJsonIndex index;
+
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
     private readonly DocumentChangesStream changesStream = new();
 
@@ -44,11 +45,12 @@ public class JsonIndexManager : IJsonIndexManager
         IJsonDocumentSource jsonDocumentSource,
         IJsonIndexSnapshotManager snapshots,
         //TODO: Allow multiple indexes and something that can shard
-        IJsonIndexWriter writer)
+        IJsonIndex index)
     {
         this.jsonDocumentSource = jsonDocumentSource;
         this.snapshots = snapshots;
-        this.writer = writer;
+        this.index = index;
+        this.writer = new JsonIndexWriter(index);
 
         Tracker = new IngestProgressTracker();
         jsonDocumentSource.DocumentChanges.ForEachAsync(CaptureChange);
@@ -105,6 +107,7 @@ public class JsonIndexManager : IJsonIndexManager
 
     public async Task ResetIndexAsync()
     {
+        index.Storage.Delete();
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
     }
 

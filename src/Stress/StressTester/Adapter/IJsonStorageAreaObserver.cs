@@ -69,7 +69,6 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
     public async Task ResetAsync()
     {
         UpdateGeneration(AreaName, initialGeneration);
-        
     }
 
     public void RunUpdateCheck()
