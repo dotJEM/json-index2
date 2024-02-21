@@ -3,8 +3,11 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Subjects;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Management.Info;
+using DotJEM.Json.Index2.Management.Observables;
 using DotJEM.Json.Index2.Management.Source;
 using DotJEM.ObservableExtensions;
 using DotJEM.ObservableExtensions.InfoStreams;
@@ -22,9 +25,11 @@ public enum IngestInitializationState
 // ReSharper disable once PossibleInterfaceMemberAmbiguity -> Just dictates implementation must be explicit which is OK.
 public interface IIngestProgressTracker :
     IObserver<IJsonDocumentChange>, 
-    IObserver<IInfoStreamEvent>, IObservable<ITrackerState>
+    IObserver<IInfoStreamEvent>,
+    IObservable<ITrackerState>
 {
-    IngestInitializationState InitializationState { get; }
+    IObservableValue<IngestInitializationState> InitializationState { get; }
+
     IInfoStream InfoStream { get; }
     StorageIngestState IngestState { get; }
     SnapshotRestoreState RestoreState { get; }
@@ -41,34 +46,41 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
     private readonly ConcurrentDictionary<string, StorageAreaIngestStateTracker> observerTrackers = new();
     private readonly ConcurrentDictionary<string, IndexFileRestoreStateTracker> restoreTrackers = new();
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
-    private IngestInitializationState initializationState;
+    public IObservableValue<IngestInitializationState> InitializationState { get; } = new ObservableValue<IngestInitializationState>();
 
     public IInfoStream InfoStream => infoStream;
-
-    public IngestInitializationState InitializationState
-    {
-        get => initializationState;
-        private set
-        {
-            if(initializationState == value) return;
-
-            initializationState = value;
-            TaskCompletionSource<bool> target = value switch
-            {
-                IngestInitializationState.Started => startedEntered,
-                IngestInitializationState.Restoring => restoringEntered,
-                IngestInitializationState.Ingesting => ingestingEntered,
-                IngestInitializationState.Initialized => initializedEntered,
-                _ => null
-            };
-            target?.TrySetResult(true);
-        }
-    }
 
     private readonly TaskCompletionSource<bool> startedEntered = new ();
     private readonly TaskCompletionSource<bool> restoringEntered = new ();
     private readonly TaskCompletionSource<bool> ingestingEntered = new ();
     private readonly TaskCompletionSource<bool> initializedEntered = new ();
+
+    private void UpdateState(IngestInitializationState newState)
+    {
+        switch (newState)
+        {
+            case IngestInitializationState.Started:
+                startedEntered.TrySetResult(true);
+                break;
+            case IngestInitializationState.Restoring:
+                startedEntered.TrySetResult(true);
+                restoringEntered.TrySetResult(true);
+                break;
+            case IngestInitializationState.Ingesting:
+                startedEntered.TrySetResult(true);
+                restoringEntered.TrySetResult(true);
+                ingestingEntered.TrySetResult(true);
+                break;
+            case IngestInitializationState.Initialized:
+                startedEntered.TrySetResult(true);
+                restoringEntered.TrySetResult(true);
+                ingestingEntered.TrySetResult(true);
+                initializedEntered.TrySetResult(true);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
+        }
+    }
 
 
     // TODO: We are adding a number of computational cycles here on each single update, this should be improved as well.
@@ -78,7 +90,7 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
 
     public IngestProgressTracker()
     {
-        InitializationState = IngestInitializationState.Started;
+        UpdateState(IngestInitializationState.Started);
     }
 
     public void OnNext(IJsonDocumentChange value)
@@ -98,7 +110,7 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
 
     public void SetInitialized(bool initialized)
     {
-        if (initialized) this.InitializationState = IngestInitializationState.Initialized;
+        if (initialized) UpdateState(IngestInitializationState.Initialized);
     }
 
     public void OnNext(IInfoStreamEvent value)
@@ -182,7 +194,7 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
 
     private void InternalPublish(ITrackerState state)
     {
-        if (InitializationState == IngestInitializationState.Initialized)
+        if (InitializationState.Value == IngestInitializationState.Initialized)
         {
             Publish(state);
             return;
@@ -191,16 +203,16 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
         switch (state)
         {
             case SnapshotRestoreState:
-                InitializationState = IngestInitializationState.Restoring;
+                UpdateState(IngestInitializationState.Restoring);
                 break;
 
             case StorageIngestState storageIngestState:
                 JsonSourceEventType[] states = storageIngestState.Areas
                     .Select(x => x.LastEvent)
                     .ToArray();
-                InitializationState = states.All(state => state is JsonSourceEventType.Updated or JsonSourceEventType.Updating or JsonSourceEventType.Initialized) 
+                UpdateState(states.All(state => state is JsonSourceEventType.Updated or JsonSourceEventType.Updating or JsonSourceEventType.Initialized) 
                     ? IngestInitializationState.Initialized
-                    : IngestInitializationState.Ingesting;
+                    : IngestInitializationState.Ingesting);
                 break;
 
         }

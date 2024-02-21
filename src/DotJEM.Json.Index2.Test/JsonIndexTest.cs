@@ -59,4 +59,28 @@ public class JsonIndexTest
         int count = searcher.Search(new MatchAllDocsQuery()).Count();
         Assert.AreEqual(1, count);
     }
+    [Test]
+    public async Task Search_Booleans()
+    {
+        IJsonIndex index = new JsonIndexBuilder("myIndex")
+            .UsingMemmoryStorage()
+            .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
+            .WithFieldResolver(new FieldResolver("uuid", "type"))
+            .Build();
+
+        IJsonIndexWriter writer = index.CreateWriter();
+        writer.Update(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", inStock = false }));
+        writer.Update(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", inStock = true }));
+        writer.Update(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", inStock = false }));
+        writer.Update(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", inStock = true }));
+        writer.Update(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", inStock = true }));
+        writer.Commit();
+
+
+
+        IJsonIndexSearcher? searcher = index.CreateSearcher();
+        //int count = searcher.Search(new TermQuery(new Term("type", "car"))).Count();
+        int count = searcher.Search(new TermQuery(new Term("inStock", "true"))).Count();
+        Assert.AreEqual(3, count);
+    }
 }

@@ -118,7 +118,7 @@ namespace DotJEM.Json.Index2.Documents.Strategies
         public IEnumerable<IIndexableJsonField> CreateFields(JToken token, IPathContext context)
         {
             yield return new JsonIndexableFieldBuilder<bool>(this, token, context)
-                .CreateStringField(b => b.ToString())
+                .CreateTextField(b => b.ToString())
                 .Build();
         }
     }
