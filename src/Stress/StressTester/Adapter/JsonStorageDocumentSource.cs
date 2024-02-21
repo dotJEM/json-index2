@@ -18,7 +18,7 @@ public class JsonStorageDocumentSource : IJsonDocumentSource
     private readonly DocumentChangesStream observable = new();
     private readonly InfoStream<JsonStorageDocumentSource> infoStream = new();
 
-    public IObservable<IJsonDocumentChange> DocumentChanges => observable;
+    public IObservable<IJsonDocumentSourceEvent> DocumentChanges => observable;
     public IObservableValue<bool> Initialized { get; } = new ObservableValue<bool>();
     public IInfoStream InfoStream => infoStream;
 
@@ -41,13 +41,13 @@ public class JsonStorageDocumentSource : IJsonDocumentSource
             .ToDictionary(x => x.AreaName);
     }
 
-    private void Forward(IJsonDocumentChange change)
+    private void Forward(IJsonDocumentSourceEvent sourceEvent)
     {
         //Only pass a commit signal through once all are initialized.
-        if(change.Type == JsonChangeType.Commit && !Initialized.Value)
+        if(sourceEvent is JsonDocumentSourceDigestCompleted && !Initialized.Value)
             return;
 
-        observable.Publish(change);
+        observable.Publish(sourceEvent);
     }
 
     private void InitializedChanged()

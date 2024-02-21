@@ -9,7 +9,7 @@ public interface IJsonDocumentSource
 {
     IInfoStream InfoStream { get; }
 
-    IObservable<IJsonDocumentChange> DocumentChanges { get; }
+    IObservable<IJsonDocumentSourceEvent> DocumentChanges { get; }
     IObservableValue<bool> Initialized { get; }
 
     Task RunAsync();

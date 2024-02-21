@@ -24,7 +24,7 @@ public enum IngestInitializationState
 
 // ReSharper disable once PossibleInterfaceMemberAmbiguity -> Just dictates implementation must be explicit which is OK.
 public interface IIngestProgressTracker :
-    IObserver<IJsonDocumentChange>, 
+    IObserver<IJsonDocumentSourceEvent>, 
     IObserver<IInfoStreamEvent>,
     IObservable<ITrackerState>
 {
@@ -93,12 +93,22 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
         UpdateState(IngestInitializationState.Started);
     }
 
-    public void OnNext(IJsonDocumentChange value)
+    public void OnNext(IJsonDocumentSourceEvent value)
     {
-        if (value is not JsonDocumentChange)
-            return;
-
-        observerTrackers.AddOrUpdate(value.Area, _ => throw new InvalidDataException(), (_, state) => state.UpdateState(value.Generation, value.Size));
+        switch (value)
+        {
+            case JsonDocumentCreated created:
+                observerTrackers.AddOrUpdate(value.Area, _ => throw new InvalidDataException(), (_, state) => state.UpdateState(created.Generation, created.Size));
+                break;
+            case JsonDocumentUpdated updated:
+                observerTrackers.AddOrUpdate(value.Area, _ => throw new InvalidDataException(), (_, state) => state.UpdateState(updated.Generation, updated.Size));
+                break;
+            case JsonDocumentDeleted deleted:
+                observerTrackers.AddOrUpdate(value.Area, _ => throw new InvalidDataException(), (_, state) => state.UpdateState(deleted.Generation, deleted.Size));
+                break;
+            default:
+                return;
+        }
         InternalPublish(IngestState);
     }
 
@@ -222,8 +232,8 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
 
     void IObserver<IInfoStreamEvent>.OnError(Exception error) { }
     void IObserver<IInfoStreamEvent>.OnCompleted() { }
-    void IObserver<IJsonDocumentChange>.OnError(Exception error) { }
-    void IObserver<IJsonDocumentChange>.OnCompleted() { }
+    void IObserver<IJsonDocumentSourceEvent>.OnError(Exception error) { }
+    void IObserver<IJsonDocumentSourceEvent>.OnCompleted() { }
 
     private class IndexFileRestoreStateTracker
     {

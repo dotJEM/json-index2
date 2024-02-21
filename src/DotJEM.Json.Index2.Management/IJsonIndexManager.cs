@@ -20,7 +20,7 @@ public interface IJsonIndexManager
 {
     IInfoStream InfoStream { get; }
     IIngestProgressTracker Tracker { get; }
-    IObservable<IJsonDocumentChange> DocumentChanges { get; }
+    IObservable<IJsonDocumentSourceEvent> DocumentChanges { get; }
     Task<bool> TakeSnapshotAsync();
     Task RunAsync();
     Task UpdateGenerationAsync(string area, long generation);
@@ -39,7 +39,7 @@ public class JsonIndexManager : IJsonIndexManager
 
     public IInfoStream InfoStream => infoStream;
     public IIngestProgressTracker Tracker { get; }
-    public IObservable<IJsonDocumentChange> DocumentChanges => changesStream;
+    public IObservable<IJsonDocumentSourceEvent> DocumentChanges => changesStream;
 
     public JsonIndexManager(
         IJsonDocumentSource jsonDocumentSource,
@@ -109,33 +109,36 @@ public class JsonIndexManager : IJsonIndexManager
     {
         index.Storage.Delete();
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
+      
     }
 
-    private void CaptureChange(IJsonDocumentChange change)
+    private void CaptureChange(IJsonDocumentSourceEvent sourceEvent)
     {
         try
         {
-            switch (change.Type)
+            switch (sourceEvent)
             {
-                case JsonChangeType.Create:
-                    writer.Create(change.Entity);
-                    break;
-                case JsonChangeType.Update:
-                    writer.Update(change.Entity);
-                    break;
-                case JsonChangeType.Delete:
-                    writer.Delete(change.Entity);
-                    break;
-                case JsonChangeType.Commit:
+                case JsonDocumentSourceDigestCompleted commitSignal:
                     writer.Commit();
                     break;
+                case JsonDocumentCreated created:
+                    writer.Create(created.Document);
+                    break;
+                case JsonDocumentDeleted deleted:
+                    writer.Delete(deleted.Document);
+                    break;
+                case JsonDocumentUpdated updated:
+                    writer.Update(updated.Document);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(sourceEvent));
             }
 
-            changesStream.Publish(change);
+            changesStream.Publish(sourceEvent);
         }
         catch (Exception ex)
         {
-            infoStream.WriteError($"Failed to ingest change from {change.Area}", ex);
+            infoStream.WriteError($"Failed to ingest change from {sourceEvent.Area}", ex);
         }
     }
 }
