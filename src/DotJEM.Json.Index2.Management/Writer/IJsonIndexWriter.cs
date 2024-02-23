@@ -1,9 +1,14 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using DotJEM.Json.Index2.Documents;
 using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.ObservableExtensions.InfoStreams;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
+using static DotJEM.Json.Index2.Management.Writer.JsonIndexWriter;
 
 namespace DotJEM.Json.Index2.Management.Writer;
 
@@ -24,9 +29,9 @@ public class JsonIndexWriter : IJsonIndexWriter
     private readonly ILuceneDocumentFactory mapper;
     private readonly IFieldInformationManager resolver;
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
-
+    private readonly ThrottledCommit throttledCommit;
+    
     private IndexWriter Writer => index.WriterManager.Writer;
-
     public IInfoStream InfoStream => infoStream;
 
     public JsonIndexWriter(IJsonIndex index)
@@ -34,6 +39,7 @@ public class JsonIndexWriter : IJsonIndexWriter
         this.index = index;
         this.mapper = index.Configuration.DocumentFactory;
         this.resolver = index.Configuration.FieldInformationManager;
+        throttledCommit = new ThrottledCommit(this);
     }
 
     public void Update(JObject entity)
@@ -61,7 +67,8 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Commit()
     {
-        Writer.Commit();
+        throttledCommit.Invoke();
+        //Writer.Commit();
         DebugInfo($"Writer.Commit()");
     }
 
@@ -79,4 +86,44 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     private void DebugInfo(string message, [CallerMemberName] string caller = null)
         => infoStream.WriteDebug(message, caller);
+    
+    public class ThrottledCommit
+    {
+        private readonly JsonIndexWriter target;
+        private readonly WaitHandle handle = new AutoResetEvent(false);
+        private readonly long upperBound = Stopwatch.Frequency * 10;
+        private readonly long lowerBound = Stopwatch.Frequency / 10;
+
+        private long lastInvocation = 0;
+        private long lastRequest = 0;
+
+        public ThrottledCommit(JsonIndexWriter target)
+        {
+            this.target = target;
+            ThreadPool.RegisterWaitForSingleObject(handle, (_,_)=>Tick(), null, 200, false);
+        }
+
+        private void Tick()
+        {
+            long time = Stopwatch.GetTimestamp();
+            if (time - lastInvocation > upperBound)
+            {
+                target.Writer.Commit();
+                lastInvocation = time;
+                return;
+            }
+
+            if (time - lastRequest > lowerBound)
+            {
+                target.Writer.Commit();
+                lastInvocation = time;
+            }
+        }
+
+        public void Invoke()
+        {
+            lastRequest = Stopwatch.GetTimestamp();
+            Tick();
+        }
+    }
 }

@@ -51,7 +51,7 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
     protected override void Dispose(bool disposing)
     {
         if (disposing)
-            Writer.Dispose();
+            Close();
         base.Dispose(disposing);
     }
 
