@@ -111,7 +111,6 @@ public class JsonIndexManager : IJsonIndexManager
     {
         index.Storage.Delete();
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
-      
     }
 
     private void CaptureChange(IJsonDocumentSourceEvent sourceEvent)
@@ -132,8 +131,6 @@ public class JsonIndexManager : IJsonIndexManager
                 case JsonDocumentUpdated updated:
                     writer.Update(updated.Document);
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(sourceEvent));
             }
 
             changesStream.Publish(sourceEvent);

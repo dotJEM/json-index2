@@ -74,9 +74,6 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
         Unlock();
         foreach (string file in Directory.ListAll())
             Directory.DeleteFile(file);
-        //Directory.Dispose();
-        //Directory = null;
-
         provider.Delete();
     }
 }
