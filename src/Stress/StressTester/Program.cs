@@ -68,7 +68,7 @@ string[] areas = new[] { "content", "settings", "diagnostic", "emsaqueue", "stat
 IWebTaskScheduler scheduler = new WebTaskScheduler();
 IJsonIndexManager jsonIndexManager = new JsonIndexManager(
     new JsonStorageDocumentSource(new JsonStorageAreaObserverFactory(storage, scheduler,areas)),
-    new JsonIndexSnapshotManager(index, new ZipSnapshotStrategy(".\\app_data\\snapshots"), scheduler, "10s"),
+    new JsonIndexSnapshotManager(index, new ZipSnapshotStrategy(".\\app_data\\snapshots"), scheduler, "30m"),
     index
 );
 
@@ -82,11 +82,6 @@ Task run = Task.WhenAll(
 jsonIndexManager.Tracker.WhenState(IngestInitializationState.Initialized).ContinueWith(task =>
 {
     Console.Clear();
-    Console.WriteLine("COMPLETED");
-    Console.WriteLine("COMPLETED");
-    Console.WriteLine("COMPLETED");
-    Console.WriteLine("COMPLETED");
-    Console.WriteLine("COMPLETED");
     Console.WriteLine("COMPLETED");
 
 });

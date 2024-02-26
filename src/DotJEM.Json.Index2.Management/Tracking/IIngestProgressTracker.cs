@@ -98,14 +98,27 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
         switch (value)
         {
             case JsonDocumentCreated created:
-                observerTrackers.AddOrUpdate(value.Area, _ => throw new InvalidDataException(), (_, state) => state.UpdateState(created.Generation, created.Size));
+                observerTrackers.AddOrUpdate(value.Area,
+                    _ => throw new InvalidDataException(), 
+                    (_, state) => state.UpdateState(created.Generation, created.Size));
                 break;
             case JsonDocumentUpdated updated:
-                observerTrackers.AddOrUpdate(value.Area, _ => throw new InvalidDataException(), (_, state) => state.UpdateState(updated.Generation, updated.Size));
+                observerTrackers.AddOrUpdate(value.Area, 
+                    _ => throw new InvalidDataException(), 
+                    (_, state) => state.UpdateState(updated.Generation, updated.Size));
                 break;
             case JsonDocumentDeleted deleted:
-                observerTrackers.AddOrUpdate(value.Area, _ => throw new InvalidDataException(), (_, state) => state.UpdateState(deleted.Generation, deleted.Size));
+                observerTrackers.AddOrUpdate(value.Area,
+                    _ => throw new InvalidDataException(),
+                    (_, state) => state.UpdateState(deleted.Generation, deleted.Size));
                 break;
+            case JsonDocumentSourceDigestCompleted:
+                observerTrackers.AddOrUpdate(value.Area,
+                    _ => throw new InvalidDataException(), (_, state) => state);
+                break;
+            case JsonDocumentSourceReset:
+                break;
+
             default:
                 return;
         }
@@ -114,8 +127,10 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
 
     public void UpdateState(StorageAreaIngestState state)
     {
-        observerTrackers.AddOrUpdate(state.Area, s => new StorageAreaIngestStateTracker(s, JsonSourceEventType.Initialized).UpdateState(state)
+        observerTrackers.AddOrUpdate(state.Area,
+            s => new StorageAreaIngestStateTracker(s, JsonSourceEventType.Initialized).UpdateState(state)
             , (s, tracker) => tracker.UpdateState(state));
+        InternalPublish(IngestState);
     }
 
     public void SetInitialized(bool initialized)
