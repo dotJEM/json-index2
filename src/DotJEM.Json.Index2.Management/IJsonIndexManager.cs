@@ -45,12 +45,14 @@ public class JsonIndexManager : IJsonIndexManager
         IJsonDocumentSource jsonDocumentSource,
         IJsonIndexSnapshotManager snapshots,
         //TODO: Allow multiple indexes and something that can shard
-        IJsonIndex index)
+        IJsonIndex index,
+        IJsonIndexWriter writer = null)
     {
         this.jsonDocumentSource = jsonDocumentSource;
         this.snapshots = snapshots;
         this.index = index;
-        this.writer = new JsonIndexWriter(index);
+        this.writer = writer ?? new JsonIndexWriter(index);
+        this.writer.InfoStream.Subscribe(infoStream);
 
         Tracker = new IngestProgressTracker();
         jsonDocumentSource.DocumentChanges.ForEachAsync(CaptureChange);
