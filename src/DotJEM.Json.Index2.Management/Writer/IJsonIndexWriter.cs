@@ -108,15 +108,27 @@ public class JsonIndexWriter : IJsonIndexWriter
             long time = Stopwatch.GetTimestamp();
             if (time - lastInvocation > upperBound)
             {
-                target.Writer.Commit();
+                Commit();
                 lastInvocation = time;
                 return;
             }
 
             if (time - lastRequest > lowerBound)
             {
-                target.Writer.Commit();
+                Commit();
                 lastInvocation = time;
+            }
+        }
+
+        private void Commit()
+        {
+            try
+            {
+                target.Writer.Commit();
+            }
+            catch (Exception e)
+            {
+                // SWALLOW FOR NOW
             }
         }
 

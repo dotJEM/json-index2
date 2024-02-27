@@ -109,6 +109,7 @@ public class JsonIndexManager : IJsonIndexManager
 
     public async Task ResetIndexAsync()
     {
+        
         index.Storage.Delete();
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
     }
