@@ -78,14 +78,6 @@ Task run = Task.WhenAll(
     //,genTask
 );
 
-
-jsonIndexManager.Tracker.WhenState(IngestInitializationState.Initialized).ContinueWith(task =>
-{
-    Console.Clear();
-    Console.WriteLine("COMPLETED");
-
-});
-
 while (true)
 {
     string? input = Console.ReadLine();
@@ -99,21 +91,12 @@ while (true)
             await jsonIndexManager.TakeSnapshotAsync();
             break;
 
-        case 'C':
-            jsonIndexManager.Tracker.WhenState(IngestInitializationState.Initialized).ContinueWith(task =>
-            {
-                Console.Clear();
-                Console.WriteLine("COMPLETED");
-            });
-
-            break;
-
         case 'I':
             Console.Clear();
             break;
 
-        case 'L':
-            Console.Clear();
+        case 'R':
+            jsonIndexManager.ResetIndexAsync();
             break;
 
         case 'Q':

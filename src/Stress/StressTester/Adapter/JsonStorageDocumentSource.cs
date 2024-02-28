@@ -55,10 +55,17 @@ public class JsonStorageDocumentSource : IJsonDocumentSource
         this.Initialized.Value = observers.Values.All(observer => observer.Initialized.Value);
     }
 
-    public async Task RunAsync()
+    public async Task StartAsync()
     {
         await Task.WhenAll(
-            observers.Values.Select(async observer => await observer.RunAsync().ConfigureAwait(false))
+            observers.Values.Select(async observer => await observer.StartAsync().ConfigureAwait(false))
+        ).ConfigureAwait(false);
+    }
+
+    public async Task StopAsync()
+    {
+        await Task.WhenAll(
+            observers.Values.Select(async observer => await observer.StopAsync().ConfigureAwait(false))
         ).ConfigureAwait(false);
     }
 

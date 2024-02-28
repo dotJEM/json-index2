@@ -13,6 +13,7 @@ using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Management.Writer;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
+using Lucene.Net.Search;
 
 namespace DotJEM.Json.Index2.Management;
 
@@ -75,7 +76,7 @@ public class JsonIndexManager : IJsonIndexManager
 
         await Task
             .WhenAll(
-                jsonDocumentSource.RunAsync(),
+                jsonDocumentSource.StartAsync(),
                 snapshots.RunAsync(Tracker, restoredFromSnapshot))
             .ConfigureAwait(false);
     }
@@ -101,17 +102,25 @@ public class JsonIndexManager : IJsonIndexManager
         return true;
     }
 
+    //TODO: Area is a concept that belongs to the specific storage implementation.
+    //      So is the generation, How can we pass these in a decoupled way?
     public Task UpdateGenerationAsync(string area, long generation)
     {
         jsonDocumentSource.UpdateGeneration(area, generation);
         return Task.CompletedTask;
     }
 
+
+    /// <summary>
+    /// Stops the underlying <see cref="IJsonDocumentSource"/>, deletes it's storage,
+    /// requests reset of the underlying <see cref="IJsonDocumentSource"/> and then starts it again.
+    /// </summary>
     public async Task ResetIndexAsync()
     {
-        
+        await jsonDocumentSource.StopAsync().ConfigureAwait(false);
         index.Storage.Delete();
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
+        await jsonDocumentSource.StartAsync().ConfigureAwait(false);
     }
 
     private void CaptureChange(IJsonDocumentSourceEvent sourceEvent)
@@ -120,7 +129,7 @@ public class JsonIndexManager : IJsonIndexManager
         {
             switch (sourceEvent)
             {
-                case JsonDocumentSourceDigestCompleted commitSignal:
+                case JsonDocumentSourceDigestCompleted:
                     writer.Commit();
                     break;
                 case JsonDocumentCreated created:
