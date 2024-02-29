@@ -128,6 +128,7 @@ public class JsonIndexWriter : IJsonIndexWriter
             }
             catch (Exception e)
             {
+                target.infoStream.WriteError("Failed to commit indexed data to storage.", e);
                 // SWALLOW FOR NOW
             }
         }
