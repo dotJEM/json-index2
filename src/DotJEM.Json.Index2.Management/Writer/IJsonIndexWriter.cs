@@ -47,6 +47,7 @@ public class JsonIndexWriter : IJsonIndexWriter
         Term term = resolver.Resolver.Identity(entity);
         LuceneDocumentEntry doc = mapper.Create(entity);
         Writer.UpdateDocument(term, doc.Document);
+        throttledCommit.Increment();
         DebugInfo($"Writer.UpdateDocument({term}, <doc>)");
     }
 
@@ -54,6 +55,7 @@ public class JsonIndexWriter : IJsonIndexWriter
     {
         LuceneDocumentEntry doc = mapper.Create(entity);
         Writer.AddDocument(doc.Document);
+        throttledCommit.Increment();
         DebugInfo($"Writer.AddDocument(<doc>)");
     }
 
@@ -61,6 +63,7 @@ public class JsonIndexWriter : IJsonIndexWriter
     {
         Term term = resolver.Resolver.Identity(entity);
         Writer.DeleteDocuments(term);
+        throttledCommit.Increment();
         DebugInfo($"Writer.UpdateDocuments({term})");
     }
 
@@ -92,10 +95,11 @@ public class JsonIndexWriter : IJsonIndexWriter
         private readonly JsonIndexWriter target;
         private readonly WaitHandle handle = new AutoResetEvent(false);
         private readonly long upperBound = Stopwatch.Frequency * 10;
-        private readonly long lowerBound = Stopwatch.Frequency / 10;
+        private readonly long lowerBound = Stopwatch.Frequency / 5;
 
         private long lastInvocation = 0;
         private long lastRequest = 0;
+        private long writes = 0;
 
         public ThrottledCommit(JsonIndexWriter target)
         {
@@ -122,6 +126,9 @@ public class JsonIndexWriter : IJsonIndexWriter
 
         private void Commit()
         {
+            if(Interlocked.Exchange(ref writes, 0) < 1)
+                return;
+
             try
             {
                 target.Writer.Commit();
@@ -136,7 +143,11 @@ public class JsonIndexWriter : IJsonIndexWriter
         public void Invoke()
         {
             lastRequest = Stopwatch.GetTimestamp();
-            Tick();
+        }
+
+        public void Increment()
+        {
+            Interlocked.Increment(ref writes);
         }
     }
 }

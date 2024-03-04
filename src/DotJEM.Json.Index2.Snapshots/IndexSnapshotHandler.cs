@@ -93,6 +93,9 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         if(!snapshot.Verify())
             return false;
 
+        // TODO: Lock index and move close here:
+        // index.WriterManager.Close();
+
         using ISnapshotReader reader = snapshot.OpenReader();
         List<IIndexFile> snapshotFiles = reader.GetIndexFiles().ToList();
 
