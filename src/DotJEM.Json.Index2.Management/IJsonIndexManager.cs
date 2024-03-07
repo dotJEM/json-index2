@@ -73,9 +73,15 @@ public class JsonIndexManager : IJsonIndexManager
 
     public async Task RunAsync()
     {
-        index.Storage.Delete();
         bool restoredFromSnapshot = await RestoreSnapshotAsync().ConfigureAwait(false);
-        infoStream.WriteInfo($"Index restored from a snapshot: {restoredFromSnapshot}.");
+        if (!restoredFromSnapshot)
+        {
+            index.Storage.Delete();
+        }
+        else
+        {
+            infoStream.WriteInfo($"Index was restored from snapshot.");
+        }
 
         await Task
             .WhenAll(
