@@ -10,4 +10,8 @@
     <ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="DotJEM.ObservableExtensions" Version="0.0.14" />
+  </ItemGroup>
+
 </Project>

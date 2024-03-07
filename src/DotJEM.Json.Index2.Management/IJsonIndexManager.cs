@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -56,6 +57,7 @@ public class JsonIndexManager : IJsonIndexManager
         this.writer.InfoStream.Subscribe(infoStream);
 
         Tracker = new IngestProgressTracker();
+        
         jsonDocumentSource.DocumentChanges.ForEachAsync(CaptureChange);
         jsonDocumentSource.InfoStream.Subscribe(infoStream);
         jsonDocumentSource.Initialized.Subscribe(Tracker.SetInitialized);
@@ -71,6 +73,7 @@ public class JsonIndexManager : IJsonIndexManager
 
     public async Task RunAsync()
     {
+        index.Storage.Delete();
         bool restoredFromSnapshot = await RestoreSnapshotAsync().ConfigureAwait(false);
         infoStream.WriteInfo($"Index restored from a snapshot: {restoredFromSnapshot}.");
 
@@ -110,7 +113,6 @@ public class JsonIndexManager : IJsonIndexManager
         return Task.CompletedTask;
     }
 
-
     /// <summary>
     /// Stops the underlying <see cref="IJsonDocumentSource"/>, deletes it's storage,
     /// requests reset of the underlying <see cref="IJsonDocumentSource"/> and then starts it again.
@@ -122,7 +124,7 @@ public class JsonIndexManager : IJsonIndexManager
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
         await jsonDocumentSource.StartAsync().ConfigureAwait(false);
     }
-
+    
     private void CaptureChange(IJsonDocumentSourceEvent sourceEvent)
     {
         try
@@ -142,7 +144,6 @@ public class JsonIndexManager : IJsonIndexManager
                     writer.Update(updated.Document);
                     break;
             }
-
             changesStream.Publish(sourceEvent);
         }
         catch (Exception ex)

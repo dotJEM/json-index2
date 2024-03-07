@@ -35,7 +35,6 @@ namespace DotJEM.Json.Index2.Searching
                 manager ??= new SearcherManager(writerManager.Writer, true, new SearcherFactory());
                 manager.MaybeRefreshBlocking();
                 return new IndexSearcherContext(manager.Acquire(), manager.Release);
-                
             }
         }
 

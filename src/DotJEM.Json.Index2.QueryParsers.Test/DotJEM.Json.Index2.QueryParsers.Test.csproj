@@ -13,13 +13,17 @@
 
   <ItemGroup>
     <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00016" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="NUnit" Version="3.14.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DotJEM.Json.Index2.QueryParsers\DotJEM.Json.Index2.QueryParsers.csproj" />
     <ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="DotJEM.ObservableExtensions" Version="0.0.14" />
   </ItemGroup>
 
 

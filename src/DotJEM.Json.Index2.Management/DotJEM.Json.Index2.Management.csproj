@@ -7,12 +7,16 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="DotJEM.Web.Scheduler" Version="0.0.9" />
+    <PackageReference Include="DotJEM.Web.Scheduler" Version="0.0.10" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\DotJEM.Json.Index2.Snapshots\DotJEM.Json.Index2.Snapshots.csproj" />
     <ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Update="DotJEM.ObservableExtensions" Version="0.0.14" />
   </ItemGroup>
 
 </Project>

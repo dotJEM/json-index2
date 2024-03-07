@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using DotJEM.Json.Index2.Documents;
 using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.ObservableExtensions.InfoStreams;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
-using static DotJEM.Json.Index2.Management.Writer.JsonIndexWriter;
 
 namespace DotJEM.Json.Index2.Management.Writer;
 
@@ -16,6 +16,7 @@ public interface IJsonIndexWriter
 {
     IInfoStream InfoStream { get; }
     void Create(JObject entity);
+    void Create(IEnumerable<JObject> entities);
     void Update(JObject entity);
     void Delete(JObject entity);
     void Commit();
@@ -57,6 +58,13 @@ public class JsonIndexWriter : IJsonIndexWriter
         Writer.AddDocument(doc.Document);
         throttledCommit.Increment();
         DebugInfo($"Writer.AddDocument(<doc>)");
+    }
+
+    public void Create(IEnumerable<JObject> entities)
+    {
+        Writer.AddDocuments(entities.Select(entity => mapper.Create(entity).Document));
+        throttledCommit.Increment();
+        DebugInfo($"Writer.AddDocuments(<doc>)");
     }
 
     public void Delete(JObject entity)
