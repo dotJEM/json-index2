@@ -79,7 +79,6 @@ public class JsonIndexWriter : IJsonIndexWriter
     public void Commit()
     {
         throttledCommit.Invoke();
-        //Writer.Commit();
         DebugInfo($"Writer.Commit()");
     }
 
@@ -108,6 +107,7 @@ public class JsonIndexWriter : IJsonIndexWriter
         private long lastInvocation = 0;
         private long lastRequest = 0;
         private long writes = 0;
+        private long calls = 0;
 
         public ThrottledCommit(JsonIndexWriter target)
         {
@@ -137,6 +137,9 @@ public class JsonIndexWriter : IJsonIndexWriter
             if(Interlocked.Exchange(ref writes, 0) < 1)
                 return;
 
+            if (Interlocked.Exchange(ref calls, 0) < 1)
+                return;
+
             try
             {
                 target.Writer.Commit();
@@ -150,6 +153,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
         public void Invoke()
         {
+            Interlocked.Increment(ref calls);
             lastRequest = Stopwatch.GetTimestamp();
         }
 
@@ -157,5 +161,66 @@ public class JsonIndexWriter : IJsonIndexWriter
         {
             Interlocked.Increment(ref writes);
         }
+    }
+}
+public class ThrottledAction
+{
+    private readonly Action target;
+    private readonly Action<Exception> onException;
+    private readonly WaitHandle handle = new AutoResetEvent(false);
+    private readonly long upperBound = Stopwatch.Frequency * 10;
+    private readonly long lowerBound = Stopwatch.Frequency / 5;
+
+    private long lastInvocation = 0;
+    private long lastRequest = 0;
+    private long writes = 0;
+
+    public ThrottledAction(Action target, Action<Exception> onException)
+    {
+        this.target = target;
+        this.onException = onException;
+        ThreadPool.RegisterWaitForSingleObject(handle, (_, _) => Tick(), null, 200, false);
+    }
+
+    private void Tick()
+    {
+        long time = Stopwatch.GetTimestamp();
+        if (time - lastInvocation > upperBound)
+        {
+            Commit();
+            lastInvocation = time;
+            return;
+        }
+
+        if (time - lastRequest > lowerBound)
+        {
+            Commit();
+            lastInvocation = time;
+        }
+    }
+
+    private void Commit()
+    {
+        if (Interlocked.Exchange(ref writes, 0) < 1)
+            return;
+
+        try
+        {
+            target();
+        }
+        catch (Exception e)
+        {
+            onException(e);
+        }
+    }
+
+    public void Invoke()
+    {
+        lastRequest = Stopwatch.GetTimestamp();
+    }
+
+    public void Increment()
+    {
+        Interlocked.Increment(ref writes);
     }
 }
