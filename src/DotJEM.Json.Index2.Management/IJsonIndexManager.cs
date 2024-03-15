@@ -138,7 +138,8 @@ public class JsonIndexManager : IJsonIndexManager
             switch (sourceEvent)
             {
                 case JsonDocumentSourceDigestCompleted:
-                    writer.Commit();
+                    if(jsonDocumentSource.Initialized.Value)
+                        writer.Commit();
                     break;
                 case JsonDocumentCreated created:
                     writer.Create(created.Document);
