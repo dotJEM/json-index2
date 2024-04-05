@@ -61,7 +61,7 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner
                     case StringValue stringValue:
                         return new ExactValueMatcher(stringValue.Value);
                     case NumberValue _:
-                    case OffsetDateTime _:
+                    case DateTimeOffsetValue _:
                     case PhraseValue _:
                     case DateTimeValue _:
                     case IntegerValue _:

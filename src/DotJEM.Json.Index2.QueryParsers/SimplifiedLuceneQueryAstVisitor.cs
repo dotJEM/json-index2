@@ -177,7 +177,7 @@ namespace DotJEM.Json.Index2.QueryParsers
 
                         return NumericRangeQuery.NewInt64Range(field + ".@ticks", null, dateTimeValue.Value.Ticks, inclusive, inclusive);
 
-                    case OffsetDateTime offsetDateTime:
+                    case DateTimeOffsetValue offsetDateTime:
                         return NumericRangeQuery.NewInt64Range(field + ".@ticks", null, offsetDateTime.Value.Ticks, inclusive, inclusive);
 
                     case NumberValue numberValue:
@@ -201,7 +201,7 @@ namespace DotJEM.Json.Index2.QueryParsers
                     case DateTimeValue dateTimeValue:
                         return NumericRangeQuery.NewInt64Range(field + ".@ticks", dateTimeValue.Value.Ticks, null, inclusive, inclusive);
 
-                    case OffsetDateTime offsetDateTime:
+                    case DateTimeOffsetValue offsetDateTime:
                         return NumericRangeQuery.NewInt64Range(field + ".@ticks", offsetDateTime.Value.Ticks, null, inclusive, inclusive);
 
                     case NumberValue numberValue:

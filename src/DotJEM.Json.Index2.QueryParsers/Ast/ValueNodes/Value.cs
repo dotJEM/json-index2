@@ -1,6 +1,8 @@
-﻿namespace DotJEM.Json.Index2.QueryParsers.Ast;
+﻿using DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
 
-public abstract class Value
+namespace DotJEM.Json.Index2.QueryParsers.Ast;
+
+public abstract class Value : BaseQuery
 {
-
+    public override TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context) => visitor.Visit(this, context);
 }

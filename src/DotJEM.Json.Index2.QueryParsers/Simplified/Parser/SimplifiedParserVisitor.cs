@@ -2,161 +2,289 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Antlr4.Runtime.Tree;
 using DotJEM.Json.Index2.QueryParsers.Ast;
 
-namespace DotJEM.Json.Index2.QueryParsers.Simplified.Parser
+namespace DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
+
+public class SimplifiedParserVisitor : SimplifiedBaseVisitor<BaseQuery>
 {
-    public class SimplifiedParserVisitor : SimplifiedBaseVisitor<BaseQuery>
-    {
-        private DateTime now;
-
-        protected override BaseQuery AggregateResult(BaseQuery aggregate, BaseQuery nextResult)
-        {
-            // TODO: what should we actually do here!?
-            if (aggregate != null && nextResult != null)
-            {
-                throw new NotSupportedException("Tried to run aggregate");
-            }
-            return aggregate ?? nextResult;
-        }
-
-        public override BaseQuery VisitQuery(SimplifiedParser.QueryContext context)
-        {
-            now = DateTime.Now;
-            BaseQuery query = context.clause.Accept(this);
-            BaseQuery order = context.order?.Accept(this);
-            return new OrderedQuery(query, order);
-        }
-
-        public override BaseQuery VisitOrClause(SimplifiedParser.OrClauseContext context)
-        {
-            List<BaseQuery> fragments = Visit(context.children);
-            // Note: If we only have a single fragment, there was no OR, just return the fragment.
-            if (fragments.Count < 2)
-                return fragments.SingleOrDefault();
-            return new OrQuery(fragments.ToArray());
-        }
-
-        public override BaseQuery VisitAndClause(SimplifiedParser.AndClauseContext context)
-        {
-            List<BaseQuery> fragments = Visit(context.children);
-            // Note: If we only have a single fragment, there was no AND, just return the fragment.
-            if (fragments.Count < 2)
-                return fragments.SingleOrDefault();
-            return new AndQuery(fragments.ToArray());
-        }
-
-        public override BaseQuery VisitNotClause(SimplifiedParser.NotClauseContext context)
-        {
-            List<BaseQuery> fragments = Visit(context.children);
-            //Note: There was actually no Not Clause.
-            if (fragments.Count < 2)
-                return fragments.SingleOrDefault();
-
-            for (int i = 1; i < fragments.Count; i++)
-                fragments[i] = new NotQuery(fragments[i]);
-
-            return new AndQuery(fragments.ToArray());
-        }
-
-        public override BaseQuery VisitDefaultClause(SimplifiedParser.DefaultClauseContext context)
-        {
-            List<BaseQuery> fragments = Visit(context.children);
-            // Note: If we only have a single fragment, just return that.
-            if (fragments.Count < 2)
-                return fragments.SingleOrDefault();
-            return new ImplicitCompositeQuery(fragments.ToArray());
-        }
-
-        public override BaseQuery VisitValue(SimplifiedParser.ValueContext context)
-        {
-            return new FieldQuery(null, FieldOperator.None, Value(context));
-        }
+    private DateTime now;
         
-        public override BaseQuery VisitTerm(SimplifiedParser.TermContext context) => VisitValue(context);
-        public override BaseQuery VisitWildcard(SimplifiedParser.WildcardContext context) => VisitValue(context);
-        public override BaseQuery VisitIntegerNumber(SimplifiedParser.IntegerNumberContext context) => VisitValue(context);
-        public override BaseQuery VisitDecimalNumber(SimplifiedParser.DecimalNumberContext context) => VisitValue(context);
-        public override BaseQuery VisitPhrase(SimplifiedParser.PhraseContext context) => VisitValue(context);
-        public override BaseQuery VisitMatchAll(SimplifiedParser.MatchAllContext context) => VisitValue(context);
+    public override BaseQuery VisitQuery(SimplifiedParser.QueryContext context)
+    {
+        now = DateTime.Now;
+        BaseQuery query = context.clause.Accept(this);
+        BaseQuery order = context.order?.Accept(this);
+        return new OrderedQuery(query, order);
+    }
 
-        public override BaseQuery VisitField(SimplifiedParser.FieldContext context)
+    public override BaseQuery VisitDefaultClause(SimplifiedParser.DefaultClauseContext context)
+    {
+        List<BaseQuery> fragments = Visit(context.children);
+        // Note: If we only have a single fragment, just return that.
+        return fragments.Count < 2 
+            ? fragments.SingleOrDefault() 
+            : new ImplicitCompositeQuery(fragments.ToArray());
+    }
+
+    public override BaseQuery VisitOrClause(SimplifiedParser.OrClauseContext context)
+    {
+        List<BaseQuery> fragments = Visit(context.children);
+        // Note: If we only have a single fragment, there was no OR, just return the fragment.
+        return fragments.Count < 2
+            ? fragments.SingleOrDefault() 
+            : new OrQuery(fragments.ToArray());
+    }
+
+    public override BaseQuery VisitAndClause(SimplifiedParser.AndClauseContext context)
+    {
+        List<BaseQuery> fragments = Visit(context.children);
+        // Note: If we only have a single fragment, there was no OR, just return the fragment.
+        return fragments.Count < 2
+            ? fragments.SingleOrDefault()
+            : new AndQuery(fragments.ToArray());
+    }
+
+    public override BaseQuery VisitNotClause(SimplifiedParser.NotClauseContext context)
+    {
+        List<BaseQuery> fragments = Visit(context.children);
+        //Note: There was actually no Not Clause.
+        if (fragments.Count < 2)
+            return fragments.SingleOrDefault();
+
+        for (int i = 1; i < fragments.Count; i++)
+            fragments[i] = new NotQuery(fragments[i]);
+
+        return new AndQuery(fragments.ToArray());
+    }
+
+    public override BaseQuery VisitMatchAll(SimplifiedParser.MatchAllContext context)
+    {
+        return new MatchAnyQuery();
+    }
+
+
+
+
+    public override BaseQuery VisitWildcardValue(SimplifiedParser.WildcardValueContext context)
+    {
+        //wildcardValue : WILDCARD_TERM       #Wildcard
+        return new WildcardValue(context.GetText());
+    }
+
+    public override BaseQuery VisitStarValue(SimplifiedParser.StarValueContext context)
+    {
+        //starValue : STAR                #MatchAll
+        return new MatchAllValue();
+    }
+
+    public override BaseQuery VisitPureValue(SimplifiedParser.PureValueContext context)
+    {
+        //pureValue : TERM                #Term
+        //          | DATE                #Date
+        //          | DATE_TIME           #DateTime
+        //          | INTEGER             #Integer
+        //          | DECIMAL             #Decimal
+        //          | PHRASE              #Phrase
+        //          ;
+        throw new NotImplementedException();
+    }
+
+    public override BaseQuery VisitOffsetValue(SimplifiedParser.OffsetValueContext context)
+    {
+        //offsetValue : SIMPLE_DATE_OFFSET  #SimpleDateOffset
+        //            | COMPLEX_DATE_OFFSET #ComplexDateOffset
+        //            ;
+        throw new NotImplementedException();
+    }
+
+
+    public override BaseQuery VisitBasicClause(SimplifiedParser.BasicClauseContext context)
+    {
+        return base.VisitBasicClause(context);
+    }
+
+
+    public override BaseQuery VisitAtom(SimplifiedParser.AtomContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override BaseQuery VisitAnyClause(SimplifiedParser.AnyClauseContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override BaseQuery VisitRangeClause(SimplifiedParser.RangeClauseContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override BaseQuery VisitOrderingClause(SimplifiedParser.OrderingClauseContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override BaseQuery VisitOrderingField(SimplifiedParser.OrderingFieldContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override BaseQuery VisitOrderingDirection(SimplifiedParser.OrderingDirectionContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override BaseQuery VisitField(SimplifiedParser.FieldContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override BaseQuery VisitWildcard(SimplifiedParser.WildcardContext context)
+    {
+        return base.VisitWildcard(context);
+    }
+
+    public override BaseQuery VisitTerm(SimplifiedParser.TermContext context)
+    {
+        return base.VisitTerm(context);
+    }
+
+    public override BaseQuery VisitDate(SimplifiedParser.DateContext context)
+    {
+        return base.VisitDate(context);
+    }
+
+    public override BaseQuery VisitDateTime(SimplifiedParser.DateTimeContext context)
+    {
+        return base.VisitDateTime(context);
+    }
+
+    public override BaseQuery VisitInteger(SimplifiedParser.IntegerContext context)
+    {
+        return base.VisitInteger(context);
+    }
+
+    public override BaseQuery VisitDecimal(SimplifiedParser.DecimalContext context)
+    {
+        return base.VisitDecimal(context);
+    }
+
+    public override BaseQuery VisitPhrase(SimplifiedParser.PhraseContext context)
+    {
+        return base.VisitPhrase(context);
+    }
+
+    public override BaseQuery VisitSimpleDateOffset(SimplifiedParser.SimpleDateOffsetContext context)
+    {
+        return base.VisitSimpleDateOffset(context);
+    }
+
+    public override BaseQuery VisitComplexDateOffset(SimplifiedParser.ComplexDateOffsetContext context)
+    {
+        return base.VisitComplexDateOffset(context);
+    }
+
+    public override BaseQuery VisitEquals(SimplifiedParser.EqualsContext context)
+    {
+        return base.VisitEquals(context);
+    }
+
+    public override BaseQuery VisitNotEquals(SimplifiedParser.NotEqualsContext context)
+    {
+        return base.VisitNotEquals(context);
+    }
+
+    public override BaseQuery VisitGreaterThan(SimplifiedParser.GreaterThanContext context)
+    {
+        return base.VisitGreaterThan(context);
+    }
+
+    public override BaseQuery VisitGreaterThanOrEquals(SimplifiedParser.GreaterThanOrEqualsContext context)
+    {
+        return base.VisitGreaterThanOrEquals(context);
+    }
+
+    public override BaseQuery VisitLessThan(SimplifiedParser.LessThanContext context)
+    {
+        return base.VisitLessThan(context);
+    }
+
+    public override BaseQuery VisitLessThanOrEquals(SimplifiedParser.LessThanOrEqualsContext context)
+    {
+        return base.VisitLessThanOrEquals(context);
+    }
+
+    public override BaseQuery VisitSimilar(SimplifiedParser.SimilarContext context)
+    {
+        return base.VisitSimilar(context);
+    }
+
+    public override BaseQuery VisitNotSimilar(SimplifiedParser.NotSimilarContext context)
+    {
+        return base.VisitNotSimilar(context);
+    }
+
+    public override BaseQuery VisitRangeValue(SimplifiedParser.RangeValueContext context)
+    {
+        return base.VisitRangeValue(context);
+    }
+
+    public override BaseQuery VisitInClause(SimplifiedParser.InClauseContext context)
+    {
+        return base.VisitInClause(context);
+    }
+
+    public override BaseQuery VisitNotInClause(SimplifiedParser.NotInClauseContext context)
+    {
+        return base.VisitNotInClause(context);
+    }
+
+    public override BaseQuery VisitName(SimplifiedParser.NameContext context)
+    {
+        return base.VisitName(context);
+    }
+
+
+    public override BaseQuery VisitAndOperator(SimplifiedParser.AndOperatorContext context)
+    {
+        return base.VisitAndOperator(context);
+    }
+
+    public override BaseQuery VisitOrOperator(SimplifiedParser.OrOperatorContext context)
+    {
+        return base.VisitOrOperator(context);
+    }
+
+    public override BaseQuery VisitNotOperator(SimplifiedParser.NotOperatorContext context)
+    {
+        return base.VisitNotOperator(context);
+    }
+
+    public override BaseQuery VisitOperator(SimplifiedParser.OperatorContext context)
+    {
+        return base.VisitOperator(context);
+    }
+
+    public override BaseQuery VisitTerminal(ITerminalNode node)
+    {
+        return base.VisitTerminal(node);
+    }
+
+    private List<BaseQuery> Visit(IList<IParseTree> items) => items
+        .Select(Visit)
+        .Where(ast => ast != null)
+        .ToList();
+    
+    protected override BaseQuery AggregateResult(BaseQuery aggregate, BaseQuery nextResult)
+    {
+        // TODO: what should we actually do here!?
+        if (aggregate != null && nextResult != null)
         {
-            string name = context.TERM().GetText();
-            switch (context.@operator())
-            {
-                case SimplifiedParser.EqualsContext _:              return new FieldQuery(name, FieldOperator.Equals, Value(context.value()));
-                case SimplifiedParser.GreaterThanContext _:         return new FieldQuery(name, FieldOperator.GreaterThan, Value(context.value()));
-                case SimplifiedParser.GreaterThanOrEqualsContext _: return new FieldQuery(name, FieldOperator.GreaterThanOrEquals, Value(context.value()));
-                case SimplifiedParser.LessThanContext _:            return new FieldQuery(name, FieldOperator.LessThan, Value(context.value()));
-                case SimplifiedParser.LessThanOrEqualsContext _:    return new FieldQuery(name, FieldOperator.LessThanOrEquals, Value(context.value()));
-                case SimplifiedParser.NotEqualsContext _:           return new FieldQuery(name, FieldOperator.NotEquals, Value(context.value()));
-                case SimplifiedParser.SimilarContext _:             return new FieldQuery(name, FieldOperator.Similar, Value(context.value()));
-                case SimplifiedParser.NotSimilarContext _:          return new FieldQuery(name, FieldOperator.NotSimilar, Value(context.value()));
-            }
-
-            throw new Exception("Invalid operator for field context: " + context.@operator());
+            throw new NotSupportedException("Tried to run aggregate");
         }
-
-        public Value Value(SimplifiedParser.ValueContext context)
-        {
-            switch (context)
-            {
-                case SimplifiedParser.DateContext _: return new DateTimeValue(DateTime.ParseExact(context.GetText(), "YYYY-MM-DD", CultureInfo.InvariantCulture), DateTimeValue.Kind.Date);
-                case SimplifiedParser.DateTimeContext _: return new DateTimeValue(DateTime.Parse(context.GetText(), CultureInfo.InvariantCulture), DateTimeValue.Kind.DateTime);
-                case SimplifiedParser.DateOffsetContext _: return OffsetDateTime.Parse(now, context.GetText());
-                case SimplifiedParser.MatchAllContext _:      return new MatchAllValue();
-                case SimplifiedParser.DecimalNumberContext _: return new NumberValue(double.Parse(context.GetText(), CultureInfo.InvariantCulture));
-                case SimplifiedParser.IntegerNumberContext _: return new IntegerValue(long.Parse(context.GetText(), CultureInfo.InvariantCulture));
-                case SimplifiedParser.PhraseContext _:        return new PhraseValue(context.GetText());
-                case SimplifiedParser.TermContext _:          return new StringValue(context.GetText());
-                case SimplifiedParser.WildcardContext _:      return new WildcardValue(context.GetText());
-            }
-            throw new Exception("Unknown value type.");
-        }
-
-        public override BaseQuery VisitInClause(SimplifiedParser.InClauseContext context)
-        {
-            string name = context.TERM().GetText();
-            Value[] values = context.children.OfType<SimplifiedParser.ValueContext>()
-                .Select(Value).ToArray();
-            return new FieldQuery(name, FieldOperator.In, new ListValue(values));
-        }
-
-        public override BaseQuery VisitNotInClause(SimplifiedParser.NotInClauseContext context)
-        {
-            string name = context.TERM().GetText();
-            Value[] values = context.children.OfType<SimplifiedParser.ValueContext>()
-                .Select(Value).ToArray();
-            return new FieldQuery(name, FieldOperator.NotIt, new ListValue(values));
-        }
-
-        public override BaseQuery VisitOrderingClause(SimplifiedParser.OrderingClauseContext context)
-        {
-            OrderField[] orders = context.children
-                .Select(Visit)
-                .OfType<OrderField>()
-                .ToArray();
-
-            return new OrderBy(orders);
-        }
-
-        public override BaseQuery VisitOrderingField(SimplifiedParser.OrderingFieldContext context)
-        {
-            string field = context.TERM().GetText();
-            FieldOrder order = context.ASC() != null
-                ? FieldOrder.Ascending
-                : context.DESC() != null
-                    ? FieldOrder.Descending
-                    : FieldOrder.None;
-            return new OrderField(field, order);
-        }
-
-        private List<BaseQuery> Visit(IList<IParseTree> items) => items
-            .Select(Visit)
-            .Where(ast => ast != null)
-            .ToList();
-
+        return aggregate ?? nextResult;
     }
 }

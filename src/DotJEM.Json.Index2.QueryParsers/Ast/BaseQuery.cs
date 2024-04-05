@@ -36,3 +36,4 @@ public abstract class BaseQuery
 
     public abstract TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context);
 }
+

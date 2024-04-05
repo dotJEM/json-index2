@@ -16,3 +16,8 @@ public class FieldQuery : BaseQuery
     }
     public override TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context) => visitor.Visit(this, context);
 }
+
+public class MatchAnyQuery : BaseQuery
+{
+    public override TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context) => visitor.Visit(this, context);
+}
