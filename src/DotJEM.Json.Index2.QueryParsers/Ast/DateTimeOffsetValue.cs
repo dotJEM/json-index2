@@ -18,13 +18,11 @@ public class DateTimeOffsetValue : Value
         Raw = raw;
         Offset = offset;
         Now = now;
-
         Value = now.Add(offset);
     }
 
     public static DateTimeOffsetValue Parse(DateTime now, string text)
     {
-        TimeSpanParser parser = new TimeSpanParser();
         Match match = pattern.Match(text.Trim());
 
         if (!match.Success)
@@ -34,7 +32,7 @@ public class DateTimeOffsetValue : Value
         string s = match.Groups["s"]?.Value;
         string v = match.Groups["v"]?.Value;
 
-        TimeSpan offset = parser.Parse(v);
+        TimeSpan offset = AdvParser.ParseTimeSpan(v);
         offset = s == "+" ? offset : offset.Negate();
         now = r?.ToLower() == "now" ? now : now.Date;
                 

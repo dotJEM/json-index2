@@ -21,8 +21,9 @@ basicClause   :
   | WS? atom
   ;
 
-atom : pureValue | wildcardValue | field | inClause | notInClause;
+atom : pureValue | wildcardValue | field | inClause | notInClause | anyClause;
 
+// Match any/all : *:*
 anyClause: STAR WS? COLON WS? STAR;
 
 // Range: field : [A TO B]
@@ -48,7 +49,12 @@ orderingClause    : WS? ORDER WS BY WS orderingField ( WS? COMMA WS? orderingFie
 orderingField     : WS? fieldName = name (WS direction = orderingDirection)?;
 orderingDirection : (ASC | DESC);
 
-field       : TERM WS? operator WS? ( wildcardValue | starValue | pureValue );
+field       : TERM WS? operator WS? fieldValue;
+fieldValue  : wildcardValue
+            | starValue
+            | pureValue
+            | offsetValue
+            ;
 name        : TERM;
 
 wildcardValue : WILDCARD_TERM       #Wildcard

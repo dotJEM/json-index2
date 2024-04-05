@@ -35,7 +35,7 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner
                     return CreateMatcher(ast.Value);
 
                 case FieldOperator.NotEquals:
-                case FieldOperator.NotIt:
+                case FieldOperator.NotIn:
                     return new NotMatcher(CreateMatcher(ast.Value));
 
                 case FieldOperator.GreaterThanOrEquals:

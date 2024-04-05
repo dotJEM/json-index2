@@ -17,6 +17,22 @@ public class FieldQuery : BaseQuery
     public override TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context) => visitor.Visit(this, context);
 }
 
+public class RangeQuery : BaseQuery
+{
+    public string Name { get; }
+    public Value From { get; }
+    public Value To { get; }
+
+    public RangeQuery(string name, Value from, Value to)
+    {
+        Name = name;
+        From = from;
+        To = to;
+    }
+
+    public override TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context) => visitor.Visit(this, context);
+}
+
 public class MatchAnyQuery : BaseQuery
 {
     public override TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context) => visitor.Visit(this, context);

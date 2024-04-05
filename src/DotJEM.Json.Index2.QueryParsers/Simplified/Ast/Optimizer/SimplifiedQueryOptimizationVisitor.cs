@@ -47,7 +47,7 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Optimizer
                     case FieldOperator.Equals:
                     case FieldOperator.In: return FieldOperator.In;
                     case FieldOperator.NotEquals: 
-                    case FieldOperator.NotIt: return FieldOperator.NotIt;
+                    case FieldOperator.NotIn: return FieldOperator.NotIn;
                     default:
                         return source;
                 }
@@ -77,12 +77,12 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Optimizer
                             select value;
                         return new[] { new FieldQuery(field, FieldOperator.In, new ListValue(inValues.ToArray())) };
 
-                    case FieldOperator.NotIt:
+                    case FieldOperator.NotIn:
                         //Note: Captures "NotEquals" as well as NotIn is a suitable target for multiple Or NotEquals
                         IEnumerable<Value> notInValues =
                             from value in fieldsArr.Select(f => f.Value).SelectMany(val => val is ListValue list ? list.Values : new[] { val })
                             select value;
-                        return new[] { new FieldQuery(field, FieldOperator.NotIt, new ListValue(notInValues.ToArray())) };
+                        return new[] { new FieldQuery(field, FieldOperator.NotIn, new ListValue(notInValues.ToArray())) };
 
                     default:
                         return fieldsArr;
@@ -147,7 +147,7 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Optimizer
                     case FieldOperator.LessThan:
                     case FieldOperator.LessThanOrEquals:
                     case FieldOperator.In:
-                    case FieldOperator.NotIt:
+                    case FieldOperator.NotIn:
                     case FieldOperator.Similar:
                     case FieldOperator.NotSimilar:
                         return fieldsArr;
