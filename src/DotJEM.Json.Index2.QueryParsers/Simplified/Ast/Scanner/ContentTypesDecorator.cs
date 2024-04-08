@@ -58,11 +58,12 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner
                         return new MatchAllMatcher();
                     case WildcardValue wildcardValue:
                         return new WildcardValueMatcher(wildcardValue.Value);
+                    case PhraseValue _:
+                        return new NullMatcher();
                     case StringValue stringValue:
                         return new ExactValueMatcher(stringValue.Value);
                     case NumberValue _:
                     case DateTimeOffsetValue _:
-                    case PhraseValue _:
                     case DateTimeValue _:
                     case IntegerValue _:
                         return new NullMatcher();

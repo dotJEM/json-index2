@@ -38,5 +38,5 @@ public class DateTimeOffsetValue : Value
                 
         return new DateTimeOffsetValue(text, offset, now);
     }
-    public override string ToString() => Value.ToString();
+    public override string ToString() => Raw;
 }

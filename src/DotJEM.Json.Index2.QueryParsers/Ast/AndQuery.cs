@@ -9,4 +9,9 @@ public class AndQuery : CompositeQuery
     }
 
     public override TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context) => visitor.Visit(this, context);
+
+    public override string ToString()
+    {
+        return $"( {string.Join(" AND ", Queries)} )";
+    }
 }

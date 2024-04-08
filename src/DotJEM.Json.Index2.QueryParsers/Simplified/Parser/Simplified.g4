@@ -16,46 +16,42 @@ defaultClause : orClause (WS? orClause)*;
 orClause      : andClause (orOperator andClause)*;
 andClause     : notClause (andOperator notClause)*;
 notClause     : basicClause (notOperator basicClause)*;
-basicClause   :
-  WS? LPA defaultClause WS? RPA
-  | WS? atom
-  ;
+basicClause   : WS? LPA WS? defaultClause WS? RPA
+              | WS? namedClause
+              ;
 
-atom : pureValue | wildcardValue | field | inClause | notInClause | anyClause;
+namedClause : field | rangeClause | inClause | anyClause;
+unnamedClause: pureValue | wildcardValue;
+//atom : field;
 
 // Match any/all : *:*
 anyClause: STAR WS? COLON WS? STAR;
 
 // Range: field : [A TO B]
-rangeClause :
-    fieldName = name
-    WS? COLON WS?
-    LSBR WS?
-    from = rangeValue
-    WS TO WS
-    to = rangeValue WS?
-    RSBR;
-rangeValue : starValue 
-           | pureValue 
-           | offsetValue 
-           ;
+rangeClause : TERM WS? COLON WS? '[' WS? from = rangeValue WS TO WS to = rangeValue WS? ']';
+rangeValue  : starValue | pureValue | offsetValue;
 
 // In: field IN (A, B, C)  |  field NOT IN (A, B, C)
-inClause       : TERM WS IN WS? LPA WS? pureValue ( WS? COMMA WS? pureValue )* WS? RPA;
-notInClause    : TERM WS NOT WS IN WS? LPA WS? pureValue ( WS? COMMA WS? pureValue )* WS? RPA;
+inClause    : TERM WS (NOT WS)? IN WS? LPA WS? pureValue ( WS? COMMA WS? pureValue )* WS? RPA;
 
 // Order: ORDER BY field:DESC, field2, field3:ASC
 orderingClause    : WS? ORDER WS BY WS orderingField ( WS? COMMA WS? orderingField )* WS?;
-orderingField     : WS? fieldName = name (WS direction = orderingDirection)?;
+orderingField     : WS? fieldName = TERM (WS direction = orderingDirection)?;
 orderingDirection : (ASC | DESC);
 
-field       : TERM WS? operator WS? fieldValue;
+// Field: fieldName: ...
+field          : TERM WS? operator WS? orFieldValue;
+orFieldValue   : andFieldValue (orOperator andFieldValue)*;
+andFieldValue  : baseFieldValue (andOperator baseFieldValue)*;
+baseFieldValue : LPA WS? orFieldValue WS? RPA
+               | WS? fieldValue
+               ;
+
 fieldValue  : wildcardValue
             | starValue
             | pureValue
             | offsetValue
             ;
-name        : TERM;
 
 wildcardValue : WILDCARD_TERM       #Wildcard
               ;
@@ -77,8 +73,8 @@ offsetValue   : SIMPLE_DATE_OFFSET  #SimpleDateOffset
 
 
 
-andOperator : WS? AND;
-orOperator  : WS? OR;
+andOperator : WS? AND WS?;
+orOperator  : WS? OR WS?;
 notOperator : WS? (AND WS)? NOT;
 
 operator : EQ       #Equals

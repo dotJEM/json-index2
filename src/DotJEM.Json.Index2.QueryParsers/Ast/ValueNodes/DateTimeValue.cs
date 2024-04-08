@@ -11,7 +11,7 @@ public class DateTimeValue : Value
         Value = value;
     }
 
-    public override string ToString() => Value.ToString();
+    public override string ToString() => Value.ToString("s");
 }
 public class DateValue : DateTimeValue
 {
