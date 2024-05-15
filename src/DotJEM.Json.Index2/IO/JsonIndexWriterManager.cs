@@ -48,6 +48,9 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
 
         lock (padlock)
         {
+            if (!writer.IsValueCreated)
+                return;
+
             writer.Value.Dispose();
             writer = new(() => Open(index));
             RaiseOnClose();
