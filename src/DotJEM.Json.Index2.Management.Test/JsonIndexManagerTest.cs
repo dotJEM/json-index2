@@ -41,13 +41,20 @@ public class JsonIndexManagerTest
         IJsonIndexManager manager = new JsonIndexManager(source, snapshots, index);
 
         InfoStreamExceptionEvent? disposedEvent = null;
+        InfoStreamExceptionEvent? exceptionEvent = null;
         manager.InfoStream
             .OfType<InfoStreamExceptionEvent>()
             .Where(@event => @event.Exception is ObjectDisposedException)
             .Subscribe(@event =>
             {
-                Debug.WriteLine(@event.Exception);
                 disposedEvent = @event;
+            });
+        manager.InfoStream
+            .OfType<InfoStreamExceptionEvent>()
+            .Where(@event => @event.Exception.Message != "Can't write to an existing snapshot.")
+            .Subscribe(@event =>
+            {
+                exceptionEvent = @event;
             });
 
         try
@@ -55,7 +62,7 @@ public class JsonIndexManagerTest
             await manager.RunAsync();
             Debug.WriteLine("TEST STARTED");
             Stopwatch sw = Stopwatch.StartNew();
-            while (sw.Elapsed < 10.Minutes() && disposedEvent == null)
+            while (sw.Elapsed < 10.Minutes() && disposedEvent == null && exceptionEvent == null)
             {
                 Task result = Random.Shared.Next(100) switch
                 {
@@ -68,21 +75,23 @@ public class JsonIndexManagerTest
 
             async Task DoAfterDelay(Func<Task> action, TimeSpan? delay = null)
             {
-                await Task.Delay(delay ?? Random.Shared.Next(1,5).Seconds());
+                await Task.Delay(delay ?? Random.Shared.Next(1, 5).Seconds());
                 await action();
             }
+
             await manager.StopAsync();
-            index.Close();
         }
-        catch (Exception e)
+        catch (TaskCanceledException)
         {
-            Console.WriteLine(e);
-            await manager.StopAsync();
+            //Ignore.
+        }
+        finally
+        {
             index.Close();
-            throw;
         }
 
         Assert.That(disposedEvent, Is.Null, () => disposedEvent?.Exception.ToString());
+        Assert.That(exceptionEvent, Is.Null, () => exceptionEvent?.Exception.ToString());
     }
 
 

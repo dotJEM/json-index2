@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using DotJEM.Json.Index2.IO;
 using DotJEM.Json.Index2.Searching;
 using Lucene.Net.Index;
@@ -19,7 +20,6 @@ public interface IJsonIndexStorageManager
 
 public class JsonIndexStorageManager: IJsonIndexStorageManager
 {
-    private readonly IJsonIndex index;
     private readonly IIndexStorageProvider provider;
     private readonly object padlock = new ();
     private Directory directory;
@@ -49,7 +49,6 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
 
     public JsonIndexStorageManager(IJsonIndex index, IIndexStorageProvider provider)
     {
-        this.index = index;
         this.provider = provider;
         this.writerManager = new Lazy<IIndexWriterManager>(()=> new IndexWriterManager(index));
         this.searcherManager = new Lazy<IIndexSearcherManager>(()=>  new IndexSearcherManager(WriterManager, index.Configuration.Serializer));
@@ -66,16 +65,22 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
         SearcherManager.Close();
         WriterManager.Close();
     }
-
+    
     public void Delete()
     {
-        if(!Exists)
+        if (directory == null)
             return;
 
-        Close();
-        Unlock();
-        foreach (string file in Directory.ListAll())
-            Directory.DeleteFile(file);
-        provider.Delete();
+        lock (padlock)
+        {
+            if (directory == null)
+                return;
+
+            Close();
+            Unlock();
+            foreach (string file in directory.ListAll())
+                directory.DeleteFile(file);
+            provider.Delete();
+        }
     }
 }
