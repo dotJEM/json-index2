@@ -47,7 +47,15 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
                 if (writer != null)
                     return writer;
 
-                return writer = Open(index);
+                try
+                {
+                    return writer = Open(index);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine("ACTIVE LEASES: " +leases.Count);
+                    throw;
+                }
             }
         }
     }
@@ -148,6 +156,11 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
                 {
                     throw new ObjectDisposedException("Index writer lease has been returned or is expired.");
                 }
+
+                if (IsExpired)
+                {
+                    throw new LeaseExpiredException("Index writer lease has been returned or is expired.");
+                }
                 return manager.Writer;
             }
         }
@@ -178,4 +191,15 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
         }
     }
 
+}
+
+public class LeaseExpiredException : Exception
+{
+    public LeaseExpiredException(string message) : base(message)
+    {
+    }
+
+    public LeaseExpiredException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }
