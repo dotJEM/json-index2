@@ -1,4 +1,6 @@
-﻿namespace DotJEM.Json.Index2.QueryParsers.Ast;
+﻿using System.Globalization;
+
+namespace DotJEM.Json.Index2.QueryParsers.Ast;
 
 public class NumberValue : Value
 {
@@ -8,5 +10,5 @@ public class NumberValue : Value
     {
         Value = value;
     }
-    public override string ToString() => Value.ToString();
+    public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 }

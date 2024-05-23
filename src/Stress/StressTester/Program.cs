@@ -24,12 +24,13 @@ using Lucene.Net.Analysis.Util;
 using Lucene.Net.Search;
 using Newtonsoft.Json.Linq;
 using Stress.Adapter;
+using Stress.Data;
 using JsonIndexWriter = DotJEM.Json.Index2.Management.Writer.JsonIndexWriter;
 
 //TraceSource trace; 
 
-IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=nsw;Integrated Security=True");
-//IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=STRESS;Integrated Security=True");
+//IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=nsw;Integrated Security=True");
+IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=STRESS;Integrated Security=True");
 storage.Configure.MapField(JsonField.Id, "id");
 storage.Configure.MapField(JsonField.ContentType, "contentType");
 storage.Configure.MapField(JsonField.Version, "$version");
@@ -37,21 +38,21 @@ storage.Configure.MapField(JsonField.Created, "$created");
 storage.Configure.MapField(JsonField.Updated, "$updated");
 storage.Configure.MapField(JsonField.SchemaVersion, "$schemaVersion");
 
-//StressDataGenerator generator = new StressDataGenerator(
-//    storage.Area("Settings"),
-//    storage.Area("Queue"),
-//    storage.Area("Recipes"),
-//    storage.Area("Animals"),
-//    storage.Area("Games"),
-//    storage.Area("Players"),
-//    storage.Area("Planets"),
-//    storage.Area("Universe"),
-//    storage.Area("Trashcan")
-//);
-//Task genTask = generator.StartAsync();
-//await Task.Delay(5000);
+StressDataGenerator generator = new StressDataGenerator(
+    storage.Area("Settings"),
+    storage.Area("Queue"),
+    storage.Area("Recipes"),
+    storage.Area("Animals"),
+    storage.Area("Games"),
+    storage.Area("Players"),
+    storage.Area("Planets"),
+    storage.Area("Universe"),
+    storage.Area("Trashcan")
+);
+Task genTask = generator.StartAsync();
+await Task.Delay(2000);
 
-if(Directory.Exists(@".\app_data\index"))
+if (Directory.Exists(@".\app_data\index"))
     Directory.Delete(@".\app_data\index", true);
 Directory.CreateDirectory(@".\app_data\index");
 Directory.CreateDirectory(@".\app_data\snapshots");

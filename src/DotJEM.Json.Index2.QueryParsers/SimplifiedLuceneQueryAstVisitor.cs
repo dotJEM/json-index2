@@ -153,7 +153,7 @@ namespace DotJEM.Json.Index2.QueryParsers
                     query.Add(inClause, Occur.MUST);
                     break;
 
-                case FieldOperator.NotIt:
+                case FieldOperator.NotIn:
                     if (!(ast.Value is ListValue notInList))
                         throw new Exception();
 
@@ -177,7 +177,7 @@ namespace DotJEM.Json.Index2.QueryParsers
 
                         return NumericRangeQuery.NewInt64Range(field + ".@ticks", null, dateTimeValue.Value.Ticks, inclusive, inclusive);
 
-                    case OffsetDateTime offsetDateTime:
+                    case DateTimeOffsetValue offsetDateTime:
                         return NumericRangeQuery.NewInt64Range(field + ".@ticks", null, offsetDateTime.Value.Ticks, inclusive, inclusive);
 
                     case NumberValue numberValue:
@@ -201,7 +201,7 @@ namespace DotJEM.Json.Index2.QueryParsers
                     case DateTimeValue dateTimeValue:
                         return NumericRangeQuery.NewInt64Range(field + ".@ticks", dateTimeValue.Value.Ticks, null, inclusive, inclusive);
 
-                    case OffsetDateTime offsetDateTime:
+                    case DateTimeOffsetValue offsetDateTime:
                         return NumericRangeQuery.NewInt64Range(field + ".@ticks", offsetDateTime.Value.Ticks, null, inclusive, inclusive);
 
                     case NumberValue numberValue:
@@ -238,6 +238,14 @@ namespace DotJEM.Json.Index2.QueryParsers
                 field ??= "gender";
                 switch (val)
                 {
+                    case DateTimeOffsetValue dateTimeOffsetValue:
+                        break;
+                    case DateValue dateValue:
+                        break;
+                    case TimeValue timeValue:
+                        break;
+                    case DateTimeValue dateTimeValue:
+                        break;
                     case MatchAllValue _:
                         return new WildcardQuery(new Term(field, "*"));
                     
@@ -246,6 +254,8 @@ namespace DotJEM.Json.Index2.QueryParsers
                     
                     case IntegerValue integerValue:
                         return NumericRangeQuery.NewInt64Range(field, integerValue.Value, integerValue.Value, true, true);
+                    case ListValue listValue:
+                        break;
 
                     case PhraseValue phraseValue:
                         TokenStream source = analyzer.GetTokenStream(field, new StringReader(phraseValue.Value));
@@ -297,8 +307,11 @@ namespace DotJEM.Json.Index2.QueryParsers
                             q.Add(new (new TermQuery(term), Occur.MUST));
                         return q;
                         //TODO: Just use the standard term query, for not this is just testing.
+
+
+
                 }
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(val), $"{val.GetType()} [{val}]");
             }
 
 

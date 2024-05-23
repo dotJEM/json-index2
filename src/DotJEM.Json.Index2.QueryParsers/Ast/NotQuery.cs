@@ -12,4 +12,9 @@ public class NotQuery : BaseQuery
     }
 
     public override TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context) => visitor.Visit(this, context);
+
+    public override string ToString()
+    {
+        return $"NOT {Not}";
+    }
 }

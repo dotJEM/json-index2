@@ -99,22 +99,23 @@ public class IngestProgressTracker : BasicSubject<ITrackerState>, IIngestProgres
         {
             case JsonDocumentCreated created:
                 observerTrackers.AddOrUpdate(value.Area,
-                    _ => throw new InvalidDataException(), 
+                    _ => new StorageAreaIngestStateTracker(value.Area, JsonSourceEventType.Starting), 
                     (_, state) => state.UpdateState(created.Generation, created.Size));
                 break;
             case JsonDocumentUpdated updated:
-                observerTrackers.AddOrUpdate(value.Area, 
-                    _ => throw new InvalidDataException(), 
+                observerTrackers.AddOrUpdate(value.Area,
+                    _ => new StorageAreaIngestStateTracker(value.Area, JsonSourceEventType.Starting),
                     (_, state) => state.UpdateState(updated.Generation, updated.Size));
                 break;
             case JsonDocumentDeleted deleted:
                 observerTrackers.AddOrUpdate(value.Area,
-                    _ => throw new InvalidDataException(),
+                    _ => new StorageAreaIngestStateTracker(value.Area, JsonSourceEventType.Starting),
                     (_, state) => state.UpdateState(deleted.Generation, deleted.Size));
                 break;
             case JsonDocumentSourceDigestCompleted:
                 observerTrackers.AddOrUpdate(value.Area,
-                    _ => throw new InvalidDataException(), (_, state) => state);
+                    _ => new StorageAreaIngestStateTracker(value.Area, JsonSourceEventType.Starting),
+                    (_, state) => state);
                 break;
             case JsonDocumentSourceReset:
                 break;

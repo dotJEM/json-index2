@@ -4,6 +4,7 @@ using DotJEM.Json.Index2.IO;
 using DotJEM.Json.Index2.QueryParsers.Query;
 using DotJEM.Json.Index2.Results;
 using DotJEM.Json.Index2.Searching;
+using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.En;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Analysis.Util;

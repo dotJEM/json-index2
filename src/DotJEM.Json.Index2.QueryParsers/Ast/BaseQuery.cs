@@ -20,8 +20,6 @@ public abstract class BaseQuery
     }
 
     public bool ContainsKey(string key) => metaData.ContainsKey(key);
-
-
     public TData GetAs<TData>(string key) => (TData)metaData[key];
     public bool TryGetAs<TData>(string key, out TData value)
     {
@@ -36,3 +34,4 @@ public abstract class BaseQuery
 
     public abstract TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context);
 }
+

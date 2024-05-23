@@ -1,12 +1,14 @@
 ﻿namespace DotJEM.Json.Index2.QueryParsers.Ast;
 
-public class PhraseValue : Value
+public class PhraseValue : StringValue
 {
-    public string Value { get; }
-
-    public PhraseValue(string value)
+    public PhraseValue(string value) 
+        : base(value)
     {
-        Value = value;
     }
-    public override string ToString() => Value;
+
+    public override string ToString()
+    {
+        return $"\"{Value}\"";
+    }
 }

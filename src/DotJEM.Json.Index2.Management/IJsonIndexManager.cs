@@ -27,6 +27,7 @@ public interface IJsonIndexManager
     Task RunAsync();
     Task UpdateGenerationAsync(string area, long generation);
     Task ResetIndexAsync();
+    Task StopAsync();
 }
 
 public class JsonIndexManager : IJsonIndexManager
@@ -130,7 +131,12 @@ public class JsonIndexManager : IJsonIndexManager
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
         await jsonDocumentSource.StartAsync().ConfigureAwait(false);
     }
-    
+
+    public async Task StopAsync()
+    {
+        await jsonDocumentSource.StopAsync().ConfigureAwait(false);
+    }
+
     private void CaptureChange(IJsonDocumentSourceEvent sourceEvent)
     {
         try

@@ -1,7 +1,6 @@
 ﻿grammar Simplified;
 
 /* Inspired by: https://github.com/lrowe/lucenequery and JIRA */
-
 /*
  * Parser Rules
  */
@@ -17,34 +16,65 @@ defaultClause : orClause (WS? orClause)*;
 orClause      : andClause (orOperator andClause)*;
 andClause     : notClause (andOperator notClause)*;
 notClause     : basicClause (notOperator basicClause)*;
-basicClause   :
-  WS? LPA defaultClause WS? RPA
-  | WS? atom
-  ;
+basicClause   : WS? LPA WS? defaultClause WS? RPA
+              | WS? namedClause
+              ;
 
-atom : value | field | inClause | notInClause;
+namedClause : field | rangeClause | inClause | anyClause;
+unnamedClause: pureValue | wildcardValue;
+//atom : field;
 
-inClause       : TERM WS IN WS? LPA WS? value ( WS? COMMA WS? value )* WS? RPA;
-notInClause    : TERM WS NOT WS IN WS? LPA WS? value ( WS? COMMA WS? value )* WS? RPA;
-orderingClause : WS? ORDER WS BY WS orderingField ( WS? COMMA WS? orderingField )* WS?;
-orderingField  : WS? TERM (WS (ASC | DESC))?;
+// Match any/all : *:*
+anyClause: STAR WS? COLON WS? STAR;
 
-field       : TERM WS? operator WS? value;
+// Range: field : [A TO B]
+rangeClause : TERM WS? COLON WS? '[' WS? from = rangeValue WS TO WS to = rangeValue WS? ']';
+rangeValue  : starValue | pureValue | offsetValue;
 
-value       : TERM                                  #Term
-            | WILDCARD_TERM                         #Wildcard
-            | INTEGER                               #IntegerNumber
-            | DECIMAL                               #DecimalNumber
-            | PHRASE                                #Phrase
-            | STAR                                  #MatchAll
-			| DATE                                #Date
-			//| TIME                                #Time
-			| DATE_TIME                            #DateTime
-			| DATE_OFFSET                         #DateOffset
+// In: field IN (A, B, C)  |  field NOT IN (A, B, C)
+inClause    : TERM WS (NOT WS)? IN WS? LPA WS? pureValue ( WS? COMMA WS? pureValue )* WS? RPA;
+
+// Order: ORDER BY field:DESC, field2, field3:ASC
+orderingClause    : WS? ORDER WS BY WS orderingField ( WS? COMMA WS? orderingField )* WS?;
+orderingField     : WS? fieldName = TERM (WS direction = orderingDirection)?;
+orderingDirection : (ASC | DESC);
+
+// Field: fieldName: ...
+field          : TERM WS? operator WS? orFieldValue;
+orFieldValue   : andFieldValue (orOperator andFieldValue)*;
+andFieldValue  : baseFieldValue (andOperator baseFieldValue)*;
+baseFieldValue : LPA WS? orFieldValue WS? RPA
+               | WS? fieldValue
+               ;
+
+fieldValue  : wildcardValue
+            | starValue
+            | pureValue
+            | offsetValue
             ;
 
-andOperator : WS? AND;
-orOperator  : WS? OR;
+wildcardValue : WILDCARD_TERM       #Wildcard
+              ;
+
+starValue     : STAR                #MatchAll
+              ;
+
+pureValue     : TERM                #Term
+              | DATE                #Date
+              | DATE_TIME           #DateTime
+              | INTEGER             #Integer
+              | DECIMAL             #Decimal
+              | PHRASE              #Phrase
+              ;
+
+offsetValue   : SIMPLE_DATE_OFFSET  #SimpleDateOffset
+              | COMPLEX_DATE_OFFSET #ComplexDateOffset
+              ;
+
+
+
+andOperator : WS? AND WS?;
+orOperator  : WS? OR WS?;
 notOperator : WS? (AND WS)? NOT;
 
 operator : EQ       #Equals
@@ -82,6 +112,9 @@ ORDER      : O R D E R  ;
 BY		   : B Y        ;
 ASC        : A S C      ;
 DESC       : D E S C    ;
+TO         : T O        ;
+
+DAYS       : D A Y S    ;
 
 EQ   : '='       ;
 NEQ  : '!='      ;
@@ -93,6 +126,7 @@ SIM  : '~'       ;
 NSIM : '!~'      ;
 
 WS  : (' '|'\t'|'\r'|'\n'|'\u3000')+;
+SS  : ' ';
 
 fragment INT        : '0' .. '9';
 fragment ESC        : '\\' .;
@@ -108,14 +142,36 @@ DATE        : INT INT INT INT MINUS INT INT MINUS INT INT;
 DATE_TIME   : DATE 'T' TIME;
 
 // Special Timespan Handling:
-fragment TIME_IDEN_CHAR : [a-zA-Z];
-fragment NOW         : N O W;
-fragment TODAY       : T O D A Y;
-fragment SIMPLE_TIMESPAN       : (INT+ '.')? INT INT ':' INT INT ( ':' INT INT ('.' INT INT))?;
-fragment COMPLEX_TIMESPAN_PART : INT+ WS? TIME_IDEN_CHAR+;
-fragment COMPLEX_TIMESPAN      : (COMPLEX_TIMESPAN_PART WS?)+;
-fragment TIME_SPAN             : SIMPLE_TIMESPAN | COMPLEX_TIMESPAN;
-DATE_OFFSET           : (NOW | TODAY)? WS? (PLUS|MINUS) WS? TIME_SPAN;
+fragment NOW                      : N O W;
+fragment TODAY                    : T O D A Y;
+
+fragment SIMPLE_TIMESPAN          : (INT+ '.')? INT INT ':' INT INT ( ':' INT INT ('.' INT INT))?;
+SIMPLE_DATE_OFFSET                : ( ( NOW | TODAY ) SS? )? ( PLUS | MINUS ) SIMPLE_TIMESPAN;
+
+fragment COMPLEX_TIME_SPAN_DAY    : INT+ SS? ( D | D A Y | DAYS );
+fragment COMPLEX_TIME_SPAN_HOUR   : INT+ SS? ( H | H O U R | H O U R S );
+fragment COMPLEX_TIME_SPAN_MIN    : INT+ SS? ( M | M I N | M I N U T E | M I N U T E S );
+fragment COMPLEX_TIME_SPAN_SEC    : INT+ SS? ( S | S E C | S E C O N D | S E C O N D S );
+fragment COMPLEX_TIMESPAN
+    : COMPLEX_TIME_SPAN_DAY
+    | COMPLEX_TIME_SPAN_DAY SS? COMPLEX_TIME_SPAN_HOUR
+    | COMPLEX_TIME_SPAN_DAY SS? COMPLEX_TIME_SPAN_HOUR SS? COMPLEX_TIME_SPAN_MIN
+    | COMPLEX_TIME_SPAN_DAY SS? COMPLEX_TIME_SPAN_HOUR SS? COMPLEX_TIME_SPAN_MIN SS? COMPLEX_TIME_SPAN_SEC
+    | COMPLEX_TIME_SPAN_DAY SS? COMPLEX_TIME_SPAN_MIN
+    | COMPLEX_TIME_SPAN_DAY SS? COMPLEX_TIME_SPAN_MIN SS? COMPLEX_TIME_SPAN_SEC
+    | COMPLEX_TIME_SPAN_DAY SS? COMPLEX_TIME_SPAN_SEC
+
+    | COMPLEX_TIME_SPAN_HOUR
+    | COMPLEX_TIME_SPAN_HOUR SS? COMPLEX_TIME_SPAN_MIN
+    | COMPLEX_TIME_SPAN_HOUR SS? COMPLEX_TIME_SPAN_MIN SS? COMPLEX_TIME_SPAN_SEC
+    | COMPLEX_TIME_SPAN_HOUR SS? COMPLEX_TIME_SPAN_SEC
+
+    | COMPLEX_TIME_SPAN_MIN
+    | COMPLEX_TIME_SPAN_MIN SS? COMPLEX_TIME_SPAN_SEC
+
+    | COMPLEX_TIME_SPAN_SEC
+    ;
+COMPLEX_DATE_OFFSET               : ( ( NOW | TODAY ) SS? )? ( PLUS | MINUS ) COMPLEX_TIMESPAN;
 
 
 fragment TERM_CHAR  : (~( ' ' | '\t' | '\n' | '\r' | '\u3000' | '\'' | '\"' 

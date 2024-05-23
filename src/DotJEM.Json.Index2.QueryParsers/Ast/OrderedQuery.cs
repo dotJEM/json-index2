@@ -14,4 +14,11 @@ public class OrderedQuery : BaseQuery
     }
 
     public override TResult Accept<TResult, TContext>(ISimplifiedQueryAstVisitor<TResult, TContext> visitor, TContext context) => visitor.Visit(this, context);
+
+    public override string ToString()
+    {
+        if (Ordering != null)
+            return $"{Query} ORDER BY {Ordering}";
+        return Query.ToString();
+    }
 }

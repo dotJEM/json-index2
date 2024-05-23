@@ -4,7 +4,7 @@ using DotJEM.AdvParsers;
 
 namespace DotJEM.Json.Index2.QueryParsers.Ast;
 
-public class OffsetDateTime : Value
+public class DateTimeOffsetValue : Value
 {
     public static Regex pattern = new Regex("^(?'r'NOW|TODAY)?(?'s'[+-])(?'v'.*)", RegexOptions.Compiled);
 
@@ -13,18 +13,16 @@ public class OffsetDateTime : Value
     public TimeSpan Offset { get; }
     public DateTime Value { get; }
 
-    private OffsetDateTime(string raw, TimeSpan offset, DateTime now)
+    private DateTimeOffsetValue(string raw, TimeSpan offset, DateTime now)
     {
         Raw = raw;
         Offset = offset;
         Now = now;
-
         Value = now.Add(offset);
     }
 
-    public static OffsetDateTime Parse(DateTime now, string text)
+    public static DateTimeOffsetValue Parse(DateTime now, string text)
     {
-        TimeSpanParser parser = new TimeSpanParser();
         Match match = pattern.Match(text.Trim());
 
         if (!match.Success)
@@ -34,11 +32,11 @@ public class OffsetDateTime : Value
         string s = match.Groups["s"]?.Value;
         string v = match.Groups["v"]?.Value;
 
-        TimeSpan offset = parser.Parse(v);
+        TimeSpan offset = AdvParser.ParseTimeSpan(v);
         offset = s == "+" ? offset : offset.Negate();
         now = r?.ToLower() == "now" ? now : now.Date;
                 
-        return new OffsetDateTime(text, offset, now);
+        return new DateTimeOffsetValue(text, offset, now);
     }
-    public override string ToString() => Value.ToString();
+    public override string ToString() => Raw;
 }

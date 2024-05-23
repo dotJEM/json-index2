@@ -35,7 +35,7 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner
                     return CreateMatcher(ast.Value);
 
                 case FieldOperator.NotEquals:
-                case FieldOperator.NotIt:
+                case FieldOperator.NotIn:
                     return new NotMatcher(CreateMatcher(ast.Value));
 
                 case FieldOperator.GreaterThanOrEquals:
@@ -58,11 +58,12 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Ast.Scanner
                         return new MatchAllMatcher();
                     case WildcardValue wildcardValue:
                         return new WildcardValueMatcher(wildcardValue.Value);
+                    case PhraseValue _:
+                        return new NullMatcher();
                     case StringValue stringValue:
                         return new ExactValueMatcher(stringValue.Value);
                     case NumberValue _:
-                    case OffsetDateTime _:
-                    case PhraseValue _:
+                    case DateTimeOffsetValue _:
                     case DateTimeValue _:
                     case IntegerValue _:
                         return new NullMatcher();

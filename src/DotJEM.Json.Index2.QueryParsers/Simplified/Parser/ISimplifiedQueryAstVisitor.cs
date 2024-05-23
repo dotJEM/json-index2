@@ -17,5 +17,21 @@ namespace DotJEM.Json.Index2.QueryParsers.Simplified.Parser
         TResult Visit(AndQuery ast, TContext context);
         TResult Visit(ImplicitCompositeQuery ast, TContext context);
         TResult Visit(FieldQuery ast, TContext context);
+        TResult Visit(MatchAnyQuery ast, TContext context);
+
+
+        TResult Visit(Value ast, TContext context);
+        TResult Visit(StringValue ast, TContext context);
+        TResult Visit(WildcardValue ast, TContext context);
+        TResult Visit(DateTimeValue ast, TContext context);
+        TResult Visit(IntegerValue ast, TContext context);
+        TResult Visit(ListValue ast, TContext context);
+        TResult Visit(MatchAllValue ast, TContext context);
+        TResult Visit(NumberValue ast, TContext context);
+        TResult Visit(DateTimeOffsetValue ast, TContext context);
+        TResult Visit(PhraseValue ast, TContext context);
+
+
+
     }
 }

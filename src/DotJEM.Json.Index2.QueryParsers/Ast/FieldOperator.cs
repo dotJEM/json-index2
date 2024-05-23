@@ -2,5 +2,5 @@
 
 public enum FieldOperator
 {
-    None, Equals, NotEquals, GreaterThan, GreaterThanOrEquals, LessThan, LessThanOrEquals, In, NotIt, Similar, NotSimilar
+    None, Equals, NotEquals, GreaterThan, GreaterThanOrEquals, LessThan, LessThanOrEquals, In, NotIn, Similar, NotSimilar
 }

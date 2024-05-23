@@ -30,16 +30,16 @@ namespace DotJEM.Json.Index2.QueryParsers
         LuceneQueryInfo Parse(string query);
     }
 
-    public class SimplifiedLuceneQueryParserIntegration : ILuceneQueryParser
+    public class SimplifiedLuceneQueryParser : ILuceneQueryParser
     {
         private readonly IAstParser<BaseQuery> astParser;
         private readonly ISimplifiedQueryAstVisitor<LuceneQueryInfo, ContentTypeContext> visitor;
         private readonly IFieldInformationManager fields;
 
-        public SimplifiedLuceneQueryParserIntegration(IFieldInformationManager fields, Analyzer analyzer, IAstParser<BaseQuery> astParser = null)
+        public SimplifiedLuceneQueryParser(IFieldInformationManager fields, Analyzer analyzer, IAstParser<BaseQuery> astParser = null)
             : this(new SimplifiedLuceneQueryAstVisitor(fields, analyzer), fields, astParser) { }
 
-        public SimplifiedLuceneQueryParserIntegration(ISimplifiedQueryAstVisitor<LuceneQueryInfo, ContentTypeContext> visitor, IFieldInformationManager fields, IAstParser<BaseQuery> astParser = null)
+        public SimplifiedLuceneQueryParser(ISimplifiedQueryAstVisitor<LuceneQueryInfo, ContentTypeContext> visitor, IFieldInformationManager fields, IAstParser<BaseQuery> astParser = null)
         {
             this.visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
             this.fields = fields ?? throw new ArgumentNullException(nameof(fields));
