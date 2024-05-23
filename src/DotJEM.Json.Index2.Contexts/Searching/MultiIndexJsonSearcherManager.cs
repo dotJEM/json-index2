@@ -20,8 +20,9 @@ namespace DotJEM.Json.Index2.Contexts.Searching
 
         public IIndexSearcherContext Acquire()
         {
+            //TODO: Do we need to respect the Writer Lease here, or is this OK as we just get the reader?
             IndexReader[] readers = indicies
-                .Select(idx => idx.WriterManager.Writer.GetReader(true))
+                .Select(idx => idx.WriterManager.Lease().Value.GetReader(true))
                 .Select(r => DirectoryReader.OpenIfChanged(r) ?? r)
                 .Cast<IndexReader>()
                 .ToArray();

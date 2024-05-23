@@ -4,17 +4,21 @@ namespace DotJEM.Json.Index2.Util;
 
 public class Disposable : IDisposable
 {
-    protected bool disposed;
+    protected bool IsDisposed { get; private set; }
 
     public void Dispose()
     {
+        if(IsDisposed)
+            return;
+
         Dispose(true);
         GC.SuppressFinalize(this);
+        IsDisposed = true;
     }
 
     protected virtual void Dispose(bool disposing)
     {
-        disposed = true;
+        IsDisposed = true;
     }
 
     ~Disposable()
@@ -24,6 +28,6 @@ public class Disposable : IDisposable
 
     protected void EnsureNotDisposed()
     {
-        if(disposed) throw new ObjectDisposedException(GetType().FullName);
+        if(IsDisposed) throw new ObjectDisposedException(GetType().FullName);
     }
 }

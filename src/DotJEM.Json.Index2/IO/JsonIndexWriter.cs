@@ -27,7 +27,7 @@ namespace DotJEM.Json.Index2.IO
         private readonly ILuceneDocumentFactory factory;
 
         public IJsonIndex Index { get; }
-        public IndexWriter UnderlyingWriter => manager.Writer;
+        //public IndexWriter UnderlyingWriter => manager.Writer;
 
         public JsonIndexWriter(IJsonIndex index, ILuceneDocumentFactory factory, IIndexWriterManager manager)
         {
@@ -43,51 +43,61 @@ namespace DotJEM.Json.Index2.IO
             IEnumerable<Document> documents = factory
                 .Create(docs)
                 .Select(tuple => tuple.Document);
-            UnderlyingWriter.AddDocuments(documents);
+            WithLease(writer => writer.AddDocuments(documents));
         }
 
         public void Update(JObject doc) => Update(new[] { doc });
         public void Update(IEnumerable<JObject> docs)
         {
             IEnumerable<LuceneDocumentEntry> documents = factory.Create(docs);
-            foreach ((Term key, Document doc) in documents)
-                UnderlyingWriter.UpdateDocument(key, doc);
+            WithLease(writer => {
+                foreach ((Term key, Document doc) in documents)
+                    writer.UpdateDocument(key, doc);
+            });
         }
 
         public void Delete(JObject doc) => Delete(new[] { doc });
         public void Delete(IEnumerable<JObject> docs)
         {
             IEnumerable<LuceneDocumentEntry> documents = factory.Create(docs);
-            foreach ((Term key, Document _) in documents)
-                UnderlyingWriter.DeleteDocuments(key);
+            WithLease(writer => {
+                foreach ((Term key, Document _) in documents)
+                    writer.DeleteDocuments(key);
+            });
         }
 
         public void ForceMerge(int maxSegments)
-            => UnderlyingWriter.ForceMerge(maxSegments);
+            => WithLease(writer => writer.ForceMerge(maxSegments));
 
         public void ForceMerge(int maxSegments, bool wait)
-            => UnderlyingWriter.ForceMerge(maxSegments, wait);
+            => WithLease(writer => writer.ForceMerge(maxSegments, wait));
 
         public void ForceMergeDeletes()
-            => UnderlyingWriter.ForceMergeDeletes();
+            => WithLease(writer => writer.ForceMergeDeletes());
 
         public void ForceMergeDeletes(bool wait)
-            => UnderlyingWriter.ForceMergeDeletes(wait);
+            => WithLease(writer => writer.ForceMergeDeletes(wait));
 
         public void Rollback()
-            => UnderlyingWriter.Rollback();
+            => WithLease(writer => writer.Rollback());
 
         public void Flush(bool triggerMerge, bool applyDeletes)
-            => UnderlyingWriter.Flush(triggerMerge, applyDeletes);
+            => WithLease(writer => writer.Flush(triggerMerge, applyDeletes));
 
         public void Commit()
-            => UnderlyingWriter.Commit();
+            => WithLease(writer => writer.Commit());
 
         public void PrepareCommit()
-            => UnderlyingWriter.PrepareCommit();
+            => WithLease(writer => writer.PrepareCommit());
 
         public void SetCommitData(IDictionary<string, string> commitUserData)
-            => UnderlyingWriter.SetCommitData(commitUserData);
+            => WithLease(writer => writer.SetCommitData(commitUserData));
+
+        private void WithLease(Action<IndexWriter> action)
+        {
+            using ILease<IndexWriter> lease =manager.Lease();
+            action(lease.Value);
+        }
 
         protected override void Dispose(bool disposing)
         {
