@@ -28,7 +28,6 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     private readonly Lazy<IIndexSearcherManager> searcherManager;
 
     public IIndexWriterManager WriterManager => writerManager.Value;
-    
     public IIndexSearcherManager SearcherManager => searcherManager.Value;
     
     public bool Exists => DirectoryReader.IndexExists(Directory);
@@ -70,6 +69,9 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
 
     public void Delete()
     {
+        if(!Exists)
+            return;
+
         Close();
         Unlock();
         foreach (string file in Directory.ListAll())

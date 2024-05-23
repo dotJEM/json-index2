@@ -15,7 +15,7 @@ public class SimplifiedQueryAstParserTest
     {
         SimplifiedQueryAstParser parser = new SimplifiedQueryAstParser();
         BaseQuery parsed = parser.Parse(query)!;
-        return parsed.ToString();
+        return parsed.ToString()!;
     }
 
     public static IEnumerable<object> ParseTestCases

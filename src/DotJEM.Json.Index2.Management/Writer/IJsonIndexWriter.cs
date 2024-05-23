@@ -40,6 +40,7 @@ public class JsonIndexWriter : IJsonIndexWriter
         this.index = index;
         this.mapper = index.Configuration.DocumentFactory;
         this.resolver = index.Configuration.FieldInformationManager;
+
         throttledCommit = new ThrottledCommit(this);
     }
 
