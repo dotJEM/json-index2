@@ -100,8 +100,6 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
             TimeLimitedIndexWriterLease[] leasesCopy = leases.ToArray();
 
             Debug.WriteLine("ACTIVE LEASES: " + leasesCopy.Length);
-
-
             leases.Clear();
             foreach (TimeLimitedIndexWriterLease lease in leasesCopy)
             {

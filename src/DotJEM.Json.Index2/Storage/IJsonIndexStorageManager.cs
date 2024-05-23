@@ -22,7 +22,7 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
 {
     private readonly IIndexStorageProvider provider;
     private readonly object padlock = new ();
-    private Directory directory;
+    private volatile Directory directory;
 
     private readonly Lazy<IIndexWriterManager> writerManager;
     private readonly Lazy<IIndexSearcherManager> searcherManager;
@@ -41,10 +41,12 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
 
             lock (padlock)
             {
-                return directory ??= provider.Get();
+                if (directory != null)
+                    return directory;
+
+                return directory = provider.Get();
             }
         }
-        protected set => directory = value;
     }
 
     public JsonIndexStorageManager(IJsonIndex index, IIndexStorageProvider provider)
