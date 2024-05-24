@@ -150,14 +150,16 @@ public class JsonIndexWriter : IJsonIndexWriter
             if (callsRead < 1)
                 return;
 
+            using ILease<IndexWriter> lease = target.WriterLease;
             try
             {
-                using ILease<IndexWriter> lease = target.WriterLease;
                 lease.Value.Commit();
             }
             catch (Exception e)
             {
-                target.infoStream.WriteError("Failed to commit indexed data to storage.", e);
+                bool leaseExpired = lease.IsExpired;
+
+                target.infoStream.WriteError($"Failed to commit indexed data to storage. {leaseExpired}", e);
                 // SWALLOW FOR NOW
             }
         }
