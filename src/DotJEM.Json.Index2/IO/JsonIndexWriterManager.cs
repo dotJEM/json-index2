@@ -165,7 +165,7 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
             }
         }
 
-        public bool IsExpired => DateTime.Now - leaseTime > TimeSpan.FromSeconds(5);
+        public bool IsExpired => (DateTime.Now - leaseTime > TimeSpan.FromSeconds(5)) || IsDisposed;
 
         public TimeLimitedIndexWriterLease(IndexWriterManager manager, Action<TimeLimitedIndexWriterLease> onReturned)
         {
@@ -181,9 +181,6 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
 
         public void Wait()
         {
-            if (IsDisposed)
-                return;
-
             if (IsExpired)
                 return;
 

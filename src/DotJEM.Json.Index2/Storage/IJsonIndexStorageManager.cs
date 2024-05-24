@@ -36,9 +36,6 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     {
         get
         {
-            if (directory != null)
-                return directory;
-
             lock (padlock)
             {
                 if (directory != null)
@@ -83,6 +80,8 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
             foreach (string file in directory.ListAll())
                 directory.DeleteFile(file);
             provider.Delete();
+
+
         }
     }
 }
