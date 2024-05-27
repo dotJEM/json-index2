@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.IO;
+using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Snapshots.Streams;
 using Lucene.Net.Index;
 using Lucene.Net.Store;

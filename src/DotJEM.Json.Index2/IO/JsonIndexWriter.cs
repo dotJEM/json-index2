@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotJEM.Json.Index2.Documents;
+using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Util;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
