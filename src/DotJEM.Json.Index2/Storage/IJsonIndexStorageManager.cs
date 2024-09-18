@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using DotJEM.Json.Index2.IO;
+using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Searching;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
@@ -23,6 +24,7 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     private readonly IIndexStorageProvider provider;
     private readonly object padlock = new ();
     private volatile Directory directory;
+    private readonly LeaseManager<Directory> leaseManager = new();
 
     private readonly Lazy<IIndexWriterManager> writerManager;
     private readonly Lazy<IIndexSearcherManager> searcherManager;

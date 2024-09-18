@@ -30,7 +30,6 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
     private readonly IJsonIndex index;
     private volatile IndexWriter writer;
     private readonly object writerPadLock = new();
-    private readonly object leasesPadLock = new();
     private readonly LeaseManager<IndexWriter> leaseManager = new();
 
     //TODO: With leases, this should not be needed.
@@ -48,24 +47,13 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
                 if (writer != null)
                     return writer;
 
-                try
-                {
-                    return writer = Open(index);
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("ACTIVE LEASES: " + leaseManager.Count);
-                    throw;
-                }
+                return writer = Open(index);
             }
         }
     }
 
 
-    public ILease<IndexWriter> Lease()
-    {
-        return leaseManager.Create(Writer, TimeSpan.FromSeconds(3));
-    }
+    public ILease<IndexWriter> Lease() => leaseManager.Create(Writer, TimeSpan.FromSeconds(3));
 
     public IndexWriterManager(IJsonIndex index)
     {
@@ -74,7 +62,6 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
 
     private static IndexWriter Open(IJsonIndex index)
     {
-        Debug.WriteLine("OPEN WRITER");
         IndexWriterConfig config = new(index.Configuration.Version, index.Configuration.Analyzer);
         config.RAMBufferSizeMB = DEFAULT_RAM_BUFFER_SIZE_MB;
         config.OpenMode = OpenMode.CREATE_OR_APPEND;
@@ -88,30 +75,15 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
         if (writer == null)
             return;
 
-        lock (leasesPadLock)
+        lock (writerPadLock)
         {
-            //TimeLimitedLease<IndexWriter>[] leasesCopy = leases.ToArray();
-
             leaseManager.RecallAll();
+            if (writer == null)
+                return;
 
-            //Debug.WriteLine("ACTIVE LEASES: " + leasesCopy.Length);
-            //leases.Clear();
-            //foreach (TimeLimitedLease<IndexWriter> lease in leasesCopy)
-            //{
-            //    if (!lease.IsExpired)
-            //        lease.Wait();
-            //    lease.Dispose();
-            //}
-
-            lock (writerPadLock)
-            {
-                if (writer == null)
-                    return;
-
-                writer.Dispose();
-                writer = null;
-                RaiseOnClose();
-            }
+            writer.Dispose();
+            writer = null;
+            RaiseOnClose();
         }
     }
 
