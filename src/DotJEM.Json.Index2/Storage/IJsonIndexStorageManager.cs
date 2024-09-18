@@ -42,7 +42,6 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
             {
                 if (directory != null)
                     return directory;
-
                 return directory = provider.Get();
             }
         }
@@ -51,8 +50,8 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     public JsonIndexStorageManager(IJsonIndex index, IIndexStorageProvider provider)
     {
         this.provider = provider;
-        this.writerManager = new Lazy<IIndexWriterManager>(()=> new IndexWriterManager(index));
-        this.searcherManager = new Lazy<IIndexSearcherManager>(()=>  new IndexSearcherManager(WriterManager, index.Configuration.Serializer));
+        this.writerManager = new(()=> new IndexWriterManager(index));
+        this.searcherManager = new(()=>  new IndexSearcherManager(WriterManager, index.Configuration.Serializer));
     }
     
     public void Unlock()
@@ -82,8 +81,6 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
             foreach (string file in directory.ListAll())
                 directory.DeleteFile(file);
             provider.Delete();
-
-
         }
     }
 }
