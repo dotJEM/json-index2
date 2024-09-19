@@ -11,6 +11,7 @@ using DotJEM.Json.Index2.Management;
 using DotJEM.Json.Index2.Management.Info;
 using DotJEM.Json.Index2.Management.Snapshots;
 using DotJEM.Json.Index2.Management.Snapshots.Zip;
+using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Management.Writer;
 using DotJEM.Json.Index2.Searching;
@@ -29,8 +30,9 @@ using JsonIndexWriter = DotJEM.Json.Index2.Management.Writer.JsonIndexWriter;
 
 //TraceSource trace; 
 
+IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=SSN3DB;Integrated Security=True");
 //IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=nsw;Integrated Security=True");
-IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=STRESS;Integrated Security=True");
+//IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=STRESS;Integrated Security=True");
 storage.Configure.MapField(JsonField.Id, "id");
 storage.Configure.MapField(JsonField.ContentType, "contentType");
 storage.Configure.MapField(JsonField.Version, "$version");
@@ -38,19 +40,19 @@ storage.Configure.MapField(JsonField.Created, "$created");
 storage.Configure.MapField(JsonField.Updated, "$updated");
 storage.Configure.MapField(JsonField.SchemaVersion, "$schemaVersion");
 
-StressDataGenerator generator = new StressDataGenerator(
-    storage.Area("Settings"),
-    storage.Area("Queue"),
-    storage.Area("Recipes"),
-    storage.Area("Animals"),
-    storage.Area("Games"),
-    storage.Area("Players"),
-    storage.Area("Planets"),
-    storage.Area("Universe"),
-    storage.Area("Trashcan")
-);
-Task genTask = generator.StartAsync();
-await Task.Delay(2000);
+//StressDataGenerator generator = new StressDataGenerator(
+//    storage.Area("Settings"),
+//    storage.Area("Queue"),
+//    storage.Area("Recipes"),
+//    storage.Area("Animals"),
+//    storage.Area("Games"),
+//    storage.Area("Players"),
+//    storage.Area("Planets"),
+//    storage.Area("Universe"),
+//    storage.Area("Trashcan")
+//);
+//Task genTask = generator.StartAsync();
+//await Task.Delay(2000);
 
 if (Directory.Exists(@".\app_data\index"))
     Directory.Delete(@".\app_data\index", true);
@@ -67,11 +69,25 @@ IJsonIndex index = new JsonIndexBuilder("main")
 string[] areas = new[] { "content", "settings", "diagnostic", "emsaqueue", "statistic" };
 
 IWebTaskScheduler scheduler = new WebTaskScheduler();
+IJsonDocumentSource jsonStorageDocumentSource = new JsonStorageDocumentSource(new JsonStorageAreaObserverFactory(storage, scheduler, areas));
 IJsonIndexManager jsonIndexManager = new JsonIndexManager(
-    new JsonStorageDocumentSource(new JsonStorageAreaObserverFactory(storage, scheduler,areas)),
+    jsonStorageDocumentSource,
     new JsonIndexSnapshotManager(index, new ZipSnapshotStrategy(".\\app_data\\snapshots"), scheduler, "30m"),
     index
 );
+
+
+DateTime start = DateTime.Now;
+TimeSpan completedAfter = TimeSpan.Zero;
+jsonStorageDocumentSource.Initialized
+    .Where(b => b)
+    .FirstAsync(b =>
+    {
+        completedAfter = DateTime.Now - start;
+        Console.WriteLine($"Done after: {completedAfter:g}");
+        return b;
+    });
+
 
 Task run = Task.WhenAll(
     jsonIndexManager.InfoStream.ForEachAsync(Reporter.CaptureInfo),
@@ -123,10 +139,10 @@ public static class Reporter
 {
     private static ITrackerState lastState;
     private static IInfoStreamEvent lastEvent;
-    private static DateTime lastReport = DateTime.Now;
+    private static DateTime lastReport = DateTime.Now.Subtract(TimeSpan.FromMinutes(1));
 
     private static readonly Queue<string> messages = new Queue<string>();
-
+    private static long eventCounter = 0;
     public static void CaptureInfo(IInfoStreamEvent evt)
     {
         lock (messages)
@@ -147,11 +163,11 @@ public static class Reporter
                 break;
 
             default:
-
                 lastEvent = evt;
                 break;
         }
-        Report();
+        if(eventCounter++ % 10000 == 0)
+            Console.Write('.');
     }
 
     private static string CleanLine = new string(' ', Console.BufferWidth);
@@ -160,7 +176,7 @@ public static class Reporter
 
     public static void Report(bool force = false)
     {
-        if(!force && DateTime.Now - lastReport < TimeSpan.FromSeconds(30))
+        if(!force && DateTime.Now - lastReport < TimeSpan.FromSeconds(5))
             return;
         lastReport = DateTime.Now;
         int lines = nl.Matches(buffer.ToString()).Count;
@@ -176,15 +192,11 @@ public static class Reporter
         {
             msgs = messages.ToArray();
         }
-
-        foreach (string message in msgs)
-        {
-            buffer.AppendLine(message);
-        }
-
-        buffer.AppendLine();
         //Console.WriteLine(lastEvent.Message);
-        buffer.AppendLine(lastState.ToString());
+        buffer.AppendLine(lastState?.ToString());
+        foreach (string message in msgs)
+            buffer.AppendLine(message);
+        buffer.AppendLine();
         Console.WriteLine(buffer);
     }
 }
