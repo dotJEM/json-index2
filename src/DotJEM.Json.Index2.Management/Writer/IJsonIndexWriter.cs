@@ -7,6 +7,7 @@ using System.Threading;
 using DotJEM.Json.Index2.Documents;
 using DotJEM.Json.Index2.Documents.Info;
 using DotJEM.Json.Index2.IO;
+using DotJEM.Json.Index2.Leases;
 using DotJEM.ObservableExtensions.InfoStreams;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
@@ -154,6 +155,7 @@ public class JsonIndexWriter : IJsonIndexWriter
             try
             {
                 lease.Value.Commit();
+
             }
             catch (Exception e)
             {

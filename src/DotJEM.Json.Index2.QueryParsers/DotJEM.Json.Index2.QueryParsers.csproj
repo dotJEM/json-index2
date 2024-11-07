@@ -20,7 +20,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Update="DotJEM.ObservableExtensions" Version="0.0.14" />
+    <PackageReference Update="DotJEM.ObservableExtensions" Version="0.0.15" />
   </ItemGroup>
 
 </Project>
