@@ -155,6 +155,7 @@ public class JsonIndexWriter : IJsonIndexWriter
             try
             {
                 lease.Value.Commit();
+
             }
             catch (Exception e)
             {

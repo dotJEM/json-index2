@@ -44,9 +44,9 @@
   
   <ItemGroup>
 	<PackageReference Include="DotJEM.Json.Visitor" Version="0.1.35" />
-    <PackageReference Include="DotJEM.ObservableExtensions" Version="0.0.14" />
-    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00016" />
-    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00016" />
+    <PackageReference Include="DotJEM.ObservableExtensions" Version="0.0.15" />
+    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00017" />
+    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
