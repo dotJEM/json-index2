@@ -61,7 +61,7 @@ Directory.CreateDirectory(@".\app_data\snapshots");
 
 IJsonIndex index = new JsonIndexBuilder("main")
     .UsingSimpleFileStorage(@".\app_data\index")
-    .WithAnalyzer(cfg=> new StandardAnalyzer(cfg.Version,CharArraySet.EMPTY_SET))
+    .WithAnalyzer(cfg=> new StandardAnalyzer(cfg.Version, CharArraySet.Empty))
     .WithFieldResolver(new FieldResolver("id", "contentType"))
     .WithSnapshoting()
     .Build();
