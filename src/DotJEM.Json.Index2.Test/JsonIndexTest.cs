@@ -34,6 +34,7 @@ public class JsonIndexTest
         //int count = searcher.Search(new MatchAllDocsQuery()).Count();
         Assert.AreEqual(5, count);
     }
+
     [Test]
     public async Task SayHello_ReturnsHello()
     {
@@ -82,5 +83,27 @@ public class JsonIndexTest
         //int count = searcher.Search(new TermQuery(new Term("type", "car"))).Count();
         int count = searcher.Search(new TermQuery(new Term("inStock", "true"))).Count();
         Assert.AreEqual(3, count);
+    }
+    [Test]
+    public async Task FindBeforeCommit_AddsDocument()
+    {
+        IJsonIndex index = new JsonIndexBuilder("myIndex")
+            .UsingMemmoryStorage()
+            .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
+            .WithFieldResolver(new FieldResolver("uuid", "type"))
+            .Build();
+
+        IJsonIndexWriter writer = index.CreateWriter();
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+
+        IJsonIndexSearcher? searcher = index.CreateSearcher();
+        Assert.That(searcher.Search(new TermQuery(new Term("type", "car"))).Count(), Is.EqualTo(5));
+
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
+        Assert.That(searcher.Search(new TermQuery(new Term("type", "car"))).Count(), Is.EqualTo(6));
     }
 }

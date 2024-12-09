@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using DotJEM.Json.Index2.IO;
+using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Searching;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
@@ -19,10 +21,10 @@ public interface IJsonIndexStorageManager
 
 public class JsonIndexStorageManager: IJsonIndexStorageManager
 {
-    private readonly IJsonIndex index;
     private readonly IIndexStorageProvider provider;
     private readonly object padlock = new ();
-    private Directory directory;
+    private volatile Directory directory;
+    private readonly LeaseManager<Directory> leaseManager = new();
 
     private readonly Lazy<IIndexWriterManager> writerManager;
     private readonly Lazy<IIndexSearcherManager> searcherManager;
@@ -41,18 +43,18 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
 
             lock (padlock)
             {
-                return directory ??= provider.Get();
+                if (directory != null)
+                    return directory;
+                return directory = provider.Get();
             }
         }
-        protected set => directory = value;
     }
 
     public JsonIndexStorageManager(IJsonIndex index, IIndexStorageProvider provider)
     {
-        this.index = index;
         this.provider = provider;
-        this.writerManager = new Lazy<IIndexWriterManager>(()=> new IndexWriterManager(index));
-        this.searcherManager = new Lazy<IIndexSearcherManager>(()=>  new IndexSearcherManager(WriterManager, index.Configuration.Serializer));
+        this.writerManager = new(()=> new IndexWriterManager(index));
+        this.searcherManager = new(()=>  new IndexSearcherManager(WriterManager, index.Configuration.Serializer));
     }
     
     public void Unlock()
@@ -66,16 +68,25 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
         SearcherManager.Close();
         WriterManager.Close();
     }
-
+    
     public void Delete()
     {
-        if(!Exists)
+        if (directory == null)
             return;
 
-        Close();
-        Unlock();
-        foreach (string file in Directory.ListAll())
-            Directory.DeleteFile(file);
-        provider.Delete();
+
+        lock (padlock)
+        {
+            if (directory == null)
+                return;
+
+            leaseManager.RecallAll();
+            
+            Close();
+            Unlock();
+            foreach (string file in directory.ListAll())
+                directory.DeleteFile(file);
+            provider.Delete();
+        }
     }
 }

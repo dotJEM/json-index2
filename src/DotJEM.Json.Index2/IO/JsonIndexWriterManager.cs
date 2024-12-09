@@ -1,9 +1,16 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using DotJEM.Json.Index2.Configuration;
+using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Util;
 using Lucene.Net.Analysis;
 using Lucene.Net.Index;
+using Lucene.Net.Search;
 
 namespace DotJEM.Json.Index2.IO;
 
@@ -11,28 +18,31 @@ public interface IIndexWriterManager : IDisposable
 {
     event EventHandler<EventArgs> OnClose;
 
-    IndexWriter Writer { get; }
+    ILease<IndexWriter> Lease();
     void Close();
 }
+
 
 public class IndexWriterManager : Disposable, IIndexWriterManager
 {
     public static int DEFAULT_RAM_BUFFER_SIZE_MB { get; set; } = 512;
 
-    private volatile IndexWriter writer;
     private readonly IJsonIndex index;
-    private readonly object padlock = new();
+    private volatile IndexWriter writer;
+    private readonly object writerPadLock = new();
+    private readonly LeaseManager<IndexWriter> leaseManager = new();
 
+    //TODO: With leases, this should not be needed.
     public event EventHandler<EventArgs> OnClose;
 
-    public IndexWriter Writer
+    private IndexWriter Writer
     {
         get
         {
             if (writer != null)
                 return writer;
 
-            lock (padlock)
+            lock (writerPadLock)
             {
                 if (writer != null)
                     return writer;
@@ -42,6 +52,9 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
         }
     }
 
+
+    public ILease<IndexWriter> Lease() => leaseManager.Create(Writer, TimeSpan.FromSeconds(3));
+
     public IndexWriterManager(IJsonIndex index)
     {
         this.index = index;
@@ -49,7 +62,6 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
 
     private static IndexWriter Open(IJsonIndex index)
     {
-        Debug.WriteLine("OPEN WRITER");
         IndexWriterConfig config = new(index.Configuration.Version, index.Configuration.Analyzer);
         config.RAMBufferSizeMB = DEFAULT_RAM_BUFFER_SIZE_MB;
         config.OpenMode = OpenMode.CREATE_OR_APPEND;
@@ -63,8 +75,9 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
         if (writer == null)
             return;
 
-        lock (padlock)
+        lock (writerPadLock)
         {
+            leaseManager.RecallAll();
             if (writer == null)
                 return;
 
