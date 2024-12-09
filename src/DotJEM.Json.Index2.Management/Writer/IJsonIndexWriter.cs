@@ -35,7 +35,8 @@ public class JsonIndexWriter : IJsonIndexWriter
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
     private readonly ThrottledCommit throttledCommit;
     
-    private ILease<IndexWriter> WriterLease => index.WriterManager.Lease();
+    private ILease<IIndexWriter> WriterLease => index.WriterManager.Lease();
+
     public IInfoStream InfoStream => infoStream;
 
     public JsonIndexWriter(IJsonIndex index)
@@ -49,7 +50,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Update(JObject entity)
     {
-        using ILease<IndexWriter> lease = WriterLease;
+        using ILease<IIndexWriter> lease = WriterLease;
         Term term = resolver.Resolver.Identity(entity);
         LuceneDocumentEntry doc = mapper.Create(entity);
         lease.Value.UpdateDocument(term, doc.Document);
@@ -59,7 +60,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Create(JObject entity)
     {
-        using ILease<IndexWriter> lease = WriterLease;
+        using ILease<IIndexWriter> lease = WriterLease;
         LuceneDocumentEntry doc = mapper.Create(entity);
         lease.Value.AddDocument(doc.Document);
         throttledCommit.Increment();
@@ -68,7 +69,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Create(IEnumerable<JObject> entities)
     {
-        using ILease<IndexWriter> lease = WriterLease;
+        using ILease<IIndexWriter> lease = WriterLease;
         lease.Value.AddDocuments(entities.Select(entity => mapper.Create(entity).Document));
         throttledCommit.Increment();
         DebugInfo($"Writer.AddDocuments(<doc>)");
@@ -76,7 +77,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Delete(JObject entity)
     {
-        using ILease<IndexWriter> lease = WriterLease;
+        using ILease<IIndexWriter> lease = WriterLease;
         Term term = resolver.Resolver.Identity(entity);
         lease.Value.DeleteDocuments(term);
         throttledCommit.Increment();
@@ -92,14 +93,14 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Flush(bool triggerMerge = false, bool applyAllDeletes = false)
     {
-        using ILease<IndexWriter> lease = WriterLease;
+        using ILease<IIndexWriter> lease = WriterLease;
         lease.Value.Flush(triggerMerge, applyAllDeletes);
         DebugInfo($"Writer.Flush({triggerMerge}, {applyAllDeletes})");
     }
 
     public void MaybeMerge()
     {
-        using ILease<IndexWriter> lease = WriterLease;
+        using ILease<IIndexWriter> lease = WriterLease;
         lease.Value.MaybeMerge();
         DebugInfo($"Writer.MaybeMerge()");
     }
@@ -149,19 +150,30 @@ public class JsonIndexWriter : IJsonIndexWriter
             if (callsRead < 1)
                 return;
 
-            using ILease<IndexWriter> lease = target.WriterLease;
+            using ILease<IIndexWriter> lease = target.WriterLease;
             long start = Stopwatch.GetTimestamp();
             try
             {
                 lease.Value.Commit();
             }
+            catch (LeaseTerminatedException e)
+            {
+                long elapsed = Stopwatch.GetTimestamp() - start;
+                target.infoStream.WriteError($"[{elapsed / (Stopwatch.Frequency / (double)1000)}ms] Failed to commit indexed data to storage. Lease has been terminated.", e);
+            }
+            catch (LeaseExpiredException e)
+            {
+                long elapsed = Stopwatch.GetTimestamp() - start;
+                target.infoStream.WriteError($"[{elapsed / (Stopwatch.Frequency / (double)1000)}ms] Failed to commit indexed data to storage. Lease was expired.", e);
+            }
+            catch (LeaseDisposedException e)
+            {
+                long elapsed = Stopwatch.GetTimestamp() - start;
+                target.infoStream.WriteError($"[{elapsed / (Stopwatch.Frequency / (double)1000)}ms] Failed to commit indexed data to storage. Lease was disposed.", e);
+            }
             catch (Exception e)
             {
-                bool leaseExpired = lease.IsExpired;
-                long elapsed = Stopwatch.GetTimestamp() - start;
-
-                target.infoStream.WriteError($"[{elapsed / (Stopwatch.Frequency / 1000)}ms] Failed to commit indexed data to storage. {leaseExpired}", e);
-                // SWALLOW FOR NOW
+                target.infoStream.WriteError(e.Message, e);
             }
         }
 

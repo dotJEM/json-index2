@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using DotJEM.Json.Index2.Util;
 
@@ -73,12 +74,20 @@ public class LeaseManager<T> : ILeaseManager<T>
         private readonly Action<Lease<T>> onReturned;
 
         public bool IsExpired => IsDisposed;
-
+        public bool IsTerminated { get; private set; }
 
         public T Value
         {
             get
             {
+                if (IsTerminated)
+                {
+                    throw new LeaseTerminatedException($"This lease has been terminated.");
+                }
+                if (IsDisposed)
+                {
+                    throw new LeaseDisposedException($"This lease has been disposed.");
+                }
                 if (IsExpired)
                 {
                     throw new LeaseExpiredException("Lease is expired as it was returned.");
@@ -100,6 +109,7 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public void Terminate()
         {
+            IsTerminated = true;
             Terminated?.Invoke(this, EventArgs.Empty);
             Dispose();
         }
@@ -118,15 +128,25 @@ public class LeaseManager<T> : ILeaseManager<T>
         private readonly T value;
         private readonly Action<TimeLimitedLease<T>> onReturned;
         private readonly TimeSpan timeLimit;
-        private readonly DateTime leaseTime = DateTime.Now;
+        private readonly long leaseTime = Stopwatch.GetTimestamp();
         private readonly AutoResetEvent handle = new(false);
 
-        public bool IsExpired => (DateTime.Now - leaseTime > timeLimit) || IsDisposed;
+        public bool IsExpired => (ElapsedMs > timeLimit.Milliseconds) || IsDisposed;
+        public bool IsTerminated { get; private set; }
+        private long ElapsedMs => (long)((Stopwatch.GetTimestamp() - leaseTime) / (Stopwatch.Frequency / (double)1000));
 
         public T Value
         {
             get
             {
+                if (IsTerminated)
+                {
+                    throw new LeaseTerminatedException($"This lease has been terminated.");
+                }
+                if (IsDisposed)
+                {
+                    throw new LeaseDisposedException($"This lease has been disposed.");
+                }
                 if (IsExpired)
                 {
                     throw new LeaseExpiredException($"Lease is expired either because the time limit '{timeLimit}' has exceeded or the lease was returned.");
@@ -141,6 +161,7 @@ public class LeaseManager<T> : ILeaseManager<T>
             this.onReturned = onReturned;
             this.timeLimit = timeLimit;
         }
+
         public bool TryRenew()
         {
             return false;
@@ -148,6 +169,7 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public void Terminate()
         {
+            IsTerminated = true;
             Terminated?.Invoke(this, EventArgs.Empty);
             Wait();
             Dispose();
@@ -158,7 +180,7 @@ public class LeaseManager<T> : ILeaseManager<T>
             if (IsExpired)
                 return;
 
-            handle.WaitOne(TimeSpan.FromSeconds(6) - (DateTime.Now - leaseTime));
+            handle.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
         }
 
         protected override void Dispose(bool disposing)
@@ -186,6 +208,17 @@ public class LeaseTerminatedException : Exception
     }
 
     public LeaseTerminatedException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+}
+
+public class LeaseDisposedException : ObjectDisposedException
+{
+    public LeaseDisposedException(string message) : base(message)
+    {
+    }
+
+    public LeaseDisposedException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

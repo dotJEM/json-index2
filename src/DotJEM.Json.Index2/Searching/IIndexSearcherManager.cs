@@ -34,7 +34,7 @@ namespace DotJEM.Json.Index2.Searching
             {
                 //TODO: Figure out how to manage the Writer lease here, perhaps we need to make our own impl
                 //      of a SearcherManager that understands leases.
-                manager ??= new SearcherManager(writerManager.Lease().Value, true, new SearcherFactory());
+                manager ??= new SearcherManager(writerManager.Lease().Value.UnsafeValue, true, new SearcherFactory());
                 manager.MaybeRefreshBlocking();
                 return new IndexSearcherContext(manager.Acquire(), manager.Release);
             }

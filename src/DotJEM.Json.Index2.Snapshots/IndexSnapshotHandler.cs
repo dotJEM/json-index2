@@ -34,9 +34,9 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
 {
     public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage)
     {
-        using ILease<IndexWriter> lease = index.WriterManager.Lease();
+        using ILease<IIndexWriter> lease = index.WriterManager.Lease();
 
-        IndexWriter writer = lease.Value;
+        IIndexWriter writer = lease.Value;
         SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy
                                      ?? throw new InvalidOperationException("Index must use an implementation of the SnapshotDeletionPolicy.");
         IndexCommit commit = null;
