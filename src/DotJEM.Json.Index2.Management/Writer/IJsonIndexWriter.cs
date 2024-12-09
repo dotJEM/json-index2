@@ -50,7 +50,6 @@ public class JsonIndexWriter : IJsonIndexWriter
     public void Update(JObject entity)
     {
         using ILease<IndexWriter> lease = WriterLease;
-
         Term term = resolver.Resolver.Identity(entity);
         LuceneDocumentEntry doc = mapper.Create(entity);
         lease.Value.UpdateDocument(term, doc.Document);
@@ -61,7 +60,6 @@ public class JsonIndexWriter : IJsonIndexWriter
     public void Create(JObject entity)
     {
         using ILease<IndexWriter> lease = WriterLease;
-
         LuceneDocumentEntry doc = mapper.Create(entity);
         lease.Value.AddDocument(doc.Document);
         throttledCommit.Increment();
@@ -152,16 +150,17 @@ public class JsonIndexWriter : IJsonIndexWriter
                 return;
 
             using ILease<IndexWriter> lease = target.WriterLease;
+            long start = Stopwatch.GetTimestamp();
             try
             {
                 lease.Value.Commit();
-
             }
             catch (Exception e)
             {
                 bool leaseExpired = lease.IsExpired;
+                long elapsed = Stopwatch.GetTimestamp() - start;
 
-                target.infoStream.WriteError($"Failed to commit indexed data to storage. {leaseExpired}", e);
+                target.infoStream.WriteError($"[{elapsed / (Stopwatch.Frequency / 1000)}ms] Failed to commit indexed data to storage. {leaseExpired}", e);
                 // SWALLOW FOR NOW
             }
         }

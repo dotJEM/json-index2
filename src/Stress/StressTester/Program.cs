@@ -1,19 +1,15 @@
 ﻿// See https://aka.ms/new-console-template for more information
-
-
 using System.Reactive.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using DotJEM.Json.Index2;
 using DotJEM.Json.Index2.Documents.Fields;
-using DotJEM.Json.Index2.IO;
 using DotJEM.Json.Index2.Management;
 using DotJEM.Json.Index2.Management.Info;
 using DotJEM.Json.Index2.Management.Snapshots;
 using DotJEM.Json.Index2.Management.Snapshots.Zip;
 using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Index2.Management.Tracking;
-using DotJEM.Json.Index2.Management.Writer;
 using DotJEM.Json.Index2.Searching;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.Json.Storage;
@@ -25,8 +21,6 @@ using Lucene.Net.Analysis.Util;
 using Lucene.Net.Search;
 using Newtonsoft.Json.Linq;
 using Stress.Adapter;
-using Stress.Data;
-using JsonIndexWriter = DotJEM.Json.Index2.Management.Writer.JsonIndexWriter;
 
 //TraceSource trace; 
 
