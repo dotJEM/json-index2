@@ -148,7 +148,7 @@ public class JsonIndexManager : IJsonIndexManager
                         writer.Commit();
                     break;
                 case JsonDocumentCreated created:
-                    writer.Create(created.Document);
+                    writer.Update(created.Document);
                     break;
                 case JsonDocumentDeleted deleted:
                     writer.Delete(deleted.Document);
