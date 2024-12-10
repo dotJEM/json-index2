@@ -127,11 +127,11 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         private readonly T value;
         private readonly Action<TimeLimitedLease<T>> onReturned;
-        private readonly TimeSpan timeLimit;
+        private readonly long timeLimitMilliseconds;
         private readonly long leaseTime = Stopwatch.GetTimestamp();
         private readonly AutoResetEvent handle = new(false);
 
-        public bool IsExpired => (ElapsedMs > timeLimit.Milliseconds) || IsDisposed;
+        public bool IsExpired => (ElapsedMs > timeLimitMilliseconds) || IsDisposed;
         public bool IsTerminated { get; private set; }
         private long ElapsedMs => (long)((Stopwatch.GetTimestamp() - leaseTime) / (Stopwatch.Frequency / (double)1000));
 
@@ -147,9 +147,11 @@ public class LeaseManager<T> : ILeaseManager<T>
                 {
                     throw new LeaseDisposedException($"This lease has been disposed.");
                 }
-                if (IsExpired)
+                long elapsed = ElapsedMs;
+                if (ElapsedMs > timeLimitMilliseconds)
                 {
-                    throw new LeaseExpiredException($"Lease is expired either because the time limit '{timeLimit}' has exceeded or the lease was returned.");
+                    throw new LeaseExpiredException($"Lease is expired either because the time limit '{timeLimitMilliseconds}'" +
+                                                    $" was exceeded by: '{elapsed - timeLimitMilliseconds}'.");
                 }
                 return value;
             }
@@ -159,7 +161,7 @@ public class LeaseManager<T> : ILeaseManager<T>
         {
             this.value = value;
             this.onReturned = onReturned;
-            this.timeLimit = timeLimit;
+            this.timeLimitMilliseconds = (long)timeLimit.TotalMilliseconds;
         }
 
         public bool TryRenew()
