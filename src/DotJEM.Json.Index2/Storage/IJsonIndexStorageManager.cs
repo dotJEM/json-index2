@@ -38,6 +38,9 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     {
         get
         {
+            if (directory != null)
+                return directory;
+
             lock (padlock)
             {
                 if (directory != null)

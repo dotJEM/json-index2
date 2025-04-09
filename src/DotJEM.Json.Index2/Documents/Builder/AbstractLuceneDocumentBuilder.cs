@@ -18,7 +18,6 @@ public interface ILuceneDocumentBuilder
 
 public abstract class AbstractLuceneDocumentBuilder : JValueVisitor<IPathContext>, ILuceneDocumentBuilder
 {
-    private readonly IFieldResolver resolver;
     private readonly IJsonDocumentSerializer documentSerializer;
     private readonly IInfoStream<AbstractLuceneDocumentBuilder> eventInfoStream;
 
@@ -26,16 +25,18 @@ public abstract class AbstractLuceneDocumentBuilder : JValueVisitor<IPathContext
 
     public IInfoStream EventInfoStream => eventInfoStream;
 
+    protected IFieldResolver Resolver { get; }
+
     protected AbstractLuceneDocumentBuilder(IFieldResolver resolver = null, IJsonDocumentSerializer documentSerializer = null)
     {
-        this.resolver = resolver ?? new FieldResolver();
+        this.Resolver = resolver ?? new FieldResolver();
         this.eventInfoStream = new InfoStream<AbstractLuceneDocumentBuilder>();
         this.documentSerializer = documentSerializer ?? new DefaultJsonDocumentSerialier();
     }
 
     public virtual IIndexableJsonDocument Build(JObject json)
     {
-        document = new IndexableJsonDocument(resolver.ContentType(json));
+        document = new IndexableJsonDocument(Resolver.ContentType(json), Resolver.Identity(json));
         PathContext context = new PathContext(this);
         documentSerializer.SerializeTo(json, document.Document);
         Visit(json, context);

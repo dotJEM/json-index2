@@ -8,6 +8,7 @@ public interface ILease<out T> : IDisposable
 
     T Value { get; }
     bool IsExpired { get; }
+    bool IsTerminated { get; }
     bool TryRenew();
 }
 
