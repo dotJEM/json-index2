@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using DotJEM.Json.Index2.Analysis;
 using DotJEM.Json.Index2.Documents;
+using DotJEM.Json.Index2.Documents.Builder;
 using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.Documents.Info;
+using DotJEM.Json.Index2.Documents.Strategies;
 using DotJEM.Json.Index2.Serialization;
 using Lucene.Net.Analysis;
 using Lucene.Net.Util;
@@ -28,8 +30,8 @@ public class JsonIndexConfiguration : IJsonIndexConfiguration
         Analyzer = Services.Get<Analyzer>() ?? new JsonAnalyzer(Version);
         FieldResolver = Services.Get<IFieldResolver>() ?? new FieldResolver();
         FieldInformationManager = Services.Get<IFieldInformationManager>() ?? new DefaultFieldInformationManager(FieldResolver);
-        DocumentFactory = Services.Get<ILuceneDocumentFactory>() ?? new LuceneDocumentFactory(FieldInformationManager);
         Serializer = Services.Get<IJsonDocumentSerializer>() ?? new DefaultJsonDocumentSerialier();
+        DocumentFactory = Services.Get<ILuceneDocumentFactory>() ?? new LuceneDocumentFactory(FieldInformationManager, new FuncFactory<ILuceneDocumentBuilder>(() => new LuceneDocumentBuilder(FieldResolver, Services.Get<IFieldStrategyCollection>(), Serializer)));
     }
 
 }
