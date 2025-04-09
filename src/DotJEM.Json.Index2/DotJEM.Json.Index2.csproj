@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\DotJEM.Json.Index2.common.props" />
+  <Import Project="..\DotJEM.Json.Index2.common.src.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 		

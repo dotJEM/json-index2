@@ -1,0 +1,11 @@
+<Project>
+
+	<Import Project="DotJEM.Json.Index2.common.props" />
+
+	<PropertyGroup>
+		<TargetFrameworks>net9.0;netstandard2.0</TargetFrameworks>
+		<WarningsAsErrors>CA2007</WarningsAsErrors>
+	</PropertyGroup>
+  
+
+</Project>

@@ -1,31 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\DotJEM.Json.Index2.common.props" />
+	<Import Project="..\DotJEM.Json.Index2.common.test.net9.props" />
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <GenerateDocumentationFile>False</GenerateDocumentationFile>
-    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-  </PropertyGroup>
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Bogus" Version="35.6.1" />
-    <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00017" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="NUnit" Version="3.14.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Bogus" Version="35.6.1" />
+		<PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00017" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+		<PackageReference Include="NUnit" Version="3.14.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DotJEM.Json.Index2.QueryParsers\DotJEM.Json.Index2.QueryParsers.csproj" />
-    <ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\DotJEM.Json.Index2.QueryParsers\DotJEM.Json.Index2.QueryParsers.csproj" />
+		<ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="DotJEM.ObservableExtensions" Version="0.0.15" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Update="DotJEM.ObservableExtensions" Version="0.0.15" />
+	</ItemGroup>
 
 
 </Project>

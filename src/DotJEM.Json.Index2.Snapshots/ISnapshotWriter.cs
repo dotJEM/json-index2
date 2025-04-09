@@ -19,12 +19,12 @@ public static class SnapshotWriterExtensions
     public static async Task WriteFileAsync(this ISnapshotWriter writer, string fileName, Directory dir)
     {
         using IndexInputStream stream = dir.OpenInputStream(fileName, IOContext.READ_ONCE);
-        await writer.CopyFileAsync(fileName, stream);
+        await writer.CopyFileAsync(fileName, stream).ConfigureAwait(false);
     }
     
     public static async Task CopyFileAsync(this ISnapshotWriter writer, string fileName, Stream stream)
     {
         using Stream target = writer.OpenStream(fileName);
-        await stream.CopyToAsync(target);
+        await stream.CopyToAsync(target).ConfigureAwait(false);
     }
 }
