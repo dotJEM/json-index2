@@ -25,7 +25,6 @@ public class JsonIndexManagerTest
     public async Task IndexWriterShouldNotBeDisposed()
     {
         using TestDirectory dir = new();
-
         IJsonIndex index = new JsonIndexBuilder("Test")
             .UsingSimpleFileStorage(dir.Info.CreateSubdirectory("index").FullName)
             .WithFieldResolver(new FieldResolver("id", "type"))

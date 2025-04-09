@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
 	<Import Project="..\DotJEM.Json.Index2.common.test.net9.props" />
 
 	<PropertyGroup>
@@ -17,12 +16,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\DotJEM.Json.Index2.Contexts\DotJEM.Json.Index2.Contexts.csproj" />
-	  <ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
+		<ProjectReference Include="..\DotJEM.Json.Index2.Contexts\DotJEM.Json.Index2.Contexts.csproj" />
+		<ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <PackageReference Update="DotJEM.ObservableExtensions" Version="0.0.15" />
-	</ItemGroup>
 
 </Project>

@@ -1,11 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-
 	<Import Project="..\DotJEM.Json.Index2.common.src.props" />
-
-	<PropertyGroup>
-		<TargetFrameworks>net9.0;netstandard2.0</TargetFrameworks>
-	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="DotJEM.Web.Scheduler" Version="0.0.13" />
@@ -16,8 +10,5 @@
 		<ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Update="DotJEM.ObservableExtensions" Version="0.0.15" />
-	</ItemGroup>
 
 </Project>
