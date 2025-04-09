@@ -11,7 +11,7 @@ namespace DotJEM.Json.Index2.Documents
 {
     public interface ILuceneDocumentFactory
     {
-        LuceneDocumentEntry Create(JObject entity);
+        IEnumerable<LuceneDocumentEntry> Create(JObject entity);
         IEnumerable<LuceneDocumentEntry> Create(IEnumerable<JObject> entities);
     }
 
@@ -31,7 +31,7 @@ namespace DotJEM.Json.Index2.Documents
             this.builderFactory = builderFactory ?? throw new ArgumentNullException(nameof(builderFactory));
         }
 
-        public LuceneDocumentEntry Create(JObject entity)
+        public IEnumerable<LuceneDocumentEntry> Create(JObject entity)
         {
             //TODO: (jmd 2020-08-10) Make Async implementation later on.
             ILuceneDocumentBuilder builder = builderFactory.Create();
@@ -40,13 +40,13 @@ namespace DotJEM.Json.Index2.Documents
             IIndexableJsonDocument doc = builder.Build(entity);
             fieldsInfo.Merge(contentType, doc.Info);
 
-            return new LuceneDocumentEntry(fieldsInfo.Resolver.Identity(entity), contentType, doc.Document);
+            return [new LuceneDocumentEntry(fieldsInfo.Resolver.Identity(entity), contentType, doc.Document)];
         }
 
         public IEnumerable<LuceneDocumentEntry> Create(IEnumerable<JObject> entities)
         {
             //TODO: (jmd 2020-08-10) Make Async implementation later on.
-            return entities.Select(Create);
+            return entities.SelectMany(Create);
         }
 
 

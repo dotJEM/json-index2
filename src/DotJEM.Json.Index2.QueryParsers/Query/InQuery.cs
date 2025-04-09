@@ -16,7 +16,8 @@ public class InQuery: MultiTermQuery
     {
         this.values = values
             .OrderBy(v => v)
-            .Select(x => new BytesRef( x )).ToArray();
+            .Select(x => new BytesRef( x ))
+            .ToArray();
     }
 
     public override string ToString(string field)

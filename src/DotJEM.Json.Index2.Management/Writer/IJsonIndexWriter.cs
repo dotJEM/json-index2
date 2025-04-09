@@ -43,26 +43,24 @@ public class JsonIndexWriter : IJsonIndexWriter
     {
         this.index = index;
         this.mapper = index.Configuration.DocumentFactory;
-        this.resolver = index.Configuration.FieldInformationManager;
-
         throttledCommit = new ThrottledCommit(this);
     }
 
     public void Update(JObject entity)
     {
         using ILease<IIndexWriter> lease = WriterLease;
-        Term term = resolver.Resolver.Identity(entity);
-        LuceneDocumentEntry doc = mapper.Create(entity);
-        lease.Value.UpdateDocument(term, doc.Document);
+        foreach (LuceneDocumentEntry doc in mapper.Create(entity))
+        {
+            lease.Value.UpdateDocument(doc.Key, doc.Document);
+            DebugInfo($"Writer.UpdateDocument({doc.Key}, <doc>)");
+        }
         throttledCommit.Increment();
-        DebugInfo($"Writer.UpdateDocument({term}, <doc>)");
     }
 
     public void Create(JObject entity)
     {
         using ILease<IIndexWriter> lease = WriterLease;
-        LuceneDocumentEntry doc = mapper.Create(entity);
-        lease.Value.AddDocument(doc.Document);
+        lease.Value.AddDocuments(mapper.Create(entity).Select(entry => entry.Document));
         throttledCommit.Increment();
         DebugInfo($"Writer.AddDocument(<doc>)");
     }
@@ -70,7 +68,7 @@ public class JsonIndexWriter : IJsonIndexWriter
     public void Create(IEnumerable<JObject> entities)
     {
         using ILease<IIndexWriter> lease = WriterLease;
-        lease.Value.AddDocuments(entities.Select(entity => mapper.Create(entity).Document));
+        lease.Value.AddDocuments(entities.SelectMany(mapper.Create).Select(entry => entry.Document));
         throttledCommit.Increment();
         DebugInfo($"Writer.AddDocuments(<doc>)");
     }
