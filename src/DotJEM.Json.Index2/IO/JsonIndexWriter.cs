@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotJEM.Json.Index2.Documents;
-using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Util;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
@@ -94,9 +93,9 @@ namespace DotJEM.Json.Index2.IO
         public void SetCommitData(IDictionary<string, string> commitUserData)
             => WithLease(writer => writer.SetCommitData(commitUserData));
 
-        private void WithLease(Action<IIndexWriter> action)
+        private void WithLease(Action<IndexWriter> action)
         {
-            using ILease<IIndexWriter> lease =manager.Lease();
+            using ILease<IndexWriter> lease =manager.Lease();
             action(lease.Value);
         }
 

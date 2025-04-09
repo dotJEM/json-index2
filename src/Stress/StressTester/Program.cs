@@ -24,8 +24,8 @@ using Stress.Adapter;
 
 //TraceSource trace; 
 
-IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=SSN3DB;Integrated Security=True");
-//IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=nsw;Integrated Security=True");
+//IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=SSN3DB;Integrated Security=True");
+IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=nsw;Integrated Security=True");
 //IStorageContext storage = new SqlServerStorageContext("Data Source=.\\DEV;Initial Catalog=STRESS;Integrated Security=True");
 storage.Configure.MapField(JsonField.Id, "id");
 storage.Configure.MapField(JsonField.ContentType, "contentType");
@@ -55,7 +55,7 @@ Directory.CreateDirectory(@".\app_data\snapshots");
 
 IJsonIndex index = new JsonIndexBuilder("main")
     .UsingSimpleFileStorage(@".\app_data\index")
-    .WithAnalyzer(cfg=> new StandardAnalyzer(cfg.Version, CharArraySet.Empty))
+    .WithAnalyzer(cfg=> new StandardAnalyzer(cfg.Version, CharArraySet.EMPTY_SET))
     .WithFieldResolver(new FieldResolver("id", "contentType"))
     .WithSnapshoting()
     .Build();
@@ -107,7 +107,7 @@ while (true)
             break;
 
         case 'R':
-            jsonIndexManager.ResetIndexAsync();
+            await jsonIndexManager.ResetIndexAsync();
             break;
 
         case 'Q':

@@ -114,40 +114,33 @@ public class JsonStorageAreaObserver : IJsonStorageAreaObserver
     public void RunUpdateCheck()
     {
         long latestGeneration = log.LatestGeneration;
-        
         Stopwatch timer = Stopwatch.StartNew();
         if (!Initialized.Value)
         {
             infoStream.WriteJsonSourceEvent(JsonSourceEventType.Initializing, StorageArea.Name, $"Initializing for storageArea '{StorageArea.Name}'.");
-            using IStorageAreaLogReader changes = log.OpenLogReader(generation, Initialized.Value );
-            PublishChanges(changes, row => new JsonDocumentCreated(row.Area, row.CreateEntity(), row.Size, new GenerationInfo(row.Generation, latestGeneration)));
+            using IStorageAreaLogReader changes = log.OpenLogReader(generation, false );
+            PublishChanges(changes, row => new JsonDocumentCreated(row.Area, row.CreateEntity(), row.Size, new (row.Generation, latestGeneration)));
             Initialized.Value  = true;
             infoStream.WriteJsonSourceEvent(JsonSourceEventType.Initialized, StorageArea.Name, $"Initialization complete for storageArea '{StorageArea.Name}' in {timer.Elapsed}.");
-
         }
         else
         {
             infoStream.WriteJsonSourceEvent(JsonSourceEventType.Updating, StorageArea.Name, $"Checking updates for storageArea '{StorageArea.Name}'.");
-            using IStorageAreaLogReader changes = log.OpenLogReader(generation, Initialized.Value );
+            using IStorageAreaLogReader changes = log.OpenLogReader(generation, true );
             PublishChanges(changes, MapRow);
             infoStream.WriteJsonSourceEvent(JsonSourceEventType.Updated, StorageArea.Name, $"Done checking updates for storageArea '{StorageArea.Name}' in {timer.Elapsed}.");
         }
-        PublishCommitSignal();
+        observable.Publish(new JsonDocumentSourceDigestCompleted(AreaName));
 
         IJsonDocumentSourceEvent MapRow(IChangeLogRow row)
         {
             return row.Type switch
             {
-                ChangeType.Create => new JsonDocumentCreated(row.Area, row.CreateEntity(), row.Size, new GenerationInfo(row.Generation, latestGeneration)),
-                ChangeType.Update => new JsonDocumentUpdated(row.Area, row.CreateEntity(), row.Size, new GenerationInfo(row.Generation, latestGeneration)),
-                ChangeType.Delete => new JsonDocumentDeleted(row.Area, row.CreateEntity(), row.Size, new GenerationInfo(row.Generation, latestGeneration)),
+                ChangeType.Create => new JsonDocumentCreated(row.Area, row.CreateEntity(), row.Size, new (row.Generation, latestGeneration)),
+                ChangeType.Update => new JsonDocumentUpdated(row.Area, row.CreateEntity(), row.Size, new (row.Generation, latestGeneration)),
+                ChangeType.Delete => new JsonDocumentDeleted(row.Area, row.CreateEntity(), row.Size, new (row.Generation, latestGeneration)),
                 _ => throw new NotSupportedException()
             };
-        }
-
-        void PublishCommitSignal()
-        {
-            observable.Publish(new JsonDocumentSourceDigestCompleted(AreaName));
         }
 
         void PublishChanges(IStorageAreaLogReader changes, Func<IChangeLogRow, IJsonDocumentSourceEvent> rowMapper)

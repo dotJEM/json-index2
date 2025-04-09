@@ -1,6 +1,13 @@
-﻿using DotJEM.Json.Index2.Documents.Fields;
+﻿using DotJEM.Json.Index2.Configuration;
+using DotJEM.Json.Index2.Documents;
+using DotJEM.Json.Index2.Documents.Builder;
+using DotJEM.Json.Index2.Documents.Data;
+using DotJEM.Json.Index2.Documents.Fields;
+using DotJEM.Json.Index2.Documents.Info;
+using DotJEM.Json.Index2.Documents.Strategies;
 using DotJEM.Json.Index2.IO;
 using DotJEM.Json.Index2.Searching;
+using DotJEM.ObservableExtensions.InfoStreams;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
@@ -106,4 +113,60 @@ public class JsonIndexTest
         writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR" }));
         Assert.That(searcher.Search(new TermQuery(new Term("type", "car"))).Count(), Is.EqualTo(6));
     }
+
+    [Test]
+    public async Task IdentityFieldsShouldNotRerturnAsTokenized()
+    {
+        IJsonIndex index = new JsonIndexBuilder("myIndex")
+            .UsingMemmoryStorage()
+            .WithAnalyzer(cfg => new StandardAnalyzer(cfg.Version))
+            .WithFieldResolver(new FieldResolver("uuid", "type"))
+            .WithDocumentFactory(cfg => new LuceneDocumentFactory(cfg.FieldInformationManager, new FuncFactory<ILuceneDocumentBuilder>(()=> new FakeDocumentBuilder())))
+            .Build();
+
+        IJsonIndexWriter writer = index.CreateWriter();
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", identity = "abc" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", identity = "abc def" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", identity = "abc def xyz" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", identity = "xyz def" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", identity = "abc-fgh" }));
+        writer.Create(JObject.FromObject(new { uuid = Guid.NewGuid(), type = "CAR", identity = "abc-lmb" }));
+
+        IJsonIndexSearcher? searcher = index.CreateSearcher();
+        Assert.That(searcher.Search(new TermQuery(new Term("identity", "abc"))).Count(), Is.EqualTo(1));
+    }
 }
+
+public class FakeDocumentBuilder : LuceneDocumentBuilder
+{
+    protected override void VisitGuid(JValue json, IPathContext context)
+    {
+        this.Add(new IdentityFieldStrategy().CreateFields(json, context));
+    }
+
+    protected override void VisitBoolean(JValue json, IPathContext context)
+    {
+        Add(new TextFieldStrategy().CreateFields(json, context));
+    }
+
+    protected override void VisitString(JValue json, IPathContext context)
+    {
+        string value = (string)json;
+        if (value?.Length == 36 && Guid.TryParse(value, out _))
+            base.VisitGuid(json, context);
+        else
+            base.VisitString(json, context);
+    }
+
+    protected override void Visit(JValue json, IPathContext context)
+    {
+        switch (context.Path)
+        {
+            case "identity":
+                this.Add(new IdentityFieldStrategy()
+                    .CreateFields(json, context));
+                break;
+        }
+    }
+}
+

@@ -128,6 +128,11 @@ public class JsonIndexManager : IJsonIndexManager
     {
         await jsonDocumentSource.StopAsync().ConfigureAwait(false);
         index.Storage.Delete();
+        //TODO: Force a commit after delete to see if that helps?
+        using (var lease = index.WriterManager.Lease())
+        {
+            lease.Value.Commit();
+        }
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
         await jsonDocumentSource.StartAsync().ConfigureAwait(false);
     }
@@ -148,7 +153,7 @@ public class JsonIndexManager : IJsonIndexManager
                         writer.Commit();
                     break;
                 case JsonDocumentCreated created:
-                    writer.Update(created.Document);
+                    writer.Create(created.Document);
                     break;
                 case JsonDocumentDeleted deleted:
                     writer.Delete(deleted.Document);

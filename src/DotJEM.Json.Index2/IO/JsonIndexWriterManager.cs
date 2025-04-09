@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using DotJEM.Json.Index2.Configuration;
-using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Util;
+using Lucene.Net.Analysis;
 using Lucene.Net.Index;
 
 namespace DotJEM.Json.Index2.IO;
@@ -14,25 +14,28 @@ namespace DotJEM.Json.Index2.IO;
 public interface IIndexWriterManager : IDisposable
 {
     event EventHandler<EventArgs> OnClose;
-
-    ILease<IIndexWriter> Lease();
+    ILease<IndexWriter> Lease();
     void Close();
 }
 
+public interface ILease<out T> : IDisposable
+{
+    T Value { get; }
+    bool IsExpired { get; }
+}
 
 public class IndexWriterManager : Disposable, IIndexWriterManager
 {
     public static int DEFAULT_RAM_BUFFER_SIZE_MB { get; set; } = 512;
 
     private readonly IJsonIndex index;
-    private volatile IIndexWriter writer;
+    private volatile IndexWriter writer;
     private readonly object writerPadLock = new();
-    private readonly LeaseManager<IIndexWriter> leaseManager = new();
+    private readonly object leasesPadLock = new();
 
-    //TODO: With leases, this should not be needed.
     public event EventHandler<EventArgs> OnClose;
 
-    private IIndexWriter Writer
+    private IndexWriter Writer
     {
         get
         {
@@ -44,25 +47,54 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
                 if (writer != null)
                     return writer;
 
-                return writer = Open(index);
+                try
+                {
+                    return writer = Open(index);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine("ACTIVE LEASES: " +leases.Count);
+                    throw;
+                }
             }
         }
     }
-    
-    public ILease<IIndexWriter> Lease() => leaseManager.Create(Writer, TimeSpan.FromSeconds(10));
+
+    private readonly List<TimeLimitedIndexWriterLease> leases = new List<TimeLimitedIndexWriterLease>();
+
+    public ILease<IndexWriter> Lease()
+    {
+        //TODO: Optimizied collection for this.
+        TimeLimitedIndexWriterLease lease = new(this, OnReturned);
+        lock (leasesPadLock)
+        {
+            leases.Add(lease);
+        }
+        return lease;
+    }
+
+    private void OnReturned(TimeLimitedIndexWriterLease lease)
+    {
+        lock (leasesPadLock)
+        {
+            leases.Remove(lease);
+        }
+    }
+
 
     public IndexWriterManager(IJsonIndex index)
     {
         this.index = index;
     }
 
-    private static IIndexWriter Open(IJsonIndex index)
+    private static IndexWriter Open(IJsonIndex index)
     {
+        Debug.WriteLine("OPEN WRITER");
         IndexWriterConfig config = new(index.Configuration.Version, index.Configuration.Analyzer);
         config.RAMBufferSizeMB = DEFAULT_RAM_BUFFER_SIZE_MB;
         config.OpenMode = OpenMode.CREATE_OR_APPEND;
         config.IndexDeletionPolicy = new SnapshotDeletionPolicy(config.IndexDeletionPolicy);
-        return new IndexWriterSafeProxy(new(index.Storage.Directory, config));
+        return new(index.Storage.Directory, config);
     }
 
     public void Close()
@@ -71,15 +103,28 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
         if (writer == null)
             return;
 
-        lock (writerPadLock)
+        lock (leasesPadLock)
         {
-            leaseManager.RecallAll();
-            if (writer == null)
-                return;
+            TimeLimitedIndexWriterLease[] leasesCopy = leases.ToArray();
 
-            writer.Dispose();
-            writer = null;
-            RaiseOnClose();
+            Debug.WriteLine("ACTIVE LEASES: " + leasesCopy.Length);
+            leases.Clear();
+            foreach (TimeLimitedIndexWriterLease lease in leasesCopy)
+            {
+                if (!lease.IsExpired)
+                    lease.Wait();
+                lease.Dispose();
+            }
+
+            lock (writerPadLock)
+            {
+                if (writer == null)
+                    return;
+
+                writer.Dispose();
+                writer = null;
+                RaiseOnClose();
+            }
         }
     }
 
@@ -94,5 +139,64 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
     protected virtual void RaiseOnClose()
     {
         OnClose?.Invoke(this, EventArgs.Empty);
+    }
+
+    private class TimeLimitedIndexWriterLease : Disposable, ILease<IndexWriter>
+    {
+        private readonly DateTime leaseTime = DateTime.Now;
+        private readonly Action<TimeLimitedIndexWriterLease> onReturned;
+        private readonly IndexWriterManager manager;
+        public AutoResetEvent Handle { get; } = new(false);
+
+        public IndexWriter Value
+        {
+            get
+            {
+                if (IsDisposed)
+                {
+                    throw new ObjectDisposedException("Index writer lease has been returned or is expired.");
+                }
+
+                if (IsExpired)
+                {
+                    throw new LeaseExpiredException("Index writer lease has been returned or is expired.");
+                }
+                return manager.Writer;
+            }
+        }
+
+        public bool IsExpired => (DateTime.Now - leaseTime > TimeSpan.FromSeconds(5)) || IsDisposed;
+
+        public TimeLimitedIndexWriterLease(IndexWriterManager manager, Action<TimeLimitedIndexWriterLease> onReturned)
+        {
+            this.onReturned = onReturned;
+            this.manager = manager;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            Handle.Set();
+            onReturned(this);
+        }
+
+        public void Wait()
+        {
+            if (IsExpired)
+                return;
+
+            Handle.WaitOne(TimeSpan.FromSeconds(6) - (DateTime.Now - leaseTime));
+        }
+    }
+
+}
+
+public class LeaseExpiredException : Exception
+{
+    public LeaseExpiredException(string message) : base(message)
+    {
+    }
+
+    public LeaseExpiredException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

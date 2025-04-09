@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.IO;
-using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Snapshots.Streams;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
@@ -34,9 +33,9 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
 {
     public async Task<ISnapshot> TakeSnapshotAsync(IJsonIndex index, ISnapshotStorage storage)
     {
-        using ILease<IIndexWriter> lease = index.WriterManager.Lease();
+        using ILease<IndexWriter> lease = index.WriterManager.Lease();
 
-        IIndexWriter writer = lease.Value;
+        IndexWriter writer = lease.Value;
         SnapshotDeletionPolicy sdp = writer.Config.IndexDeletionPolicy as SnapshotDeletionPolicy
                                      ?? throw new InvalidOperationException("Index must use an implementation of the SnapshotDeletionPolicy.");
         IndexCommit commit = null;
