@@ -2,7 +2,6 @@
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Analysis.Util;
 using Lucene.Net.Util;
 
 namespace DotJEM.Json.Index2.Analysis;

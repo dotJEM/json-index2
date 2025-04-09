@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Antlr4.Runtime.Tree;
 using DotJEM.Json.Index2.QueryParsers.Ast;
 

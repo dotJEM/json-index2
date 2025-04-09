@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using DotJEM.Json.Index2.IO;
 using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Searching;

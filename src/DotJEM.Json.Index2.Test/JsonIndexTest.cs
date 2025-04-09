@@ -4,7 +4,6 @@ using DotJEM.Json.Index2.Searching;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
-using Lucene.Net.Util;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 

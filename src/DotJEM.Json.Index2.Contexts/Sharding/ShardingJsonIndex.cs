@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DotJEM.Json.Index2.Configuration;
 using DotJEM.Json.Index2.IO;
 using DotJEM.Json.Index2.Searching;

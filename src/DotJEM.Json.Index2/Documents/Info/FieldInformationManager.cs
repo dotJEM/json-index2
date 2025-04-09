@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using DotJEM.Json.Index2.Documents.Data;
 using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.Documents.Meta;
 using DotJEM.ObservableExtensions.InfoStreams;

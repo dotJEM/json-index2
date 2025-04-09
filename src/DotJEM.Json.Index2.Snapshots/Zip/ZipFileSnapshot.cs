@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 
 namespace DotJEM.Json.Index2.Snapshots.Zip;
 

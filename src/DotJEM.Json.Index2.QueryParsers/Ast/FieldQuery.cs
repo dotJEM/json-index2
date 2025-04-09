@@ -1,6 +1,5 @@
 ﻿using System;
 using DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
-using static Antlr4.Runtime.Atn.SemanticContext;
 
 namespace DotJEM.Json.Index2.QueryParsers.Ast;
 

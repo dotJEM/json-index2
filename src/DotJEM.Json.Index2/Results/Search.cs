@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using DotJEM.Json.Index2.Searching;
 using DotJEM.Json.Index2.Serialization;
 using DotJEM.ObservableExtensions.InfoStreams;

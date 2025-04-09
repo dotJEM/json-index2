@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using DotJEM.Json.Index2.Util;
 
 namespace DotJEM.Json.Index2.Snapshots.Zip;

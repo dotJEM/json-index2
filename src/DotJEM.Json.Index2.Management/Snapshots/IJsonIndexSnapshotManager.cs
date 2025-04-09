@@ -6,7 +6,6 @@ using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
-using Lucene.Net.Search;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using DotJEM.Json.Index2.Configuration;
 using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Util;
 using Lucene.Net.Index;
-using Lucene.Net.Search;
 
 namespace DotJEM.Json.Index2.IO;
 

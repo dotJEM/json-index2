@@ -1,7 +1,6 @@
 ﻿using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.IO;
 using DotJEM.Json.Index2.Searching;
-using DotJEM.Json.Index2.Storage;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
 using Lucene.Net.Search;

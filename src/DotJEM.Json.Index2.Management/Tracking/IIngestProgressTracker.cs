@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reactive.Subjects;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Management.Info;
 using DotJEM.Json.Index2.Management.Observables;

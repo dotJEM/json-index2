@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Snapshots.Streams;
-using Lucene.Net.Index;
 using Lucene.Net.Store;
 using Directory = Lucene.Net.Store.Directory;
 
