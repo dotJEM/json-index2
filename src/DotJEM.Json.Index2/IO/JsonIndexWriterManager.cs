@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -12,6 +13,7 @@ using Lucene.Net.Search;
 
 namespace DotJEM.Json.Index2.IO;
 
+
 public interface IIndexWriterManager : IDisposable
 {
     event EventHandler<EventArgs> OnClose;
@@ -21,6 +23,9 @@ public interface IIndexWriterManager : IDisposable
 }
 
 
+/// <summary>
+/// 
+/// </summary>
 public class IndexWriterManager : Disposable, IIndexWriterManager
 {
     public static int DEFAULT_RAM_BUFFER_SIZE_MB { get; set; } = 512;
@@ -28,7 +33,7 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
     private readonly IJsonIndex index;
     private volatile IIndexWriter writer;
     private readonly object writerPadLock = new();
-    private readonly object leasesPadLock = new();
+    private readonly LeaseManager<IIndexWriter> leaseManager = new();
 
     //TODO: With leases, this should not be needed.
     public event EventHandler<EventArgs> OnClose;
@@ -49,14 +54,12 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
             }
         }
     }
-    
-    private readonly List<TimeLimitedIndexWriterLease> leases = new List<TimeLimitedIndexWriterLease>();
 
-        TimeLimitedIndexWriterLease lease = new(this, OnReturned);
     public IndexWriterManager(IJsonIndex index)
     {
         this.index = index;
     }
+    public ILease<IIndexWriter> Lease() => leaseManager.Create(Writer, TimeSpan.FromSeconds(10));
 
     private static IIndexWriter Open(IJsonIndex index)
     {

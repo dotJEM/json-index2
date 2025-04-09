@@ -24,12 +24,12 @@ public class LeaseManager<T> : ILeaseManager<T>
 
     public ILease<T> Create(T value)
     {
-        return Add(new Lease<T>(value, OnReturned));
+        return Add(new Lease(value, OnReturned));
     }
 
     public ILease<T> Create(T value, TimeSpan limit)
     {
-        return Add(new TimeLimitedLease<T>(value, OnReturned, limit));
+        return Add(new TimeLimitedLease(value, OnReturned, limit));
     }
 
     public void RecallAll()
@@ -66,12 +66,12 @@ public class LeaseManager<T> : ILeaseManager<T>
         void Terminate();
     }
 
-    private class Lease<T> : Disposable, IRecallableLease<T>
+    private class Lease : Disposable, IRecallableLease<T>
     {
         public event EventHandler<EventArgs> Terminated;
 
         private readonly T value;
-        private readonly Action<Lease<T>> onReturned;
+        private readonly Action<Lease> onReturned;
 
         public bool IsExpired => IsDisposed;
         public bool IsTerminated { get; private set; }
@@ -96,7 +96,7 @@ public class LeaseManager<T> : ILeaseManager<T>
             }
         }
 
-        public Lease(T value, Action<Lease<T>> onReturned)
+        public Lease(T value, Action<Lease> onReturned)
         {
             this.value = value;
             this.onReturned = onReturned;
@@ -121,12 +121,12 @@ public class LeaseManager<T> : ILeaseManager<T>
         }
     }
 
-    private class TimeLimitedLease<T> : Disposable, IRecallableLease<T>
+    private class TimeLimitedLease : Disposable, IRecallableLease<T>
     {
         public event EventHandler<EventArgs> Terminated;
 
         private readonly T value;
-        private readonly Action<TimeLimitedLease<T>> onReturned;
+        private readonly Action<TimeLimitedLease> onReturned;
         private readonly long timeLimitMilliseconds;
         private readonly long leaseTime = Stopwatch.GetTimestamp();
         private readonly AutoResetEvent handle = new(false);
@@ -157,7 +157,7 @@ public class LeaseManager<T> : ILeaseManager<T>
             }
         }
 
-        public TimeLimitedLease(T value, Action<TimeLimitedLease<T>> onReturned, TimeSpan timeLimit)
+        public TimeLimitedLease(T value, Action<TimeLimitedLease> onReturned, TimeSpan timeLimit)
         {
             this.value = value;
             this.onReturned = onReturned;
