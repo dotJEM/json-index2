@@ -1,7 +1,6 @@
 ﻿using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.Documents.Strategies;
 using DotJEM.Json.Index2.Serialization;
-using DotJEM.ObservableExtensions.InfoStreams;
 using Newtonsoft.Json.Linq;
 
 namespace DotJEM.Json.Index2.Documents.Builder

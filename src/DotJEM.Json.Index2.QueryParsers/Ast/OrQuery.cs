@@ -1,5 +1,4 @@
 ﻿using DotJEM.Json.Index2.QueryParsers.Simplified.Parser;
-using Newtonsoft.Json.Linq;
 
 namespace DotJEM.Json.Index2.QueryParsers.Ast;
 

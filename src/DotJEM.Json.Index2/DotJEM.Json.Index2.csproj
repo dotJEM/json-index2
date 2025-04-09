@@ -1,53 +1,51 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\DotJEM.Json.Index2.common.src.props" />
 
-  <Import Project="..\DotJEM.Json.Index2.common.props" />
+	<PropertyGroup>
+		<LangVersion>latest</LangVersion>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 
-  <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-		
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Authors>DotJEM</Authors>
-    <Copyright>Copyright © DotJEM 2023</Copyright>
-    <Description></Description>
-    <IncludeSymbols>False</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  
-    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
-    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
- 
-    <Version></Version>
-    <PackageVersion></PackageVersion>
-    <InformationalVersion></InformationalVersion>
-    <PackageVersion></PackageVersion>
-    <AssemblyVersion></AssemblyVersion>
-    <FileVersion></FileVersion>
-	
-	<PackageIcon>avatar.png</PackageIcon>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<AnalysisLevel>6.0</AnalysisLevel>
-	  
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <None Include="..\..\avatar.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-  
-  <ItemGroup>
-	<PackageReference Include="DotJEM.Json.Visitor" Version="0.1.35" />
-    <PackageReference Include="DotJEM.ObservableExtensions" Version="0.0.15" />
-    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00017" />
-    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Authors>DotJEM</Authors>
+		<Copyright>Copyright © DotJEM 2023</Copyright>
+		<Description></Description>
+		<IncludeSymbols>False</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
+		<RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+
+		<Version></Version>
+		<PackageVersion></PackageVersion>
+		<InformationalVersion></InformationalVersion>
+		<PackageVersion></PackageVersion>
+		<AssemblyVersion></AssemblyVersion>
+		<FileVersion></FileVersion>
+
+		<PackageIcon>avatar.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<AnalysisLevel>6.0</AnalysisLevel>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\avatar.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="DotJEM.Json.Visitor" Version="0.1.35" />
+		<PackageReference Include="DotJEM.ObservableExtensions" Version="0.0.15" />
+		<PackageReference Include="Lucene.Net" Version="4.8.0-beta00017" />
+		<PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00017" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
 
 </Project>

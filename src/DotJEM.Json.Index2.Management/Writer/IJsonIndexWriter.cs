@@ -11,7 +11,6 @@ using DotJEM.Json.Index2.Leases;
 using DotJEM.ObservableExtensions.InfoStreams;
 using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
-using static Lucene.Net.Documents.Field;
 
 namespace DotJEM.Json.Index2.Management.Writer;
 

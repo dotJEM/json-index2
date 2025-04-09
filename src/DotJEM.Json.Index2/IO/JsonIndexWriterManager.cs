@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using DotJEM.Json.Index2.Configuration;
 using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Util;
 using Lucene.Net.Index;
 
 namespace DotJEM.Json.Index2.IO;
+
 
 public interface IIndexWriterManager : IDisposable
 {
@@ -20,6 +16,9 @@ public interface IIndexWriterManager : IDisposable
 }
 
 
+/// <summary>
+/// 
+/// </summary>
 public class IndexWriterManager : Disposable, IIndexWriterManager
 {
     public static int DEFAULT_RAM_BUFFER_SIZE_MB { get; set; } = 512;
@@ -48,13 +47,12 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
             }
         }
     }
-    
-    public ILease<IIndexWriter> Lease() => leaseManager.Create(Writer, TimeSpan.FromSeconds(10));
 
     public IndexWriterManager(IJsonIndex index)
     {
         this.index = index;
     }
+    public ILease<IIndexWriter> Lease() => leaseManager.Create(Writer, TimeSpan.FromSeconds(10));
 
     private static IIndexWriter Open(IJsonIndex index)
     {

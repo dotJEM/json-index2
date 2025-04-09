@@ -1,8 +1,6 @@
 ﻿using Lucene.Net.Store;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace DotJEM.Json.Index2.Snapshots.Streams;
 

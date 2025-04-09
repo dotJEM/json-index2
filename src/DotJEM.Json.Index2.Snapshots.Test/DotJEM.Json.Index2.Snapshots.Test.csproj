@@ -1,21 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\DotJEM.Json.Index2.common.test.net9.props" />
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Bogus" Version="35.6.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="NUnit" Version="3.14.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Bogus" Version="35.6.1" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+		<PackageReference Include="NUnit" Version="3.14.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DotJEM.Json.Index2.QueryParsers\DotJEM.Json.Index2.QueryParsers.csproj" />
-    <ProjectReference Include="..\DotJEM.Json.Index2.Snapshots\DotJEM.Json.Index2.Snapshots.csproj" />
-    <ProjectReference Include="..\DotJEM.Json.Index2\DotJEM.Json.Index2.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\DotJEM.Json.Index2.QueryParsers\DotJEM.Json.Index2.QueryParsers.csproj" />
+		<ProjectReference Include="..\DotJEM.Json.Index2.Snapshots\DotJEM.Json.Index2.Snapshots.csproj" />
+	</ItemGroup>
 
 </Project>

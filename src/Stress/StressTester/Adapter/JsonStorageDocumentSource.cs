@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DotJEM.Json.Index2.Management;
-using DotJEM.Json.Index2.Management.Observables;
+﻿using DotJEM.Json.Index2.Management.Observables;
 using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Storage;
 using DotJEM.ObservableExtensions.InfoStreams;

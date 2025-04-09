@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Xml.Linq;
 using DotJEM.Json.Index2.Configuration;
 using DotJEM.Json.Index2.Contexts.Searching;
 using DotJEM.Json.Index2.Contexts.Storage;
 using DotJEM.Json.Index2.Searching;
-using DotJEM.Json.Index2.Storage;
 using Lucene.Net.Util;
 
 namespace DotJEM.Json.Index2.Contexts;
