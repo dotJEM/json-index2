@@ -40,6 +40,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StressTester", "Stress\Stre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotJEM.Json.Index2.Management.Test", "DotJEM.Json.Index2.Management.Test\DotJEM.Json.Index2.Management.Test.csproj", "{C69D5CE2-77DB-44B2-8775-E72B61320A5B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StresserForm", "Stress\StresserForm\StresserForm.csproj", "{67BE57EF-0FFF-47E3-95A4-EA5DAD150E42}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,12 +92,17 @@ Global
 		{C69D5CE2-77DB-44B2-8775-E72B61320A5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C69D5CE2-77DB-44B2-8775-E72B61320A5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C69D5CE2-77DB-44B2-8775-E72B61320A5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67BE57EF-0FFF-47E3-95A4-EA5DAD150E42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67BE57EF-0FFF-47E3-95A4-EA5DAD150E42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67BE57EF-0FFF-47E3-95A4-EA5DAD150E42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67BE57EF-0FFF-47E3-95A4-EA5DAD150E42}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8E44834E-DA07-433E-886F-F0684580A733} = {65A5C7D1-9A2B-41A2-B4B3-5761F395E536}
+		{67BE57EF-0FFF-47E3-95A4-EA5DAD150E42} = {65A5C7D1-9A2B-41A2-B4B3-5761F395E536}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7E7928A8-CADD-4F04-A69D-36EFE1A8D27B}

@@ -30,7 +30,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 {
     private readonly IJsonIndex index;
     private readonly ILuceneDocumentFactory mapper;
-    private readonly IFieldInformationManager resolver;
+    private readonly IFieldInformationManager information;
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
     private readonly ThrottledCommit throttledCommit;
     
@@ -42,6 +42,7 @@ public class JsonIndexWriter : IJsonIndexWriter
     {
         this.index = index;
         this.mapper = index.Configuration.DocumentFactory;
+        this.information = index.Configuration.FieldInformationManager;
         throttledCommit = new ThrottledCommit(this);
     }
 
@@ -75,7 +76,7 @@ public class JsonIndexWriter : IJsonIndexWriter
     public void Delete(JObject entity)
     {
         using ILease<IIndexWriter> lease = WriterLease;
-        Term term = resolver.Resolver.Identity(entity);
+        Term term = information.Resolver.Identity(entity);
         lease.Value.DeleteDocuments(term);
         throttledCommit.Increment();
         DebugInfo($"Writer.UpdateDocuments({term})");
