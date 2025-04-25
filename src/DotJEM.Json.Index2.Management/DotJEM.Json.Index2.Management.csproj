@@ -2,7 +2,7 @@
 	<Import Project="..\DotJEM.Json.Index2.common.src.props" />
 
 	<ItemGroup>
-		<PackageReference Include="DotJEM.Web.Scheduler" Version="0.0.17" />
+		<PackageReference Include="DotJEM.Web.Scheduler" Version="0.0.18" />
 	</ItemGroup>
 
 	<ItemGroup>
