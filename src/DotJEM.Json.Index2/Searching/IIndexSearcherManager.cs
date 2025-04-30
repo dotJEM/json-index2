@@ -1,52 +1,68 @@
 using System;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using DotJEM.Json.Index2.IO;
+using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Serialization;
 using DotJEM.Json.Index2.Util;
+using Lucene.Net.Index;
 using Lucene.Net.Search;
 
-namespace DotJEM.Json.Index2.Searching
-{
-    public interface IIndexSearcherManager : IDisposable
-    {
-        IJsonDocumentSerializer Serializer { get; }
-        IIndexSearcherContext Acquire();
+namespace DotJEM.Json.Index2.Searching;
 
-        void Close();
+public interface IIndexSearcherManager : IDisposable
+{
+    IJsonDocumentSerializer Serializer { get; }
+    IIndexSearcherContext Acquire();
+
+    void Close();
+}
+
+public class IndexSearcherManager : Disposable, IIndexSearcherManager
+{
+    private readonly object padlock = new();
+    private readonly IIndexWriterManager writerManager;
+
+    private IndexSearcher searcher;
+    private object writerRef;
+
+    public IJsonDocumentSerializer Serializer { get; }
+
+    public IndexSearcherManager(IIndexWriterManager writerManager, IJsonDocumentSerializer serializer)
+    {
+        this.writerManager = writerManager;
+        Serializer = serializer;
     }
 
-    public class IndexSearcherManager : Disposable, IIndexSearcherManager
+    public IIndexSearcherContext Acquire()
     {
-        private readonly IIndexWriterManager writerManager;
-        private readonly object padlock = new();
-        private SearcherManager manager;
-
-        public IJsonDocumentSerializer Serializer { get; }
-
-        public IndexSearcherManager(IIndexWriterManager writerManager, IJsonDocumentSerializer serializer)
+        lock (padlock)
         {
-            this.writerManager = writerManager;
-            Serializer = serializer;
-        }
-
-        public IIndexSearcherContext Acquire()
-        {
-            lock (padlock)
+            ILease<IIndexWriter> lease = writerManager.Lease();
+            if (searcher is null || !ReferenceEquals(writerRef, lease.Value.UnsafeValue))
             {
-                //TODO: Figure out how to manage the Writer lease here, perhaps we need to make our own impl
-                //      of a SearcherManager that understands leases.
-                manager ??= new SearcherManager(writerManager.Lease().Value.UnsafeValue, true, new SearcherFactory());
-                manager.MaybeRefreshBlocking();
-                return new IndexSearcherContext(manager.Acquire(), manager.Release);
+                writerRef = lease.Value.UnsafeValue;
+                searcher = new IndexSearcher(DirectoryReader.Open(lease.Value.UnsafeValue, true));
+                return new IndexSearcherContext(searcher, s => lease.Dispose());
             }
-        }
 
-        public void Close()
+            IndexReader newReader = DirectoryReader.OpenIfChanged((DirectoryReader)searcher.IndexReader);
+            if (newReader is null)
+                return new IndexSearcherContext(searcher, s => lease.Dispose());
+
+            searcher = new IndexSearcher(newReader);
+            return new IndexSearcherContext(searcher, s => lease.Dispose());
+        }
+    }
+
+
+    public void Close()
+    {
+        lock (padlock)
         {
-            lock (padlock)
-            {
-                manager?.Dispose();
-                manager = null;
-            }
+            searcher = null;
+            writerRef = null;
         }
     }
 }
