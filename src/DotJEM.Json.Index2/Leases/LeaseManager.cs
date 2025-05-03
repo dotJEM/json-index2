@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using DotJEM.Json.Index2.Util;
 
@@ -11,7 +12,7 @@ public interface ILeaseManager<T>
     int Count { get; }
     ILease<T> Create(T value);
     ILease<T> Create(T value, TimeSpan limit);
-    void RecallAll();
+    IEnumerable<T> RecallAll();
 }
 
 public class LeaseManager<T> : ILeaseManager<T>
@@ -32,15 +33,19 @@ public class LeaseManager<T> : ILeaseManager<T>
         return Add(new TimeLimitedLease(value, OnReturned, limit));
     }
 
-    public void RecallAll()
+    public IEnumerable<T> RecallAll()
     {
         lock (leasesPadLock)
         {
             IRecallableLease<T>[] copy = leases.ToArray();
             leases.Clear();
 
+            T[] values = Array.ConvertAll(copy, x => x.Value);
+
             foreach (IRecallableLease<T> lease in copy)
                 lease.Terminate();
+
+            return values;
         }
     }
 
@@ -72,6 +77,8 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         private readonly T value;
         private readonly Action<Lease> onReturned;
+        private readonly object padlock = new ();
+        private readonly ManualResetEventSlim returned = new ManualResetEventSlim();
 
         public bool IsExpired => IsDisposed;
         public bool IsTerminated { get; private set; }
@@ -102,6 +109,20 @@ public class LeaseManager<T> : ILeaseManager<T>
             this.onReturned = onReturned;
         }
 
+        public TOut WithLock<TOut>(Func<T, TOut> func)
+        {
+            lock (padlock) {
+                return func(Value);
+            }
+        }
+
+        public void WithLock(Action<T> action)
+        {
+            lock (padlock) {
+                action(Value);
+            }
+        }
+
         public bool TryRenew()
         {
             return false;
@@ -109,13 +130,18 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public void Terminate()
         {
-            IsTerminated = true;
-            Terminated?.Invoke(this, EventArgs.Empty);
-            Dispose();
+            lock (padlock)
+            {
+                returned.Wait(5000);
+                IsTerminated = true;
+                Terminated?.Invoke(this, EventArgs.Empty);
+                Dispose();
+            }
         }
 
         protected override void Dispose(bool disposing)
         {
+            returned.Set();
             onReturned(this);
             base.Dispose(disposing);
         }
@@ -130,6 +156,7 @@ public class LeaseManager<T> : ILeaseManager<T>
         private readonly long timeLimitMilliseconds;
         private readonly long leaseTime = Stopwatch.GetTimestamp();
         private readonly AutoResetEvent handle = new(false);
+        private readonly object padlock = new();
 
         public bool IsExpired => (ElapsedMs > timeLimitMilliseconds) || IsDisposed;
         public bool IsTerminated { get; private set; }
@@ -164,6 +191,20 @@ public class LeaseManager<T> : ILeaseManager<T>
             this.timeLimitMilliseconds = (long)timeLimit.TotalMilliseconds;
         }
 
+        public TOut WithLock<TOut>(Func<T, TOut> func)
+        {
+            lock (padlock) {
+                return func(Value);
+            }
+        }
+
+        public void WithLock(Action<T> action)
+        {
+            lock (padlock) {
+                action(Value);
+            }
+        }
+
         public bool TryRenew()
         {
             return false;
@@ -171,10 +212,13 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public void Terminate()
         {
-            IsTerminated = true;
-            Terminated?.Invoke(this, EventArgs.Empty);
-            Wait();
-            Dispose();
+            lock (padlock)
+            {
+                IsTerminated = true;
+                Terminated?.Invoke(this, EventArgs.Empty);
+                Wait();
+                Dispose();
+            }
         }
 
         public void Wait()
@@ -187,8 +231,11 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         protected override void Dispose(bool disposing)
         {
-            onReturned(this);
-            base.Dispose(disposing);
+            lock (padlock)
+            {
+                onReturned(this);
+                base.Dispose(disposing);
+            }
         }
     }
 }

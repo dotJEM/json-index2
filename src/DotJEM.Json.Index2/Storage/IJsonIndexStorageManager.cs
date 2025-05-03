@@ -73,14 +73,13 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
         if (directory == null)
             return;
 
-
         lock (padlock)
         {
             if (directory == null)
                 return;
 
             leaseManager.RecallAll();
-            
+
             Close();
             Unlock();
             foreach (string file in directory.ListAll())

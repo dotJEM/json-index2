@@ -10,6 +10,9 @@ public interface ILease<out T> : IDisposable
     bool IsExpired { get; }
     bool IsTerminated { get; }
     bool TryRenew();
+
+    TOut WithLock<TOut>(Func<T, TOut> func);
+    void WithLock(Action<T> action);
 }
 
 

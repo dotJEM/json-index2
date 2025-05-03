@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Util;
@@ -52,7 +53,13 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
     {
         this.index = index;
     }
-    public ILease<IIndexWriter> Lease() => leaseManager.Create(Writer, TimeSpan.FromSeconds(10));
+    public ILease<IIndexWriter> Lease()
+    {
+        lock (writerPadLock)
+        {
+            return leaseManager.Create(Writer, TimeSpan.FromSeconds(10));
+        }
+    }
 
     private static IIndexWriter Open(IJsonIndex index)
     {
@@ -71,7 +78,10 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
 
         lock (writerPadLock)
         {
-            leaseManager.RecallAll();
+            IEnumerable<IIndexWriter> recalled = leaseManager.RecallAll();
+            foreach (IIndexWriter leasedValue in recalled)
+                leasedValue.Dispose();
+
             if (writer == null)
                 return;
 
