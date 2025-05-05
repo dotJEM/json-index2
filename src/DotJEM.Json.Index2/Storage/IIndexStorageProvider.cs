@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Lucene.Net.Store;
 using Directory = Lucene.Net.Store.Directory;
 
