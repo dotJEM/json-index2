@@ -35,19 +35,24 @@ public class LeaseManager<T> : ILeaseManager<T>
 
     public IEnumerable<T> RecallAll()
     {
-        lock (leasesPadLock)
+        IRecallableLease<T>[] copy = CopyLeases();
+
+        T[] values = Array.ConvertAll(copy, x => x.Value);
+        foreach (IRecallableLease<T> lease in copy)
+            lease.Terminate();
+        return values;
+
+        IRecallableLease<T>[] CopyLeases()
         {
-            IRecallableLease<T>[] copy = leases.ToArray();
-            leases.Clear();
-
-            T[] values = Array.ConvertAll(copy, x => x.Value);
-
-            foreach (IRecallableLease<T> lease in copy)
-                lease.Terminate();
-
-            return values;
+            lock (leasesPadLock)
+            {
+                IRecallableLease<T>[] copy = leases.ToArray();
+                leases.Clear();
+                return copy;
+            }
         }
     }
+
 
     private ILease<T> Add(IRecallableLease<T> lease)
     {
@@ -77,7 +82,7 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         private readonly T value;
         private readonly Action<Lease> onReturned;
-        private readonly object padlock = new ();
+        private readonly object padlock = new();
         private readonly ManualResetEventSlim returned = new ManualResetEventSlim();
 
         public bool IsExpired => IsDisposed;
@@ -111,14 +116,16 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public TOut WithLock<TOut>(Func<T, TOut> func)
         {
-            lock (padlock) {
+            lock (padlock)
+            {
                 return func(Value);
             }
         }
 
         public void WithLock(Action<T> action)
         {
-            lock (padlock) {
+            lock (padlock)
+            {
                 action(Value);
             }
         }
@@ -130,9 +137,9 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public void Terminate()
         {
+            returned.Wait(500);
             lock (padlock)
             {
-                returned.Wait(5000);
                 IsTerminated = true;
                 Terminated?.Invoke(this, EventArgs.Empty);
                 Dispose();
@@ -193,14 +200,16 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public TOut WithLock<TOut>(Func<T, TOut> func)
         {
-            lock (padlock) {
+            lock (padlock)
+            {
                 return func(Value);
             }
         }
 
         public void WithLock(Action<T> action)
         {
-            lock (padlock) {
+            lock (padlock)
+            {
                 action(Value);
             }
         }
@@ -212,11 +221,11 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public void Terminate()
         {
+            Wait();
             lock (padlock)
             {
                 IsTerminated = true;
                 Terminated?.Invoke(this, EventArgs.Empty);
-                Wait();
                 Dispose();
             }
         }

@@ -121,6 +121,7 @@ public class JsonIndexManager : IJsonIndexManager
     {
         await jsonDocumentSource.StopAsync().ConfigureAwait(false);
         index.Storage.Delete();
+        index.Commit();
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
         await jsonDocumentSource.StartAsync().ConfigureAwait(false);
     }

@@ -37,6 +37,7 @@ public class JsonIndexManagerTest
         IJsonIndexSnapshotManager snapshots = new JsonIndexSnapshotManager(index, strategy, scheduler, "60h");
         IJsonIndexManager manager = new JsonIndexManager(source, snapshots, index);
         index.Commit();
+
         InfoStreamExceptionEvent? disposedEvent = null;
         InfoStreamExceptionEvent? exceptionEvent = null;
         manager.InfoStream
@@ -59,7 +60,7 @@ public class JsonIndexManagerTest
         try
         {
             await manager.RunAsync();
-            Debug.WriteLine("TEST STARTED");
+            Console.WriteLine("TEST STARTED");
             Stopwatch sw = Stopwatch.StartNew();
             while (sw.Elapsed < 10.Minutes() && disposedEvent == null && exceptionEvent == null)
             {
@@ -111,7 +112,7 @@ public class TestDirectory : IDisposable
 
     public TestDirectory()
     {
-        Info = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $"TEST-{Guid.NewGuid():N}"));
+        Info = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "DOTNET_TEST", $"TEST-{Guid.NewGuid():N}"));
         Debug.WriteLine("TEST DIR: " + Info.FullName);
     }
 

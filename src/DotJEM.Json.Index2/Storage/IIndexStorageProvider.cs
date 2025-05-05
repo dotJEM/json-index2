@@ -35,11 +35,11 @@ public class SimpleFsIndexStorageProvider : IIndexStorageProvider
     public void Delete()
     {
         //TODO: For now. But maybe there is cases where this actually makes sense to always have.
-        DirectoryInfo dir = new DirectoryInfo(path);
-        foreach (FileInfo file in dir.EnumerateFiles())
-            file.Delete();
+        //DirectoryInfo dir = new DirectoryInfo(path);
+        //foreach (FileInfo file in dir.EnumerateFiles())
+        //    file.Delete();
         
-        foreach (DirectoryInfo directory in dir.EnumerateDirectories())
-            directory.Delete(true);
+        //foreach (DirectoryInfo directory in dir.EnumerateDirectories())
+        //    directory.Delete(true);
     }
 }
