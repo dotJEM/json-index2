@@ -83,6 +83,7 @@ public class JsonIndexTest
         int count = searcher.Search(new TermQuery(new Term("inStock", "true"))).Count();
         Assert.AreEqual(3, count);
     }
+
     [Test]
     public async Task FindBeforeCommit_AddsDocument()
     {

@@ -20,8 +20,8 @@ public interface IJsonIndexStorageManager
 
 public class JsonIndexStorageManager: IJsonIndexStorageManager
 {
-    private readonly IIndexStorageProvider provider;
     private readonly object padlock = new ();
+    private readonly IIndexStorageProvider provider;
     private volatile Directory directory;
     private readonly LeaseManager<Directory> leaseManager = new();
 
@@ -73,19 +73,22 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
         if (directory == null)
             return;
 
-
         lock (padlock)
         {
             if (directory == null)
                 return;
 
             leaseManager.RecallAll();
-            
+
+            WriterManager.Lock();
+
             Close();
             Unlock();
             foreach (string file in directory.ListAll())
                 directory.DeleteFile(file);
             provider.Delete();
+
+            WriterManager.Unlock();
         }
     }
 }

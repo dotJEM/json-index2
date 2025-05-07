@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using DotJEM.Json.Index2.Util;
 
@@ -11,7 +12,7 @@ public interface ILeaseManager<T>
     int Count { get; }
     ILease<T> Create(T value);
     ILease<T> Create(T value, TimeSpan limit);
-    void RecallAll();
+    IEnumerable<T> RecallAll();
 }
 
 public class LeaseManager<T> : ILeaseManager<T>
@@ -32,17 +33,25 @@ public class LeaseManager<T> : ILeaseManager<T>
         return Add(new TimeLimitedLease(value, OnReturned, limit));
     }
 
-    public void RecallAll()
+    public IEnumerable<T> RecallAll()
     {
-        lock (leasesPadLock)
-        {
-            IRecallableLease<T>[] copy = leases.ToArray();
-            leases.Clear();
+        IRecallableLease<T>[] copy = CopyLeases();
+        T[] values = Array.ConvertAll(copy, x => x.Value);
+        foreach (IRecallableLease<T> lease in copy)
+            lease.Terminate();
+        return values;
 
-            foreach (IRecallableLease<T> lease in copy)
-                lease.Terminate();
+        IRecallableLease<T>[] CopyLeases()
+        {
+            lock (leasesPadLock)
+            {
+                IRecallableLease<T>[] copy = leases.ToArray();
+                leases.Clear();
+                return copy;
+            }
         }
     }
+
 
     private ILease<T> Add(IRecallableLease<T> lease)
     {
@@ -72,6 +81,7 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         private readonly T value;
         private readonly Action<Lease> onReturned;
+        private readonly ManualResetEventSlim returned = new ManualResetEventSlim();
 
         public bool IsExpired => IsDisposed;
         public bool IsTerminated { get; private set; }
@@ -109,14 +119,21 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public void Terminate()
         {
+            returned.Wait(500);
             IsTerminated = true;
             Terminated?.Invoke(this, EventArgs.Empty);
-            Dispose();
+            Dispose(false);
+            onReturned(this);
         }
 
         protected override void Dispose(bool disposing)
         {
-            onReturned(this);
+            if (disposing)
+            {
+                returned.Set();
+                onReturned(this);
+            }
+            returned.Dispose();
             base.Dispose(disposing);
         }
     }
@@ -129,7 +146,7 @@ public class LeaseManager<T> : ILeaseManager<T>
         private readonly Action<TimeLimitedLease> onReturned;
         private readonly long timeLimitMilliseconds;
         private readonly long leaseTime = Stopwatch.GetTimestamp();
-        private readonly AutoResetEvent handle = new(false);
+        private readonly AutoResetEvent returned = new(false);
 
         public bool IsExpired => (ElapsedMs > timeLimitMilliseconds) || IsDisposed;
         public bool IsTerminated { get; private set; }
@@ -163,7 +180,7 @@ public class LeaseManager<T> : ILeaseManager<T>
             this.onReturned = onReturned;
             this.timeLimitMilliseconds = (long)timeLimit.TotalMilliseconds;
         }
-
+        
         public bool TryRenew()
         {
             return false;
@@ -171,23 +188,31 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public void Terminate()
         {
+            Wait();
             IsTerminated = true;
             Terminated?.Invoke(this, EventArgs.Empty);
-            Wait();
-            Dispose();
+            Dispose(false);
+            onReturned(this);
         }
 
-        public void Wait()
+        private void Wait()
         {
             if (IsExpired)
                 return;
 
-            handle.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
+            TimeSpan remaining = TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs);
+            if(remaining > TimeSpan.Zero)
+                returned.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
         }
 
         protected override void Dispose(bool disposing)
         {
-            onReturned(this);
+            if (disposing)
+            {
+                returned.Set();
+                onReturned(this);
+            }
+            returned.Dispose();
             base.Dispose(disposing);
         }
     }

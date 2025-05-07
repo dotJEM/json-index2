@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Lucene.Net.Analysis;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
@@ -10,7 +12,9 @@ namespace DotJEM.Json.Index2.IO;
 public class IndexWriterSafeProxy : IIndexWriter
 {
     private readonly IndexWriter inner;
-
+    private readonly Guid id = Guid.NewGuid();
+    private StackTrace whoDisposed;
+    
     public IndexWriterSafeProxy(IndexWriter writer)
     {
         inner = writer;
@@ -30,11 +34,15 @@ public class IndexWriterSafeProxy : IIndexWriter
 
     public void Dispose()
     {
+        whoDisposed = new StackTrace();
+        Debug.WriteLine($"Dispose IndexWriter[{id}]");
         inner.Dispose();
     }
 
     public void Dispose(bool waitForMerges)
     {
+        whoDisposed = new StackTrace();
+        Debug.WriteLine($"Dispose IndexWriter[{id}]");
         inner.Dispose(waitForMerges);
     }
 
@@ -190,7 +198,23 @@ public class IndexWriterSafeProxy : IIndexWriter
 
     public void Commit()
     {
-        inner.Commit();
+        Console.WriteLine($"Commit IndexWriter[{id}]");
+        try
+        {
+            inner.Commit();
+        }
+        catch (ObjectDisposedException e)
+        {
+            Console.WriteLine("Who disposed me:");
+            Console.WriteLine(whoDisposed);
+            Console.WriteLine();
+
+            Console.WriteLine("Who then called me:");
+            Console.WriteLine(new StackTrace());
+            Console.WriteLine();
+
+            throw;
+        }
     }
 
     public bool HasUncommittedChanges()

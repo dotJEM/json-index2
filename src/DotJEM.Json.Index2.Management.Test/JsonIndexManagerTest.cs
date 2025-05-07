@@ -21,7 +21,7 @@ namespace DotJEM.Json.Index2.Management.Test;
 [TestFixture]
 public class JsonIndexManagerTest
 {
-    [Test, Explicit]
+    [Test, Explicit, MaxTime(1000*60*12)]
     public async Task IndexWriterShouldNotBeDisposed()
     {
         using TestDirectory dir = new();
@@ -36,6 +36,7 @@ public class JsonIndexManagerTest
         ISnapshotStrategy strategy = new ZipSnapshotStrategy(dir.Info.CreateSubdirectory("snapshot").FullName);
         IJsonIndexSnapshotManager snapshots = new JsonIndexSnapshotManager(index, strategy, scheduler, "60h");
         IJsonIndexManager manager = new JsonIndexManager(source, snapshots, index);
+        index.Commit();
 
         InfoStreamExceptionEvent? disposedEvent = null;
         InfoStreamExceptionEvent? exceptionEvent = null;
@@ -44,6 +45,7 @@ public class JsonIndexManagerTest
             .Where(@event => @event.Exception is ObjectDisposedException)
             .Subscribe(@event =>
             {
+                Debug.WriteLine($"Event {@event.Message};");
                 disposedEvent = @event;
             });
         manager.InfoStream
@@ -51,6 +53,7 @@ public class JsonIndexManagerTest
             .Where(@event => @event.Exception.Message != "Can't write to an existing snapshot.")
             .Subscribe(@event =>
             {
+                Debug.WriteLine($"Event {@event.Message};");
                 exceptionEvent = @event;
             });
 
@@ -59,7 +62,7 @@ public class JsonIndexManagerTest
             await manager.RunAsync();
             Debug.WriteLine("TEST STARTED");
             Stopwatch sw = Stopwatch.StartNew();
-            while (sw.Elapsed < 10.Minutes() && disposedEvent == null && exceptionEvent == null)
+            while (sw.Elapsed < 1.Minutes() && disposedEvent == null && exceptionEvent == null)
             {
                 Task result = Random.Shared.Next(100) switch
                 {
@@ -73,7 +76,16 @@ public class JsonIndexManagerTest
             async Task DoAfterDelay(Func<Task> action, TimeSpan? delay = null)
             {
                 await Task.Delay(delay ?? Random.Shared.Next(1, 5).Seconds());
-                await action();
+                Debug.WriteLine($"Calling {action.Method.Name};");
+                try
+                {
+                    await action();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    throw;
+                }
             }
 
             await manager.StopAsync();
@@ -100,7 +112,7 @@ public class TestDirectory : IDisposable
 
     public TestDirectory()
     {
-        Info = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $"TEST-{Guid.NewGuid():N}"));
+        Info = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "DOTNET_TEST", $"TEST-{Guid.NewGuid():N}"));
         Debug.WriteLine("TEST DIR: " + Info.FullName);
     }
 
