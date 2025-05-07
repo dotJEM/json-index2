@@ -133,6 +133,7 @@ public class LeaseManager<T> : ILeaseManager<T>
                 returned.Set();
                 onReturned(this);
             }
+            returned.Dispose();
             base.Dispose(disposing);
         }
     }
@@ -211,6 +212,7 @@ public class LeaseManager<T> : ILeaseManager<T>
                 returned.Set();
                 onReturned(this);
             }
+            returned.Dispose();
             base.Dispose(disposing);
         }
     }

@@ -116,6 +116,7 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
     protected override void Dispose(bool disposing)
     {
         Debug.WriteLine($"DISPOSE WRITER: {disposing}");
+        reset.Dispose();
         if (disposing)
             Close();
         base.Dispose(disposing);
