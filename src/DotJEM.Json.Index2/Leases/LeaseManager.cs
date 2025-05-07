@@ -36,7 +36,6 @@ public class LeaseManager<T> : ILeaseManager<T>
     public IEnumerable<T> RecallAll()
     {
         IRecallableLease<T>[] copy = CopyLeases();
-
         T[] values = Array.ConvertAll(copy, x => x.Value);
         foreach (IRecallableLease<T> lease in copy)
             lease.Terminate();
@@ -123,6 +122,7 @@ public class LeaseManager<T> : ILeaseManager<T>
             returned.Wait(500);
             IsTerminated = true;
             Terminated?.Invoke(this, EventArgs.Empty);
+            Dispose(false);
             onReturned(this);
         }
 
@@ -190,7 +190,8 @@ public class LeaseManager<T> : ILeaseManager<T>
             Wait();
             IsTerminated = true;
             Terminated?.Invoke(this, EventArgs.Empty);
-            Dispose();
+            Dispose(false);
+            onReturned(this);
         }
 
         private void Wait()
@@ -198,13 +199,18 @@ public class LeaseManager<T> : ILeaseManager<T>
             if (IsExpired)
                 return;
 
-            returned.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
+            TimeSpan remaining = TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs);
+            if(remaining > TimeSpan.Zero)
+                returned.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
         }
 
         protected override void Dispose(bool disposing)
         {
-            returned.Set();
-            onReturned(this);
+            if (disposing)
+            {
+                returned.Set();
+                onReturned(this);
+            }
             base.Dispose(disposing);
         }
     }
