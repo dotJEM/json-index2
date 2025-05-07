@@ -103,9 +103,8 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
 
             IIndexWriter copy = writer;
             writer = null;
-            copy.Dispose();
-
             leaseManager.RecallAll();
+            copy.Dispose();
             RaiseOnClose();
         }
 
