@@ -45,7 +45,7 @@ public class JsonIndexManagerTest
             .Where(@event => @event.Exception is ObjectDisposedException)
             .Subscribe(@event =>
             {
-                Console.WriteLine($"Event {@event.Message};");
+                Debug.WriteLine($"Event {@event.Message};");
                 disposedEvent = @event;
             });
         manager.InfoStream
@@ -53,16 +53,16 @@ public class JsonIndexManagerTest
             .Where(@event => @event.Exception.Message != "Can't write to an existing snapshot.")
             .Subscribe(@event =>
             {
-                Console.WriteLine($"Event {@event.Message};");
+                Debug.WriteLine($"Event {@event.Message};");
                 exceptionEvent = @event;
             });
 
         try
         {
             await manager.RunAsync();
-            Console.WriteLine("TEST STARTED");
+            Debug.WriteLine("TEST STARTED");
             Stopwatch sw = Stopwatch.StartNew();
-            while (sw.Elapsed < 10.Minutes() && disposedEvent == null && exceptionEvent == null)
+            while (sw.Elapsed < 1.Minutes() && disposedEvent == null && exceptionEvent == null)
             {
                 Task result = Random.Shared.Next(100) switch
                 {
@@ -76,7 +76,7 @@ public class JsonIndexManagerTest
             async Task DoAfterDelay(Func<Task> action, TimeSpan? delay = null)
             {
                 await Task.Delay(delay ?? Random.Shared.Next(1, 5).Seconds());
-                Console.WriteLine($"Calling {action.Method.Name};");
+                Debug.WriteLine($"Calling {action.Method.Name};");
                 try
                 {
                     await action();

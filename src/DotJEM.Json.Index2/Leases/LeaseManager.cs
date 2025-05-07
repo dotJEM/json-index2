@@ -82,7 +82,6 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         private readonly T value;
         private readonly Action<Lease> onReturned;
-        private readonly object padlock = new();
         private readonly ManualResetEventSlim returned = new ManualResetEventSlim();
 
         public bool IsExpired => IsDisposed;
@@ -116,18 +115,12 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public TOut WithLock<TOut>(Func<T, TOut> func)
         {
-            lock (padlock)
-            {
-                return func(Value);
-            }
+            return func(Value);
         }
 
         public void WithLock(Action<T> action)
         {
-            lock (padlock)
-            {
-                action(Value);
-            }
+            action(Value);
         }
 
         public bool TryRenew()
@@ -138,18 +131,18 @@ public class LeaseManager<T> : ILeaseManager<T>
         public void Terminate()
         {
             returned.Wait(500);
-            lock (padlock)
-            {
-                IsTerminated = true;
-                Terminated?.Invoke(this, EventArgs.Empty);
-                Dispose();
-            }
+            IsTerminated = true;
+            Terminated?.Invoke(this, EventArgs.Empty);
+            onReturned(this);
         }
 
         protected override void Dispose(bool disposing)
         {
-            returned.Set();
-            onReturned(this);
+            if (disposing)
+            {
+                returned.Set();
+                onReturned(this);
+            }
             base.Dispose(disposing);
         }
     }
@@ -162,8 +155,8 @@ public class LeaseManager<T> : ILeaseManager<T>
         private readonly Action<TimeLimitedLease> onReturned;
         private readonly long timeLimitMilliseconds;
         private readonly long leaseTime = Stopwatch.GetTimestamp();
-        private readonly AutoResetEvent handle = new(false);
-        private readonly object padlock = new();
+        private readonly AutoResetEvent returned = new(false);
+        //private readonly object padlock = new();
 
         public bool IsExpired => (ElapsedMs > timeLimitMilliseconds) || IsDisposed;
         public bool IsTerminated { get; private set; }
@@ -200,18 +193,12 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         public TOut WithLock<TOut>(Func<T, TOut> func)
         {
-            lock (padlock)
-            {
-                return func(Value);
-            }
+            return func(Value);
         }
 
         public void WithLock(Action<T> action)
         {
-            lock (padlock)
-            {
-                action(Value);
-            }
+            action(Value);
         }
 
         public bool TryRenew()
@@ -222,29 +209,24 @@ public class LeaseManager<T> : ILeaseManager<T>
         public void Terminate()
         {
             Wait();
-            lock (padlock)
-            {
-                IsTerminated = true;
-                Terminated?.Invoke(this, EventArgs.Empty);
-                Dispose();
-            }
+            IsTerminated = true;
+            Terminated?.Invoke(this, EventArgs.Empty);
+            Dispose();
         }
 
-        public void Wait()
+        private void Wait()
         {
             if (IsExpired)
                 return;
 
-            handle.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
+            returned.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
         }
 
         protected override void Dispose(bool disposing)
         {
-            lock (padlock)
-            {
-                onReturned(this);
-                base.Dispose(disposing);
-            }
+            returned.Set();
+            onReturned(this);
+            base.Dispose(disposing);
         }
     }
 }
