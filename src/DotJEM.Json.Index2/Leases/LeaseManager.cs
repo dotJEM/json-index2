@@ -113,16 +113,6 @@ public class LeaseManager<T> : ILeaseManager<T>
             this.onReturned = onReturned;
         }
 
-        public TOut WithLock<TOut>(Func<T, TOut> func)
-        {
-            return func(Value);
-        }
-
-        public void WithLock(Action<T> action)
-        {
-            action(Value);
-        }
-
         public bool TryRenew()
         {
             return false;
@@ -156,7 +146,6 @@ public class LeaseManager<T> : ILeaseManager<T>
         private readonly long timeLimitMilliseconds;
         private readonly long leaseTime = Stopwatch.GetTimestamp();
         private readonly AutoResetEvent returned = new(false);
-        //private readonly object padlock = new();
 
         public bool IsExpired => (ElapsedMs > timeLimitMilliseconds) || IsDisposed;
         public bool IsTerminated { get; private set; }
@@ -190,17 +179,7 @@ public class LeaseManager<T> : ILeaseManager<T>
             this.onReturned = onReturned;
             this.timeLimitMilliseconds = (long)timeLimit.TotalMilliseconds;
         }
-
-        public TOut WithLock<TOut>(Func<T, TOut> func)
-        {
-            return func(Value);
-        }
-
-        public void WithLock(Action<T> action)
-        {
-            action(Value);
-        }
-
+        
         public bool TryRenew()
         {
             return false;
