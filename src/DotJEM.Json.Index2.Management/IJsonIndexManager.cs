@@ -121,6 +121,7 @@ public class JsonIndexManager : IJsonIndexManager
     {
         await jsonDocumentSource.StopAsync().ConfigureAwait(false);
         index.Storage.Delete();
+        index.Commit();
         await jsonDocumentSource.ResetAsync().ConfigureAwait(false);
         await jsonDocumentSource.StartAsync().ConfigureAwait(false);
     }
@@ -141,7 +142,7 @@ public class JsonIndexManager : IJsonIndexManager
                         writer.Commit();
                     break;
                 case JsonDocumentCreated created:
-                    writer.Update(created.Document);
+                    writer.Create(created.Document);
                     break;
                 case JsonDocumentDeleted deleted:
                     writer.Delete(deleted.Document);

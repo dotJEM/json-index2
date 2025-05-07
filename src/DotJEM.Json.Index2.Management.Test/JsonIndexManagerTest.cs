@@ -8,9 +8,11 @@ using DotJEM.Json.Index2.Management.Observables;
 using DotJEM.Json.Index2.Management.Snapshots;
 using DotJEM.Json.Index2.Management.Snapshots.Zip;
 using DotJEM.Json.Index2.Management.Source;
+using DotJEM.Json.Index2.Searching;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
+using Lucene.Net.Search;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
@@ -21,7 +23,7 @@ namespace DotJEM.Json.Index2.Management.Test;
 [TestFixture]
 public class JsonIndexManagerTest
 {
-    [Test, Explicit, MaxTime(1000*60*12)]
+    [Test, Explicit, MaxTime(1000 * 60 * 12)]
     public async Task IndexWriterShouldNotBeDisposed()
     {
         using TestDirectory dir = new();
@@ -66,8 +68,13 @@ public class JsonIndexManagerTest
             {
                 Task result = Random.Shared.Next(100) switch
                 {
-                    (>= 0 and <= 50) => DoAfterDelay(manager.TakeSnapshotAsync, 1.Seconds()),
-                    (> 50 and <= 100) => DoAfterDelay(manager.ResetIndexAsync, 1.Seconds()),
+                    (>= 0 and <= 40) => DoAfterDelay(manager.TakeSnapshotAsync, 1.Seconds()),
+                    (> 40 and <= 80) => DoAfterDelay(manager.ResetIndexAsync, 1.Seconds()),
+                    (> 80 and <= 100) => DoAfterDelay(() =>
+                    {
+                        index.Search(new MatchAllDocsQuery()).Execute();
+                        return Task.CompletedTask;
+                    }, 250.Milliseconds()),
                     _ => Task.CompletedTask
                 };
                 await result;
@@ -146,7 +153,7 @@ public class DummyDocumentSource : IJsonDocumentSource
     private long gen;
 
     private Task? runningTask;
-    private CancellationTokenSource cancellationTokenSource = new ();
+    private CancellationTokenSource cancellationTokenSource = new();
     private readonly string area = "Test";
 
     public async Task StartAsync()
@@ -200,9 +207,9 @@ public class DummyDocumentSource : IJsonDocumentSource
     {
         cancellationTokenSource.Cancel();
 
-        if(runningTask != null)
+        if (runningTask != null)
             await runningTask.ConfigureAwait(false);
-        
+
         runningTask = null;
         cancellationTokenSource = new();
         infoStream.WriteJsonSourceEvent(JsonSourceEventType.Stopped, area, $"Stopping for storageArea '{area}'.");

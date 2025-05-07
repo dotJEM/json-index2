@@ -52,6 +52,8 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
     {
         get
         {
+            reset.Wait();
+
             if (writer != null)
                 return writer;
 
@@ -59,8 +61,6 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
             {
                 if (writer != null)
                     return writer;
-
-                reset.Wait();
 
                 IIndexWriter newWriter = Open(index);
                 writers.Add(new(newWriter));
