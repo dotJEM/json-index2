@@ -1,13 +1,15 @@
-﻿using System;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using DotJEM.Json.Index2.Management.Info;
+﻿using DotJEM.Json.Index2.Management.Info;
 using DotJEM.Json.Index2.Management.Observables;
 using DotJEM.Json.Index2.Management.Snapshots;
 using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Management.Writer;
 using DotJEM.ObservableExtensions.InfoStreams;
+using Lucene.Net.Util;
+using System;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using static Lucene.Net.Util.Packed.PackedInt32s;
 
 namespace DotJEM.Json.Index2.Management;
 
@@ -29,6 +31,7 @@ public class JsonIndexManager : IJsonIndexManager
     private readonly IJsonIndexSnapshotManager snapshots;
     private readonly IJsonIndexWriter writer;
     private readonly IJsonIndex index;
+    private readonly IChangeHandler changeHandler;
 
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
     private readonly DocumentChangesStream changesStream = new();
@@ -42,13 +45,15 @@ public class JsonIndexManager : IJsonIndexManager
         IJsonIndexSnapshotManager snapshots,
         //TODO: Allow multiple indexes and something that can shard
         IJsonIndex index,
-        IJsonIndexWriter writer = null)
+        IJsonIndexWriter writer = null,
+        IChangeHandler changeHandler = null)
     {
         this.jsonDocumentSource = jsonDocumentSource;
         this.snapshots = snapshots;
         this.index = index;
         this.writer = writer ?? new JsonIndexWriter(index);
         this.writer.InfoStream.Subscribe(infoStream);
+        this.changeHandler = changeHandler ?? new ChangeHandler();
 
         Tracker = new IngestProgressTracker();
         
@@ -135,27 +140,41 @@ public class JsonIndexManager : IJsonIndexManager
     {
         try
         {
-            switch (sourceEvent)
-            {
-                case JsonDocumentSourceDigestCompleted:
-                    if(jsonDocumentSource.Initialized.Value)
-                        writer.Commit();
-                    break;
-                case JsonDocumentCreated created:
-                    writer.Update(created.Document);
-                    break;
-                case JsonDocumentDeleted deleted:
-                    writer.Delete(deleted.Document);
-                    break;
-                case JsonDocumentUpdated updated:
-                    writer.Update(updated.Document);
-                    break;
-            }
-            changesStream.Publish(sourceEvent);
+            this.changeHandler.HandleChange(changesStream, jsonDocumentSource, writer, sourceEvent);
         }
         catch (Exception ex)
         {
             infoStream.WriteError($"Failed to ingest change from {sourceEvent.Area}", ex);
         }
+    }
+}
+
+public interface IChangeHandler
+{
+    void HandleChange(DocumentChangesStream changesStream, IJsonDocumentSource source, IJsonIndexWriter writer, IJsonDocumentSourceEvent sourceEvent);
+}
+
+public class ChangeHandler : IChangeHandler
+{
+    public void HandleChange(DocumentChangesStream changesStream, IJsonDocumentSource source, IJsonIndexWriter writer, IJsonDocumentSourceEvent sourceEvent)
+    {
+        switch (sourceEvent)
+        {
+            case JsonDocumentSourceDigestCompleted:
+                if (source.Initialized.Value)
+                    writer.Commit();
+                break;
+            case JsonDocumentCreated created:
+                writer.Update(created.Document);
+                break;
+            case JsonDocumentDeleted deleted:
+                writer.Delete(deleted.Document);
+                break;
+            case JsonDocumentUpdated updated:
+                writer.Update(updated.Document);
+                break;
+        }
+        changesStream.Publish(sourceEvent);
+
     }
 }
