@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Lucene.Net.Store;
 using Directory = Lucene.Net.Store.Directory;
 
@@ -37,9 +38,26 @@ public class SimpleFsIndexStorageProvider : IIndexStorageProvider
         //TODO: For now. But maybe there is cases where this actually makes sense to always have.
         DirectoryInfo dir = new DirectoryInfo(path);
         foreach (FileInfo file in dir.EnumerateFiles())
-            file.Delete();
-        
+        {
+            try 
+            {
+                file.Delete();
+            }
+            catch (Exception ex) 
+            {
+                //TODO: Ignore for now.
+            }
+        }
         foreach (DirectoryInfo directory in dir.EnumerateDirectories())
-            directory.Delete(true);
+        {
+            try 
+            {
+                directory.Delete(true);
+            }
+            catch (Exception ex) 
+            {
+                //TODO: Ignore for now.
+            }
+        }
     }
 }
