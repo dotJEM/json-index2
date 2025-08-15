@@ -151,8 +151,7 @@ public class JsonIndexWriter : IJsonIndexWriter
             long start = Stopwatch.GetTimestamp();
             try
             {
-                lease.WithLock(v => v.Commit());
-                //lease.Value.Commit();
+                lease.Value.Commit();
             }
             catch (LeaseTerminatedException e)
             {

@@ -1,4 +1,6 @@
 using System;
+using DotJEM.Json.Index2.IO;
+using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Util;
 using Lucene.Net.Search;
 
@@ -11,20 +13,28 @@ namespace DotJEM.Json.Index2.Searching
 
     public class IndexSearcherContext : Disposable, IIndexSearcherContext
     {
-        private readonly Action<IndexSearcher> release;
+        private readonly ILease<IIndexWriter> lease;
+        private readonly IndexSearcher searcher;
 
-        public IndexSearcher Searcher { get; }
-
-        public IndexSearcherContext(IndexSearcher searcher, Action<IndexSearcher> release)
+        public IndexSearcher Searcher
         {
-            this.Searcher = searcher;
-            this.release = release;
+            get
+            {
+                if (lease.IsExpired || lease.IsTerminated)
+                    throw new LeaseExpiredException("");
+                return searcher;
+            }
+        }
+
+        public IndexSearcherContext(IndexSearcher searcher, ILease<IIndexWriter> lease)
+        {
+            this.lease = lease;
+            this.searcher = searcher;
         }
 
         protected override void Dispose(bool disposing)
         {
-            release(Searcher);
-
+            lease.Dispose();
             base.Dispose(disposing);
         }
     }

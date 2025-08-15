@@ -25,7 +25,8 @@ public class IndexSearcherManager : Disposable, IIndexSearcherManager
     private readonly IIndexWriterManager writerManager;
 
     private IndexSearcher searcher;
-    private object writerRef;
+    private SearcherManager manager;
+    private IIndexWriter writer;
 
     public IJsonDocumentSerializer Serializer { get; }
 
@@ -40,19 +41,24 @@ public class IndexSearcherManager : Disposable, IIndexSearcherManager
         lock (padlock)
         {
             ILease<IIndexWriter> lease = writerManager.Lease();
-            if (searcher is null || !ReferenceEquals(writerRef, lease.Value.UnsafeValue))
+            if (searcher is null || !ReferenceEquals(writer, lease.Value))
             {
-                writerRef = lease.Value.UnsafeValue;
+                writer = lease.Value;
                 searcher = new IndexSearcher(DirectoryReader.Open(lease.Value.UnsafeValue, true));
-                return new IndexSearcherContext(searcher, s => lease.Dispose());
+                return new IndexSearcherContext(searcher, lease);
             }
 
             IndexReader newReader = DirectoryReader.OpenIfChanged((DirectoryReader)searcher.IndexReader);
             if (newReader is null)
-                return new IndexSearcherContext(searcher, s => lease.Dispose());
+                return new IndexSearcherContext(searcher, lease);
 
             searcher = new IndexSearcher(newReader);
-            return new IndexSearcherContext(searcher, s => lease.Dispose());
+            return new IndexSearcherContext(searcher, lease);
+
+
+            //manager ??= new SearcherManager(writerManager.Lease().Value.UnsafeValue, true, new SearcherFactory());
+            //manager.MaybeRefreshBlocking();
+            //return new IndexSearcherContext(manager.Acquire(), manager.Release);
         }
     }
 
@@ -62,7 +68,8 @@ public class IndexSearcherManager : Disposable, IIndexSearcherManager
         lock (padlock)
         {
             searcher = null;
-            writerRef = null;
+            writer = null;
+            manager?.Dispose();
         }
     }
 }

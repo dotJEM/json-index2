@@ -86,13 +86,16 @@ public sealed class Search : ISearch
 
     private SearchResults Execute(Query query, int skip, int take, Sort sort, Filter filter, bool doDocScores, bool doMaxScores)
     {
-        //TODO: Replace yield
-        infoStream.WriteSearchStartEvent("", new SearchInfo(query, skip, take, sort, filter,doDocScores,doMaxScores), TimeSpan.Zero);
         Stopwatch timer = Stopwatch.StartNew();
+        //TODO: Replace yield
+        IJsonDocumentSerializer serializer = manager.Serializer;
+       
+        infoStream.WriteSearchStartEvent("", new SearchInfo(query, skip, take, sort, filter,doDocScores,doMaxScores), TimeSpan.Zero);
+
         using IIndexSearcherContext context = manager.Acquire();
         IndexSearcher searcher = context.Searcher;
         //s.Doc()
-        //query = s.Rewrite(query);
+        query = searcher.Rewrite(query);
         infoStream.WriteDebug($"Query Rewrite: {query}");
 
         // https://issues.apache.org/jira/secure/attachment/12430688/PagingCollector.java
@@ -104,10 +107,8 @@ public sealed class Search : ISearch
         //    : query;
         //Weight w = s.CreateNormalizedWeight(fq);
         //collector2.GetTopDocs()
-        IJsonDocumentSerializer serializer = manager.Serializer;
 
         TopFieldDocs topDocs = searcher.Search(query, filter, take + skip, sort, doDocScores, doMaxScores);
-
         infoStream.WriteSearchCompletedEvent("", new SearchInfo(query, skip, take, sort, filter, doDocScores, doMaxScores), timer.Elapsed);
         IEnumerable<SearchResult> loaded =
             from hit in topDocs.ScoreDocs.Skip(skip)

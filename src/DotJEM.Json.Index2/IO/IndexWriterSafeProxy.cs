@@ -14,7 +14,7 @@ public class IndexWriterSafeProxy : IIndexWriter
     private readonly IndexWriter inner;
     private readonly Guid id = Guid.NewGuid();
     private StackTrace whoDisposed;
-
+    
     public IndexWriterSafeProxy(IndexWriter writer)
     {
         inner = writer;
@@ -35,14 +35,14 @@ public class IndexWriterSafeProxy : IIndexWriter
     public void Dispose()
     {
         whoDisposed = new StackTrace();
-        Console.WriteLine($"Dispose IndexWriter[{id}]");
+        Debug.WriteLine($"Dispose IndexWriter[{id}]");
         inner.Dispose();
     }
 
     public void Dispose(bool waitForMerges)
     {
         whoDisposed = new StackTrace();
-        Console.WriteLine($"Dispose IndexWriter[{id}]");
+        Debug.WriteLine($"Dispose IndexWriter[{id}]");
         inner.Dispose(waitForMerges);
     }
 

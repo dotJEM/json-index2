@@ -36,7 +36,6 @@ public class LeaseManager<T> : ILeaseManager<T>
     public IEnumerable<T> RecallAll()
     {
         IRecallableLease<T>[] copy = CopyLeases();
-
         T[] values = Array.ConvertAll(copy, x => x.Value);
         foreach (IRecallableLease<T> lease in copy)
             lease.Terminate();
@@ -82,7 +81,6 @@ public class LeaseManager<T> : ILeaseManager<T>
 
         private readonly T value;
         private readonly Action<Lease> onReturned;
-        private readonly object padlock = new();
         private readonly ManualResetEventSlim returned = new ManualResetEventSlim();
 
         public bool IsExpired => IsDisposed;
@@ -114,22 +112,6 @@ public class LeaseManager<T> : ILeaseManager<T>
             this.onReturned = onReturned;
         }
 
-        public TOut WithLock<TOut>(Func<T, TOut> func)
-        {
-            lock (padlock)
-            {
-                return func(Value);
-            }
-        }
-
-        public void WithLock(Action<T> action)
-        {
-            lock (padlock)
-            {
-                action(Value);
-            }
-        }
-
         public bool TryRenew()
         {
             return false;
@@ -138,18 +120,20 @@ public class LeaseManager<T> : ILeaseManager<T>
         public void Terminate()
         {
             returned.Wait(500);
-            lock (padlock)
-            {
-                IsTerminated = true;
-                Terminated?.Invoke(this, EventArgs.Empty);
-                Dispose();
-            }
+            IsTerminated = true;
+            Terminated?.Invoke(this, EventArgs.Empty);
+            Dispose(false);
+            onReturned(this);
         }
 
         protected override void Dispose(bool disposing)
         {
-            returned.Set();
-            onReturned(this);
+            if (disposing)
+            {
+                returned.Set();
+                onReturned(this);
+            }
+            returned.Dispose();
             base.Dispose(disposing);
         }
     }
@@ -162,8 +146,7 @@ public class LeaseManager<T> : ILeaseManager<T>
         private readonly Action<TimeLimitedLease> onReturned;
         private readonly long timeLimitMilliseconds;
         private readonly long leaseTime = Stopwatch.GetTimestamp();
-        private readonly AutoResetEvent handle = new(false);
-        private readonly object padlock = new();
+        private readonly AutoResetEvent returned = new(false);
 
         public bool IsExpired => (ElapsedMs > timeLimitMilliseconds) || IsDisposed;
         public bool IsTerminated { get; private set; }
@@ -197,23 +180,7 @@ public class LeaseManager<T> : ILeaseManager<T>
             this.onReturned = onReturned;
             this.timeLimitMilliseconds = (long)timeLimit.TotalMilliseconds;
         }
-
-        public TOut WithLock<TOut>(Func<T, TOut> func)
-        {
-            lock (padlock)
-            {
-                return func(Value);
-            }
-        }
-
-        public void WithLock(Action<T> action)
-        {
-            lock (padlock)
-            {
-                action(Value);
-            }
-        }
-
+        
         public bool TryRenew()
         {
             return false;
@@ -222,29 +189,31 @@ public class LeaseManager<T> : ILeaseManager<T>
         public void Terminate()
         {
             Wait();
-            lock (padlock)
-            {
-                IsTerminated = true;
-                Terminated?.Invoke(this, EventArgs.Empty);
-                Dispose();
-            }
+            IsTerminated = true;
+            Terminated?.Invoke(this, EventArgs.Empty);
+            Dispose(false);
+            onReturned(this);
         }
 
-        public void Wait()
+        private void Wait()
         {
             if (IsExpired)
                 return;
 
-            handle.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
+            TimeSpan remaining = TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs);
+            if(remaining > TimeSpan.Zero)
+                returned.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
         }
 
         protected override void Dispose(bool disposing)
         {
-            lock (padlock)
+            if (disposing)
             {
+                returned.Set();
                 onReturned(this);
-                base.Dispose(disposing);
             }
+            returned.Dispose();
+            base.Dispose(disposing);
         }
     }
 }

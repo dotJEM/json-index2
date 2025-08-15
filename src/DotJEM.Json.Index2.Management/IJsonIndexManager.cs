@@ -165,7 +165,7 @@ public class ChangeHandler : IChangeHandler
                     writer.Commit();
                 break;
             case JsonDocumentCreated created:
-                writer.Update(created.Document);
+                writer.Create(created.Document);
                 break;
             case JsonDocumentDeleted deleted:
                 writer.Delete(deleted.Document);
