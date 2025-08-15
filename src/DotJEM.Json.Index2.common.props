@@ -9,7 +9,7 @@
 		<Authors>DotJEM</Authors>
 		<Copyright>Copyright © DotJEM 2023</Copyright>
 		<Description></Description>
-		<IncludeSymbols>False</IncludeSymbols>
+		<IncludeSymbols>True</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   
 		<AssemblyName>$(MSBuildProjectName)</AssemblyName>

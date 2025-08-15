@@ -10,8 +10,6 @@
 		<Authors>DotJEM</Authors>
 		<Copyright>Copyright © DotJEM 2023</Copyright>
 		<Description></Description>
-		<IncludeSymbols>False</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
 		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
 		<RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
