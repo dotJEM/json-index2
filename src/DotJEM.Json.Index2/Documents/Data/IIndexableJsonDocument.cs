@@ -12,6 +12,11 @@ public interface IIndexableJsonDocument
     /// <summary>
     /// 
     /// </summary>
+    public Term Key { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
     Document Document { get; }
     
     /// <summary>
@@ -28,19 +33,23 @@ public interface IIndexableJsonDocument
 
 public class IndexableJsonDocument : IIndexableJsonDocument
 {
+    public Term Key { get; }
+
     public Document Document { get; } = new Document();
 
     public IContentTypeInfo Info { get; }
 
-    public IndexableJsonDocument(string contentType)
+    public IndexableJsonDocument(string contentType, Term key)
     {
         Info = new ContentTypeInfo(contentType);
+        Key = key;
     }
 
     public void Add(IIndexableJsonField field)
     {
         foreach (IIndexableField x in field.LuceneFields)
             Document.Add(x);
+
 
         Info.Add(field.Info());
     }

@@ -33,7 +33,7 @@ public class JsonIndexWriter : IJsonIndexWriter
     private readonly IFieldInformationManager resolver;
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
     private readonly ThrottledCommit throttledCommit;
-    
+
     private ILease<IndexWriter> WriterLease => index.WriterManager.Lease();
     public IInfoStream InfoStream => infoStream;
 
@@ -51,28 +51,35 @@ public class JsonIndexWriter : IJsonIndexWriter
         using ILease<IndexWriter> lease = WriterLease;
 
         Term term = resolver.Resolver.Identity(entity);
-        LuceneDocumentEntry doc = mapper.Create(entity);
-        lease.Value.UpdateDocument(term, doc.Document);
-        throttledCommit.Increment();
-        DebugInfo($"Writer.UpdateDocument({term}, <doc>)");
+        foreach (LuceneDocumentEntry doc in mapper.Create(entity))
+        {
+            lease.Value.UpdateDocument(term, doc.Document);
+            throttledCommit.Increment();
+            DebugInfo($"Writer.UpdateDocument({term}, <doc>)");
+        }
     }
 
     public void Create(JObject entity)
     {
         using ILease<IndexWriter> lease = WriterLease;
 
-        LuceneDocumentEntry doc = mapper.Create(entity);
-        lease.Value.AddDocument(doc.Document);
-        throttledCommit.Increment();
-        DebugInfo($"Writer.AddDocument(<doc>)");
+        foreach (LuceneDocumentEntry doc in mapper.Create(entity))
+        {
+            lease.Value.AddDocument(doc.Document);
+            throttledCommit.Increment();
+            DebugInfo($"Writer.AddDocument(<doc>)");
+        }
     }
 
     public void Create(IEnumerable<JObject> entities)
     {
         using ILease<IndexWriter> lease = WriterLease;
-        lease.Value.AddDocuments(entities.Select(entity => mapper.Create(entity).Document));
-        throttledCommit.Increment();
-        DebugInfo($"Writer.AddDocuments(<doc>)");
+        foreach (LuceneDocumentEntry doc in entities.SelectMany(mapper.Create))
+        {
+            lease.Value.AddDocument(doc.Document);
+            throttledCommit.Increment();
+            DebugInfo($"Writer.AddDocument(<doc>)");
+        }
     }
 
     public void Delete(JObject entity)
@@ -107,7 +114,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     private void DebugInfo(string message, [CallerMemberName] string caller = null)
         => infoStream.WriteDebug(message, caller);
-    
+
     public class ThrottledCommit
     {
         private readonly JsonIndexWriter target;
@@ -123,7 +130,7 @@ public class JsonIndexWriter : IJsonIndexWriter
         public ThrottledCommit(JsonIndexWriter target)
         {
             this.target = target;
-            ThreadPool.RegisterWaitForSingleObject(handle, (_,_)=>Tick(false), null, 200, false);
+            ThreadPool.RegisterWaitForSingleObject(handle, (_, _) => Tick(false), null, 200, false);
         }
 
         private void Tick(bool force)

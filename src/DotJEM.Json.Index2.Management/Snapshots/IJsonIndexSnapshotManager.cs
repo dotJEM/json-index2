@@ -41,6 +41,8 @@ public class JsonIndexSnapshotManager : IJsonIndexSnapshotManager
 {
     private readonly IJsonIndex index;
     private readonly ISnapshotStrategy strategy;
+    //TODO: This binds us to a concrete idea (even though this is an interface).
+    //      instead it would be preferred if we could provide an abstraction for what is needed.
     private readonly IWebTaskScheduler scheduler;
     private readonly IInfoStream<JsonIndexSnapshotManager> infoStream = new InfoStream<JsonIndexSnapshotManager>();
 

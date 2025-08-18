@@ -36,6 +36,7 @@ public class JsonIndexManager : IJsonIndexManager
     private readonly IJsonIndexSnapshotManager snapshots;
     private readonly IJsonIndexWriter writer;
     private readonly IJsonIndex index;
+    private readonly IChangeHandler changeHandler;
 
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
     private readonly DocumentChangesStream changesStream = new();
@@ -49,11 +50,13 @@ public class JsonIndexManager : IJsonIndexManager
         IJsonIndexSnapshotManager snapshots,
         //TODO: Allow multiple indexes and something that can shard
         IJsonIndex index,
-        IJsonIndexWriter writer = null)
+        IJsonIndexWriter writer = null,
+        IChangeHandler changeHandler = null)
     {
         this.jsonDocumentSource = jsonDocumentSource;
         this.snapshots = snapshots;
         this.index = index;
+        this.changeHandler = changeHandler ?? new ChangeHandler();
         this.writer = writer ?? new JsonIndexWriter(index);
         this.writer.InfoStream.Subscribe(infoStream);
 
@@ -146,27 +149,41 @@ public class JsonIndexManager : IJsonIndexManager
     {
         try
         {
-            switch (sourceEvent)
-            {
-                case JsonDocumentSourceDigestCompleted:
-                    if(jsonDocumentSource.Initialized.Value)
-                        writer.Commit();
-                    break;
-                case JsonDocumentCreated created:
-                    writer.Create(created.Document);
-                    break;
-                case JsonDocumentDeleted deleted:
-                    writer.Delete(deleted.Document);
-                    break;
-                case JsonDocumentUpdated updated:
-                    writer.Update(updated.Document);
-                    break;
-            }
-            changesStream.Publish(sourceEvent);
+            this.changeHandler.HandleChange(changesStream, jsonDocumentSource, writer, sourceEvent);
         }
         catch (Exception ex)
         {
             infoStream.WriteError($"Failed to ingest change from {sourceEvent.Area}", ex);
         }
+    }
+}
+
+public interface IChangeHandler
+{
+    void HandleChange(DocumentChangesStream changesStream, IJsonDocumentSource source, IJsonIndexWriter writer, IJsonDocumentSourceEvent sourceEvent);
+}
+
+public class ChangeHandler : IChangeHandler
+{
+    public void HandleChange(DocumentChangesStream changesStream, IJsonDocumentSource source, IJsonIndexWriter writer, IJsonDocumentSourceEvent sourceEvent)
+    {
+        switch (sourceEvent)
+        {
+            case JsonDocumentSourceDigestCompleted:
+                if (source.Initialized.Value)
+                    writer.Commit();
+                break;
+            case JsonDocumentCreated created:
+                writer.Create(created.Document);
+                break;
+            case JsonDocumentDeleted deleted:
+                writer.Delete(deleted.Document);
+                break;
+            case JsonDocumentUpdated updated:
+                writer.Update(updated.Document);
+                break;
+        }
+        changesStream.Publish(sourceEvent);
+
     }
 }

@@ -1,4 +1,7 @@
-﻿using Lucene.Net.Store;
+﻿using System;
+using System.IO;
+using Lucene.Net.Store;
+using Directory = Lucene.Net.Store.Directory;
 
 namespace DotJEM.Json.Index2.Storage;
 
@@ -32,5 +35,29 @@ public class SimpleFsIndexStorageProvider : IIndexStorageProvider
 
     public void Delete()
     {
+        //TODO: For now. But maybe there is cases where this actually makes sense to always have.
+        DirectoryInfo dir = new DirectoryInfo(path);
+        foreach (FileInfo file in dir.EnumerateFiles())
+        {
+            try 
+            {
+                file.Delete();
+            }
+            catch (Exception ex) 
+            {
+                //TODO: Ignore for now.
+            }
+        }
+        foreach (DirectoryInfo directory in dir.EnumerateDirectories())
+        {
+            try 
+            {
+                directory.Delete(true);
+            }
+            catch (Exception ex) 
+            {
+                //TODO: Ignore for now.
+            }
+        }
     }
 }
