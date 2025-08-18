@@ -95,7 +95,7 @@ namespace DotJEM.Json.Index2.IO
 
         private void WithLease(Action<IndexWriter> action)
         {
-            using ILease<IndexWriter> lease =manager.Lease();
+            using ILease<IndexWriter> lease = manager.Lease();
             action(lease.Value);
         }
 
