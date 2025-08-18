@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using Lucene.Net.Analysis.Util;
 using Lucene.Net.Documents;
 using Lucene.Net.Util;

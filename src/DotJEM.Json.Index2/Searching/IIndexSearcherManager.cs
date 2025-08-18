@@ -39,11 +39,11 @@ public class IndexSearcherManager : Disposable, IIndexSearcherManager
     {
         lock (padlock)
         {
-            ILease<IIndexWriter> lease = writerManager.Lease();
-            if (searcher is null || !ReferenceEquals(writerRef, lease.Value.UnsafeValue))
+            ILease<IndexWriter> lease = writerManager.Lease();
+            if (searcher is null || !ReferenceEquals(writerRef, lease.Value))
             {
-                writerRef = lease.Value.UnsafeValue;
-                searcher = new IndexSearcher(DirectoryReader.Open(lease.Value.UnsafeValue, true));
+                writerRef = lease.Value;
+                searcher = new IndexSearcher(DirectoryReader.Open(lease.Value, true));
                 return new IndexSearcherContext(searcher, s => lease.Dispose());
             }
 

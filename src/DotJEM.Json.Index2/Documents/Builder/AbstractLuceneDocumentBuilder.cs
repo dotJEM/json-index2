@@ -4,6 +4,8 @@ using DotJEM.Json.Index2.Documents.Fields;
 using DotJEM.Json.Index2.Serialization;
 using DotJEM.Json.Visitor;
 using DotJEM.ObservableExtensions.InfoStreams;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
 using Newtonsoft.Json.Linq;
 
 namespace DotJEM.Json.Index2.Documents.Builder;

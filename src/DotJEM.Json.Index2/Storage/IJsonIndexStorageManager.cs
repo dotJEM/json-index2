@@ -23,7 +23,6 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     private readonly object padlock = new ();
     private readonly IIndexStorageProvider provider;
     private volatile Directory directory;
-    private readonly LeaseManager<Directory> leaseManager = new();
 
     private readonly Lazy<IIndexWriterManager> writerManager;
     private readonly Lazy<IIndexSearcherManager> searcherManager;
@@ -37,9 +36,6 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
     {
         get
         {
-            if (directory != null)
-                return directory;
-
             lock (padlock)
             {
                 if (directory != null)
@@ -78,17 +74,11 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
             if (directory == null)
                 return;
 
-            leaseManager.RecallAll();
-
-            WriterManager.Lock();
-
             Close();
             Unlock();
             foreach (string file in directory.ListAll())
                 directory.DeleteFile(file);
             provider.Delete();
-
-            WriterManager.Unlock();
         }
     }
 }

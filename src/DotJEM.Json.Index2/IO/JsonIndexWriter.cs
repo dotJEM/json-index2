@@ -94,9 +94,9 @@ namespace DotJEM.Json.Index2.IO
         public void SetCommitData(IDictionary<string, string> commitUserData)
             => WithLease(writer => writer.SetCommitData(commitUserData));
 
-        private void WithLease(Action<IIndexWriter> action)
+        private void WithLease(Action<IndexWriter> action)
         {
-            using ILease<IIndexWriter> lease =manager.Lease();
+            using ILease<IndexWriter> lease = manager.Lease();
             action(lease.Value);
         }
 

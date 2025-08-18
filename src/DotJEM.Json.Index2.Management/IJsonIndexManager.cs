@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DotJEM.Json.Index2.Management.Info;
 using DotJEM.Json.Index2.Management.Observables;
@@ -8,6 +13,8 @@ using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Management.Writer;
 using DotJEM.ObservableExtensions.InfoStreams;
+using DotJEM.Web.Scheduler;
+using Lucene.Net.Search;
 
 namespace DotJEM.Json.Index2.Management;
 

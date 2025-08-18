@@ -6,18 +6,15 @@ using System.Threading;
 using DotJEM.Json.Index2.Leases;
 using DotJEM.Json.Index2.Util;
 using Lucene.Net.Index;
+using Lucene.Net.Util;
 
 namespace DotJEM.Json.Index2.IO;
 
 
 public interface IIndexWriterManager : IDisposable
 {
-    event EventHandler<EventArgs> OnClose;
-    ILease<IIndexWriter> Lease();
+    ILease<IndexWriter> Lease();
     void Close();
-
-    void Lock();
-    void Unlock();
 }
 
 
@@ -28,66 +25,34 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
 {
     public static int DEFAULT_RAM_BUFFER_SIZE_MB { get; set; } = 512;
 
+    private IndexWriter writer;
+
     private readonly IJsonIndex index;
-    private volatile IIndexWriter writer;
     private readonly object writerPadLock = new();
-    private readonly LeaseManager<IIndexWriter> leaseManager = new();
-
-    private readonly ManualResetEventSlim reset = new(true);
-    //TODO: With leases, this should not be needed.
-    public event EventHandler<EventArgs> OnClose;
-
-    private static List<WeakReference<IIndexWriter>> writers = new();
-
-    public void Lock()
-    {
-        reset.Reset();
-    }
-    public void Unlock()
-    {
-        reset.Set();
-    }
-
-    private IIndexWriter Writer
-    {
-        get
-        {
-            if (writer != null)
-                return writer;
-
-            lock (writerPadLock)
-            {
-                if (writer != null)
-                    return writer;
-
-                reset.Wait();
-
-                IIndexWriter newWriter = Open(index);
-                writers.Add(new(newWriter));
-                return writer = newWriter;
-            }
-        }
-    }
+    private readonly LeaseManager<IndexWriter> leaseManager = new();
 
     public IndexWriterManager(IJsonIndex index)
     {
         this.index = index;
     }
-    public ILease<IIndexWriter> Lease()
+
+    public ILease<IndexWriter> Lease()
     {
         lock (writerPadLock)
         {
-            return leaseManager.Create(Writer, TimeSpan.FromSeconds(10));
+            writer ??= Open(index);
+            return leaseManager.Create(writer);
         }
     }
 
-    private static IIndexWriter Open(IJsonIndex index)
+    private static IndexWriter Open(IJsonIndex index)
     {
         IndexWriterConfig config = new(index.Configuration.Version, index.Configuration.Analyzer);
         config.RAMBufferSizeMB = DEFAULT_RAM_BUFFER_SIZE_MB;
         config.OpenMode = OpenMode.CREATE_OR_APPEND;
         config.IndexDeletionPolicy = new SnapshotDeletionPolicy(config.IndexDeletionPolicy);
-        return new IndexWriterSafeProxy(new(index.Storage.Directory, config));
+        config.SetInfoStream(new RedirectInfoStream());
+        return new(index.Storage.Directory, config);
     }
 
     public void Close()
@@ -101,29 +66,26 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
             if (writer == null)
                 return;
 
-            IIndexWriter copy = writer;
+            IndexWriter copy = writer;
             writer = null;
             leaseManager.RecallAll();
             copy.Dispose();
-            RaiseOnClose();
         }
-
-        int writersOpenend = writers.Count;
-        int writersAlive = writers.Count(w => w.TryGetTarget(out _));
-        Debug.WriteLine($"Number of opened writers: {writersOpenend} where {writersAlive} are still alive");
     }
 
     protected override void Dispose(bool disposing)
     {
-        Debug.WriteLine($"DISPOSE WRITER: {disposing}");
-        reset.Dispose();
-        if (disposing)
-            Close();
+        Close();
         base.Dispose(disposing);
     }
 
-    protected virtual void RaiseOnClose()
+}
+
+internal class RedirectInfoStream : InfoStream
+{
+    public override void Message(string component, string message)
     {
-        OnClose?.Invoke(this, EventArgs.Empty);
     }
+
+    public override bool IsEnabled(string component) => true;
 }

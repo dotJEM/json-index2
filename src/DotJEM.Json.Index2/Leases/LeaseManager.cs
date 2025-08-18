@@ -4,78 +4,80 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using DotJEM.Json.Index2.Util;
+using DotJEM.ObservableExtensions.InfoStreams;
 
 namespace DotJEM.Json.Index2.Leases;
 
 public interface ILeaseManager<T>
 {
+    IInfoStream InfoStream { get; }
+
     int Count { get; }
     ILease<T> Create(T value);
-    ILease<T> Create(T value, TimeSpan limit);
     IEnumerable<T> RecallAll();
 }
 
 public class LeaseManager<T> : ILeaseManager<T>
 {
     //TODO: Optimizied collection for this.
-    private readonly List<IRecallableLease<T>> leases = new();
+    private readonly List<Lease> leases = [];
     private readonly object leasesPadLock = new();
+    private readonly InfoStream<LeaseManager<T>> infoStream = new();
+    public IInfoStream InfoStream => infoStream;
 
-    public int Count => leases.Count;
-
-    public ILease<T> Create(T value)
+    /// <summary>
+    /// 
+    /// </summary>
+    public int Count
     {
-        return Add(new Lease(value, OnReturned));
-    }
-
-    public ILease<T> Create(T value, TimeSpan limit)
-    {
-        return Add(new TimeLimitedLease(value, OnReturned, limit));
-    }
-
-    public IEnumerable<T> RecallAll()
-    {
-        IRecallableLease<T>[] copy = CopyLeases();
-        T[] values = Array.ConvertAll(copy, x => x.Value);
-        foreach (IRecallableLease<T> lease in copy)
-            lease.Terminate();
-        return values;
-
-        IRecallableLease<T>[] CopyLeases()
+        get
         {
             lock (leasesPadLock)
             {
-                IRecallableLease<T>[] copy = leases.ToArray();
-                leases.Clear();
-                return copy;
+                return leases.Count;
             }
         }
     }
 
-
-    private ILease<T> Add(IRecallableLease<T> lease)
+    public ILease<T> Create(T value)
     {
         lock (leasesPadLock)
         {
+            Lease lease = new Lease(value, OnReturned);
             leases.Add(lease);
+            infoStream.WriteDebug($"Adding new lease, total leases = {leases.Count}");
+            return lease;
         }
-        return lease;
     }
 
-    private void OnReturned(IRecallableLease<T> obj)
+    public IEnumerable<T> RecallAll()
+    {
+        lock (leasesPadLock)
+        {
+            Lease[] copy = leases.ToArray();
+            leases.Clear();
+
+            infoStream.WriteDebug($"Recalling lease, total leases = {copy.Length}");
+
+            T[] values = Array.ConvertAll(copy, x => x.Value);
+            foreach (Lease lease in copy)
+                lease.Terminate();
+            return values;
+        }
+
+    }
+
+
+    private void OnReturned(Lease obj)
     {
         lock (leasesPadLock)
         {
             leases.Remove(obj);
+            infoStream.WriteDebug($"Returning lease, total leases = {leases.Count}");
         }
     }
 
-    private interface IRecallableLease<T> : ILease<T>
-    {
-        void Terminate();
-    }
-
-    private class Lease : Disposable, IRecallableLease<T>
+    private class Lease : Disposable, ILease<T>
     {
         public event EventHandler<EventArgs> Terminated;
 
@@ -83,7 +85,6 @@ public class LeaseManager<T> : ILeaseManager<T>
         private readonly Action<Lease> onReturned;
         private readonly ManualResetEventSlim returned = new ManualResetEventSlim();
 
-        public bool IsExpired => IsDisposed;
         public bool IsTerminated { get; private set; }
 
         public T Value
@@ -97,10 +98,6 @@ public class LeaseManager<T> : ILeaseManager<T>
                 if (IsDisposed)
                 {
                     throw new LeaseDisposedException($"This lease has been disposed.");
-                }
-                if (IsExpired)
-                {
-                    throw new LeaseExpiredException("Lease is expired as it was returned.");
                 }
                 return value;
             }
@@ -112,18 +109,12 @@ public class LeaseManager<T> : ILeaseManager<T>
             this.onReturned = onReturned;
         }
 
-        public bool TryRenew()
-        {
-            return false;
-        }
-
         public void Terminate()
         {
             returned.Wait(500);
             IsTerminated = true;
             Terminated?.Invoke(this, EventArgs.Empty);
-            Dispose(false);
-            onReturned(this);
+            Dispose();
         }
 
         protected override void Dispose(bool disposing)
@@ -136,95 +127,6 @@ public class LeaseManager<T> : ILeaseManager<T>
             returned.Dispose();
             base.Dispose(disposing);
         }
-    }
-
-    private class TimeLimitedLease : Disposable, IRecallableLease<T>
-    {
-        public event EventHandler<EventArgs> Terminated;
-
-        private readonly T value;
-        private readonly Action<TimeLimitedLease> onReturned;
-        private readonly long timeLimitMilliseconds;
-        private readonly long leaseTime = Stopwatch.GetTimestamp();
-        private readonly AutoResetEvent returned = new(false);
-
-        public bool IsExpired => (ElapsedMs > timeLimitMilliseconds) || IsDisposed;
-        public bool IsTerminated { get; private set; }
-        private long ElapsedMs => (long)((Stopwatch.GetTimestamp() - leaseTime) / (Stopwatch.Frequency / (double)1000));
-
-        public T Value
-        {
-            get
-            {
-                if (IsTerminated)
-                {
-                    throw new LeaseTerminatedException($"This lease has been terminated.");
-                }
-                if (IsDisposed)
-                {
-                    throw new LeaseDisposedException($"This lease has been disposed.");
-                }
-                long elapsed = ElapsedMs;
-                if (ElapsedMs > timeLimitMilliseconds)
-                {
-                    throw new LeaseExpiredException($"Lease is expired either because the time limit '{timeLimitMilliseconds}'" +
-                                                    $" was exceeded by: '{elapsed - timeLimitMilliseconds}'.");
-                }
-                return value;
-            }
-        }
-
-        public TimeLimitedLease(T value, Action<TimeLimitedLease> onReturned, TimeSpan timeLimit)
-        {
-            this.value = value;
-            this.onReturned = onReturned;
-            this.timeLimitMilliseconds = (long)timeLimit.TotalMilliseconds;
-        }
-        
-        public bool TryRenew()
-        {
-            return false;
-        }
-
-        public void Terminate()
-        {
-            Wait();
-            IsTerminated = true;
-            Terminated?.Invoke(this, EventArgs.Empty);
-            Dispose(false);
-            onReturned(this);
-        }
-
-        private void Wait()
-        {
-            if (IsExpired)
-                return;
-
-            TimeSpan remaining = TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs);
-            if(remaining > TimeSpan.Zero)
-                returned.WaitOne(TimeSpan.FromSeconds(6) - TimeSpan.FromMilliseconds(ElapsedMs));
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                returned.Set();
-                onReturned(this);
-            }
-            returned.Dispose();
-            base.Dispose(disposing);
-        }
-    }
-}
-public class LeaseExpiredException : Exception
-{
-    public LeaseExpiredException(string message) : base(message)
-    {
-    }
-
-    public LeaseExpiredException(string message, Exception innerException) : base(message, innerException)
-    {
     }
 }
 

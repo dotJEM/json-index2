@@ -34,7 +34,7 @@ public class JsonIndexWriter : IJsonIndexWriter
     private readonly IInfoStream<JsonIndexManager> infoStream = new InfoStream<JsonIndexManager>();
     private readonly ThrottledCommit throttledCommit;
     
-    private ILease<IIndexWriter> WriterLease => index.WriterManager.Lease();
+    private ILease<IndexWriter> WriterLease => index.WriterManager.Lease();
 
     public IInfoStream InfoStream => infoStream;
 
@@ -47,7 +47,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Update(JObject entity)
     {
-        using ILease<IIndexWriter> lease = WriterLease;
+        using ILease<IndexWriter> lease = WriterLease;
         foreach (LuceneDocumentEntry doc in mapper.Create(entity))
         {
             lease.Value.UpdateDocument(doc.Key, doc.Document);
@@ -58,7 +58,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Create(JObject entity)
     {
-        using ILease<IIndexWriter> lease = WriterLease;
+        using ILease<IndexWriter> lease = WriterLease;
         lease.Value.AddDocuments(mapper.Create(entity).Select(entry => entry.Document));
         throttledCommit.Increment();
         DebugInfo($"Writer.AddDocument(<doc>)");
@@ -66,7 +66,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Create(IEnumerable<JObject> entities)
     {
-        using ILease<IIndexWriter> lease = WriterLease;
+        using ILease<IndexWriter> lease = WriterLease;
         lease.Value.AddDocuments(entities.SelectMany(mapper.Create).Select(entry => entry.Document));
         throttledCommit.Increment();
         DebugInfo($"Writer.AddDocuments(<doc>)");
@@ -74,7 +74,7 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Delete(JObject entity)
     {
-        using ILease<IIndexWriter> lease = WriterLease;
+        using ILease<IndexWriter> lease = WriterLease;
         Term term = resolver.Resolver.Identity(entity);
         lease.Value.DeleteDocuments(term);
         throttledCommit.Increment();
@@ -90,14 +90,14 @@ public class JsonIndexWriter : IJsonIndexWriter
 
     public void Flush(bool triggerMerge = false, bool applyAllDeletes = false)
     {
-        using ILease<IIndexWriter> lease = WriterLease;
+        using ILease<IndexWriter> lease = WriterLease;
         lease.Value.Flush(triggerMerge, applyAllDeletes);
         DebugInfo($"Writer.Flush({triggerMerge}, {applyAllDeletes})");
     }
 
     public void MaybeMerge()
     {
-        using ILease<IIndexWriter> lease = WriterLease;
+        using ILease<IndexWriter> lease = WriterLease;
         lease.Value.MaybeMerge();
         DebugInfo($"Writer.MaybeMerge()");
     }
@@ -147,7 +147,7 @@ public class JsonIndexWriter : IJsonIndexWriter
             if (callsRead < 1)
                 return;
 
-            using ILease<IIndexWriter> lease = target.WriterLease;
+            using ILease<IndexWriter> lease = target.WriterLease;
             long start = Stopwatch.GetTimestamp();
             try
             {
@@ -157,11 +157,6 @@ public class JsonIndexWriter : IJsonIndexWriter
             {
                 long elapsed = Stopwatch.GetTimestamp() - start;
                 target.infoStream.WriteError($"[{elapsed / (Stopwatch.Frequency / (double)1000)}ms] Failed to commit indexed data to storage. Lease has been terminated.", e);
-            }
-            catch (LeaseExpiredException e)
-            {
-                long elapsed = Stopwatch.GetTimestamp() - start;
-                target.infoStream.WriteError($"[{elapsed / (Stopwatch.Frequency / (double)1000)}ms] Failed to commit indexed data to storage. Lease was expired.", e);
             }
             catch (LeaseDisposedException e)
             {
