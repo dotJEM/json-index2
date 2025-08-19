@@ -60,8 +60,8 @@ public class JsonIndexStorageManager: IJsonIndexStorageManager
 
     public void Close()
     {
-        SearcherManager.Close();
         WriterManager.Close();
+        SearcherManager.Close();
     }
     
     public void Delete()

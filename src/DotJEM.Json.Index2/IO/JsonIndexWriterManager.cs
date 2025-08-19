@@ -49,7 +49,7 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
     {
         IndexWriterConfig config = new(index.Configuration.Version, index.Configuration.Analyzer);
         config.RAMBufferSizeMB = DEFAULT_RAM_BUFFER_SIZE_MB;
-        config.OpenMode = OpenMode.CREATE_OR_APPEND;
+        config.OpenMode = OpenMode.CREATE;
         config.IndexDeletionPolicy = new SnapshotDeletionPolicy(config.IndexDeletionPolicy);
         config.SetInfoStream(new RedirectInfoStream());
         return new(index.Storage.Directory, config);
@@ -57,7 +57,6 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
 
     public void Close()
     {
-        Debug.WriteLine($"CLOSE WRITER: {writer != null}");
         if (writer == null)
             return;
 
@@ -68,6 +67,7 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
 
             IndexWriter copy = writer;
             writer = null;
+            
             leaseManager.RecallAll();
             copy.Dispose();
         }

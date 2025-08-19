@@ -46,11 +46,11 @@ public class IndexSearcherManager : Disposable, IIndexSearcherManager
                 searcher = new IndexSearcher(DirectoryReader.Open(lease.Value, true));
                 return new IndexSearcherContext(searcher, s => lease.Dispose());
             }
-
             IndexReader newReader = DirectoryReader.OpenIfChanged((DirectoryReader)searcher.IndexReader);
             if (newReader is null)
                 return new IndexSearcherContext(searcher, s => lease.Dispose());
 
+            searcher.IndexReader.Dispose();
             searcher = new IndexSearcher(newReader);
             return new IndexSearcherContext(searcher, s => lease.Dispose());
         }
@@ -60,7 +60,8 @@ public class IndexSearcherManager : Disposable, IIndexSearcherManager
     public void Close()
     {
         lock (padlock)
-        {
+        { 
+            searcher.IndexReader.Dispose();
             searcher = null;
             writerRef = null;
         }

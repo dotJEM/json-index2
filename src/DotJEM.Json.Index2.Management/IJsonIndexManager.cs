@@ -80,6 +80,7 @@ public class JsonIndexManager : IJsonIndexManager
         bool restoredFromSnapshot = await RestoreSnapshotAsync().ConfigureAwait(false);
         if (!restoredFromSnapshot)
         {
+            
             index.Storage.Delete();
         }
         else
