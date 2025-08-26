@@ -49,7 +49,7 @@ public class IndexWriterManager : Disposable, IIndexWriterManager
     {
         IndexWriterConfig config = new(index.Configuration.Version, index.Configuration.Analyzer);
         config.RAMBufferSizeMB = DEFAULT_RAM_BUFFER_SIZE_MB;
-        config.OpenMode = OpenMode.CREATE;
+        config.OpenMode = OpenMode.CREATE_OR_APPEND;
         config.IndexDeletionPolicy = new SnapshotDeletionPolicy(config.IndexDeletionPolicy);
         config.SetInfoStream(new RedirectInfoStream());
         return new(index.Storage.Directory, config);

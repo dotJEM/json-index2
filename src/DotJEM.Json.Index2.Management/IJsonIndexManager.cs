@@ -12,6 +12,7 @@ using DotJEM.Json.Index2.Management.Snapshots;
 using DotJEM.Json.Index2.Management.Source;
 using DotJEM.Json.Index2.Management.Tracking;
 using DotJEM.Json.Index2.Management.Writer;
+using DotJEM.Json.Index2.Searching;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
 using Lucene.Net.Search;
@@ -78,9 +79,10 @@ public class JsonIndexManager : IJsonIndexManager
     public async Task RunAsync()
     {
         bool restoredFromSnapshot = await RestoreSnapshotAsync().ConfigureAwait(false);
+
+
         if (!restoredFromSnapshot)
         {
-            
             index.Storage.Delete();
         }
         else

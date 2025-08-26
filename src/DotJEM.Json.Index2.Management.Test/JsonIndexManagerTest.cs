@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reactive.Linq;
+using System.Reflection;
 using Bogus;
 using DotJEM.AdvParsers;
 using DotJEM.Json.Index2.Documents.Fields;
@@ -8,19 +9,55 @@ using DotJEM.Json.Index2.Management.Observables;
 using DotJEM.Json.Index2.Management.Snapshots;
 using DotJEM.Json.Index2.Management.Snapshots.Zip;
 using DotJEM.Json.Index2.Management.Source;
+using DotJEM.Json.Index2.Searching;
 using DotJEM.Json.Index2.Snapshots;
 using DotJEM.ObservableExtensions.InfoStreams;
 using DotJEM.Web.Scheduler;
+using Lucene.Net.Search;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace DotJEM.Json.Index2.Management.Test;
 
 
-
 [TestFixture]
 public class JsonIndexManagerTest
 {
+    [Test, Explicit]
+    public async Task CanStartAndStopManager()
+    {
+        using TestDirectory dir = new();
+
+        // Copy test snapshot file to snapshot directory
+        string assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        DirectoryInfo snapshotDir = dir.Info.CreateSubdirectory("snapshot");
+
+        File.Copy(
+            Path.Combine(assemblyDirectory, "00000001.zip"), 
+            Path.Combine(snapshotDir.FullName, "00000001.zip"));
+
+
+        IJsonIndex index = new JsonIndexBuilder("Test")
+            .UsingSimpleFileStorage(dir.Info.CreateSubdirectory("index").FullName)
+            .WithFieldResolver(new FieldResolver("id", "type"))
+            .WithSnapshoting()
+            .Build();
+        IJsonDocumentSource source = new DummyDocumentSource();
+        IWebTaskScheduler scheduler = new WebTaskScheduler();
+        ISnapshotStrategy strategy = new ZipSnapshotStrategy(snapshotDir.FullName);
+        IJsonIndexSnapshotManager snapshots = new JsonIndexSnapshotManager(index, strategy, scheduler, "15m");
+        IJsonIndexManager manager = new JsonIndexManager(source, snapshots, index);
+        
+        
+        await manager.RunAsync();
+
+        Assert.That(index.Search(new MatchAllDocsQuery()).Execute().TotalHits, Is.EqualTo(1142));
+
+
+    }
+
+
+
     [Test, Explicit, MaxTime(1000*60*12)]
     public async Task IndexWriterShouldNotBeDisposed()
     {

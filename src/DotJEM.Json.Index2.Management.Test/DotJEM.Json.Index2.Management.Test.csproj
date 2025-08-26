@@ -16,5 +16,11 @@
 	  <ProjectReference Include="..\DotJEM.Json.Index2.Management\DotJEM.Json.Index2.Management.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="00000001.zip">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 
 </Project>
