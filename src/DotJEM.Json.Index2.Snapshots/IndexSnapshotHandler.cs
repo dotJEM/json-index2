@@ -42,6 +42,7 @@ public class IndexSnapshotHandler : IIndexSnapshotHandler
         IndexCommit commit = null;
         try
         {
+            writer.Commit();
             commit = sdp.Snapshot();
             Directory dir = commit.Directory;
             ISnapshot snapshot = storage.CreateSnapshot(commit);
