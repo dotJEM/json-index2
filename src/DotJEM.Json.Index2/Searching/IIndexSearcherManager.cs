@@ -61,7 +61,7 @@ public class IndexSearcherManager : Disposable, IIndexSearcherManager
     {
         lock (padlock)
         { 
-            searcher.IndexReader.Dispose();
+            searcher?.IndexReader?.Dispose();
             searcher = null;
             writerRef = null;
         }
