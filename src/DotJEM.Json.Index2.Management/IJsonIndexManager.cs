@@ -24,6 +24,7 @@ public interface IJsonIndexManager
     IInfoStream InfoStream { get; }
     IIngestProgressTracker Tracker { get; }
     IObservable<IJsonDocumentSourceEvent> DocumentChanges { get; }
+    IJsonIndex Index { get; }
     Task<bool> TakeSnapshotAsync();
     Task RunAsync();
     Task UpdateGenerationAsync(string area, long generation);
@@ -45,6 +46,7 @@ public class JsonIndexManager : IJsonIndexManager
     public IInfoStream InfoStream => infoStream;
     public IIngestProgressTracker Tracker { get; }
     public IObservable<IJsonDocumentSourceEvent> DocumentChanges => changesStream;
+    public IJsonIndex Index { get; }
 
     public JsonIndexManager(
         IJsonDocumentSource jsonDocumentSource,
